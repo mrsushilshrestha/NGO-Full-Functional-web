@@ -1,0 +1,49 @@
+{% extends 'cms/base.html' %}
+{% block page_title %}Collaboration Management{% endblock %}
+{% block content %}
+<div class="cms-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">Collaborations / Partner Wings</h5>
+        <a href="{% url 'cms_collaboration_add' %}" class="btn btn-primary btn-sm">Add Collaboration</a>
+    </div>
+    <form method="get" class="mb-3">
+        <select name="type" class="form-select" onchange="this.form.submit()">
+            <option value="">All Partnership Types</option>
+            {% for value, label in partnership_types %}
+            <option value="{{ value }}" {% if type_filter == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </form>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Logo</th>
+                    <th>Organization</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in collaborations %}
+                <tr>
+                    <td>{% if c.logo %}<img src="{{ c.logo.url }}" style="width: 50px; height: 50px; object-fit: contain;">{% else %}-{% endif %}</td>
+                    <td>{{ c.organization_name }}</td>
+                    <td><span class="badge bg-primary">{{ c.get_partnership_type_display }}</span></td>
+                    <td><span class="badge {% if c.status == 'active' %}bg-success{% elif c.status == 'ongoing' %}bg-info{% else %}bg-secondary{% endif %}">{{ c.get_status_display }}</span></td>
+                    <td>{% if c.agreement_date %}{{ c.agreement_date|date:"M Y" }}{% else %}-{% endif %}</td>
+                    <td>
+                        <a href="{% url 'cms_collaboration_edit' c.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <form method="post" action="{% url 'cms_collaboration_delete' c.pk %}" class="d-inline" onsubmit="return confirm('Delete?')">{% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-danger">Delete</button></form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-muted">No collaborations found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

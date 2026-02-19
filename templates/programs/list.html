@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Programs & Events{% endblock %}
+
+{% block content %}
+<section class="py-5" style="background: var(--bg-warm);">
+    <div class="container">
+        <h1 class="section-title mb-2">Programs & Events</h1>
+        <p class="section-subtitle mb-4">Health camps, outreach initiatives, and community wellness events</p>
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <form method="get" class="d-flex gap-2 flex-wrap">
+                    <select name="category" class="form-select" style="max-width: 180px;">
+                        <option value="">All</option>
+                        <option value="upcoming" {% if category_filter == 'upcoming' %}selected{% endif %}>Upcoming</option>
+                        <option value="past" {% if category_filter == 'past' %}selected{% endif %}>Past</option>
+                    </select>
+                    <select name="sort" class="form-select" style="max-width: 150px;">
+                        <option value="desc" {% if sort == 'desc' %}selected{% endif %}>Newest First</option>
+                        <option value="asc" {% if sort == 'asc' %}selected{% endif %}>Oldest First</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary">Apply</button>
+                </form>
+            </div>
+        </div>
+        <div class="row g-4">
+            {% for program in programs %}
+            <div class="col-md-4">
+                <div class="card card-elevated h-100">
+                    {% if program.image %}<img src="{{ program.image.url }}" class="card-img-top" alt="{{ program.title }}" style="height: 220px; object-fit: cover;">{% else %}<div class="img-placeholder card-img-top" style="height: 220px;"><div><i class="fas fa-stethoscope fa-3x mb-2"></i><p class="mb-0">{{ program.title|truncatewords:4 }}</p><p class="small opacity-90">{{ program.event_date|date:"M Y" }}</p></div></div>{% endif %}
+                    <div class="card-body">
+                        <span class="badge bg-{% if program.category == 'upcoming' %}success{% else %}secondary{% endif %}">{{ program.get_category_display }}</span>
+                        <h5 class="card-title mt-2">{{ program.title }}</h5>
+                        <p class="card-text text-muted small">{{ program.event_date|date:"F d, Y" }}</p>
+                        <p class="card-text">{{ program.description|striptags|truncatewords:25 }}</p>
+                        <a href="{% url 'program_detail' program.slug %}" class="btn btn-outline-primary btn-sm">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center text-muted py-5">
+                <i class="fas fa-calendar-alt fa-4x mb-3"></i>
+                <p>No programs found.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

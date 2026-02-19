@@ -1,0 +1,146 @@
+{% extends 'cms/base.html' %}
+{% block page_title %}Website Theme & Colors{% endblock %}
+{% block extra_css %}
+<style>
+.theme-preview { border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
+.theme-preview .nav-preview { padding: 12px 20px; display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
+.theme-preview .nav-preview a { color: inherit; text-decoration: none; padding: 6px 12px; border-radius: 6px; }
+.theme-preview .content-preview { padding: 24px; }
+.color-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.color-row input[type="color"] { width: 48px; height: 36px; padding: 2px; border: 1px solid #ddd; border-radius: 4px; }
+.color-row input[type="text"] { flex: 1; max-width: 140px; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="cms-card">
+    <form method="post" id="themeForm">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="mb-3">Color Settings</h6>
+                <div class="mb-3">
+                    <label class="form-label">Primary</label>
+                    <div class="color-row">
+                        <input type="color" id="id_primary_color" name="primary_color" value="{{ theme.primary_color }}" onchange="document.getElementById('primary_text').value=this.value; updatePreview();">
+                        <input type="text" id="primary_text" class="form-control form-control-sm" value="{{ theme.primary_color }}" onchange="document.getElementById('id_primary_color').value=this.value; updatePreview();">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Secondary</label>
+                    <div class="color-row">
+                        <input type="color" id="id_secondary_color" name="secondary_color" value="{{ theme.secondary_color }}" onchange="updatePreview();">
+                        <input type="text" class="form-control form-control-sm" value="{{ theme.secondary_color }}" onchange="document.getElementById('id_secondary_color').value=this.value; updatePreview();">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Nav background</label>
+                    <div class="color-row">
+                        <input type="color" id="id_nav_bg_color" name="nav_bg_color" value="{{ theme.nav_bg_color }}" onchange="updatePreview();">
+                        <input type="text" class="form-control form-control-sm" value="{{ theme.nav_bg_color }}" onchange="document.getElementById('id_nav_bg_color').value=this.value; updatePreview();">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Nav text</label>
+                    <div class="color-row">
+                        <input type="color" id="id_nav_text_color" name="nav_text_color" value="{{ theme.nav_text_color }}" onchange="updatePreview();">
+                        <input type="text" class="form-control form-control-sm" value="{{ theme.nav_text_color }}" onchange="var c=this.value; if(c.startsWith('#')) document.getElementById('id_nav_text_color').value=c; updatePreview();">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Nav hover</label>
+                    <input type="text" class="form-control" name="nav_hover_color" value="{{ theme.nav_hover_color }}" placeholder="rgba(255,255,255,0.15)">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Button color</label>
+                    <div class="color-row">
+                        <input type="color" id="id_button_color" name="button_color" value="{{ theme.button_color }}" onchange="updatePreview();">
+                        <input type="text" class="form-control form-control-sm" value="{{ theme.button_color }}" onchange="document.getElementById('id_button_color').value=this.value; updatePreview();">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Button hover</label>
+                    <div class="color-row">
+                        <input type="color" id="id_button_hover_color" name="button_hover_color" value="{{ theme.button_hover_color }}">
+                        <input type="text" class="form-control form-control-sm" value="{{ theme.button_hover_color }}" onchange="var v=this.value; if(v&&v.startsWith('#')) document.getElementById('id_button_hover_color').value=v;">
+                    </div>
+                </div>
+                <hr class="my-4">
+                <h6 class="mb-3">Dark Mode / Appearance</h6>
+                <div class="mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="id_dark_mode_enabled" name="dark_mode_enabled" {% if theme.dark_mode_enabled %}checked{% endif %} onchange="toggleDarkModeSettings(this.checked);">
+                        <label class="form-check-label" for="id_dark_mode_enabled">
+                            <strong>Enable Dark Mode</strong>
+                        </label>
+                    </div>
+                    <small class="text-muted d-block mt-1">When enabled, the site will use dark colors for backgrounds and text.</small>
+                </div>
+                <div id="darkModeSettings" style="display: {% if theme.dark_mode_enabled %}block{% else %}none{% endif %};">
+                    <div class="mb-3">
+                        <label class="form-label">Dark Background</label>
+                        <div class="color-row">
+                            <input type="color" id="id_dark_bg_color" name="dark_bg_color" value="{{ theme.dark_bg_color }}">
+                            <input type="text" class="form-control form-control-sm" value="{{ theme.dark_bg_color }}" onchange="document.getElementById('id_dark_bg_color').value=this.value;">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Dark Text</label>
+                        <div class="color-row">
+                            <input type="color" id="id_dark_text_color" name="dark_text_color" value="{{ theme.dark_text_color }}">
+                            <input type="text" class="form-control form-control-sm" value="{{ theme.dark_text_color }}" onchange="document.getElementById('id_dark_text_color').value=this.value;">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Dark Card Background</label>
+                        <div class="color-row">
+                            <input type="color" id="id_dark_card_bg" name="dark_card_bg" value="{{ theme.dark_card_bg }}">
+                            <input type="text" class="form-control form-control-sm" value="{{ theme.dark_card_bg }}" onchange="document.getElementById('id_dark_card_bg').value=this.value;">
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary">Save Theme</button>
+                    <button type="submit" name="action" value="reset" class="btn btn-outline-secondary">Reset to Default</button>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h6 class="mb-3">Live Preview</h6>
+                <div class="theme-preview" id="themePreview">
+                    <div class="nav-preview" id="navPreview" style="background: linear-gradient(90deg, {{ theme.nav_bg_color }}, {{ theme.secondary_color }}); color: {{ theme.nav_text_color }};">
+                        <a href="#" style="background: {{ theme.nav_hover_color }};">Home</a>
+                        <a href="#" style="background: {{ theme.nav_hover_color }};">About</a>
+                        <a href="#" style="background: {{ theme.button_color }}; color: white;">Donate</a>
+                    </div>
+                    <div class="content-preview bg-light">
+                        <p class="mb-2"><span style="color: {{ theme.primary_color }}; font-weight: 600;">Primary text</span></p>
+                        <button type="button" class="btn btn-sm" style="background: {{ theme.primary_color }}; color: white;">Primary Button</button>
+                        <button type="button" class="btn btn-sm ms-2" style="background: {{ theme.button_color }}; color: white;">Donate Button</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+function updatePreview(){
+    var navBg = document.getElementById('id_nav_bg_color').value;
+    var navText = document.getElementById('id_nav_text_color').value;
+    var btnColor = document.getElementById('id_button_color').value;
+    var sec = document.getElementById('id_secondary_color').value;
+    var preview = document.getElementById('navPreview');
+    if(preview){
+        preview.style.background = 'linear-gradient(90deg, ' + navBg + ', ' + sec + ')';
+        preview.style.color = navText;
+        var btns = preview.querySelectorAll('a:last-child');
+        btns.forEach(function(b){ b.style.background = btnColor; });
+    }
+}
+function toggleDarkModeSettings(enabled) {
+    var settings = document.getElementById('darkModeSettings');
+    if (settings) {
+        settings.style.display = enabled ? 'block' : 'none';
+    }
+}
+document.getElementById('themeForm').addEventListener('input', updatePreview);
+</script>
+{% endblock %}

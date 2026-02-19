@@ -1,0 +1,26 @@
+{% extends 'cms/base.html' %}
+{% block page_title %}Contact{% endblock %}
+{% block content %}
+<div class="cms-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">Contact Info</h5>
+        <a href="{% url 'cms_contact_edit' %}" class="btn btn-primary btn-sm">Edit</a>
+    </div>
+    {% if info %}<p>{{ info.phone }} | {{ info.email }}</p>{% else %}<p class="text-muted">No contact info. <a href="{% url 'cms_contact_edit' %}">Add</a></p>{% endif %}
+</div>
+<div class="cms-card">
+    <h5 class="mb-4">Recent Messages</h5>
+    <div class="table-responsive">
+        <table class="table">
+            <thead><tr><th>Name</th><th>Email</th><th>Subject</th><th>Date</th></tr></thead>
+            <tbody>
+            {% for m in contact_messages %}
+            <tr><td>{{ m.name }}</td><td>{{ m.email }}</td><td>{{ m.subject }}</td><td>{{ m.submitted_at|date:"M d, Y" }}</td></tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-muted">No messages.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

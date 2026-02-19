@@ -1,0 +1,19 @@
+{% extends 'cms/base.html' %}
+{% block page_title %}Programs{% endblock %}
+{% block content %}
+<div class="cms-card">
+    <p class="text-muted">Programs. Use <a href="/admin/programs/program/">Django admin</a> for add/edit.</p>
+    <div class="table-responsive">
+        <table class="table">
+            <thead><tr><th>Title</th><th>Date</th><th>Category</th></tr></thead>
+            <tbody>
+            {% for p in programs %}
+            <tr><td>{{ p.title }}</td><td>{{ p.event_date }}</td><td>{{ p.get_category_display }}</td></tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-muted">No programs.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

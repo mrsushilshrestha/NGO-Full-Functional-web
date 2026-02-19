@@ -1,0 +1,381 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Our Team{% endblock %}
+
+{% block content %}
+<section class="py-5" style="background: var(--bg-warm);">
+    <div class="container">
+        <h1 class="section-title mb-2">Our Team</h1>
+        <p class="section-subtitle mb-4">Meet the people behind NHAF Nepal. <strong>{{ member_count }}</strong> members dedicated to community health.</p>
+
+        <!-- Search, Filters, and Join Us navigation -->
+        <form method="get" class="row g-3 mb-4 align-items-end">
+            <div class="col-md-4 col-lg-3">
+                <label for="search-input" class="form-label small text-muted mb-1">Search Members</label>
+                <input type="text" name="search" id="search-input" class="form-control" placeholder="Name, role, ID..." value="{{ search }}">
+            </div>
+            <div class="col-md-3 col-lg-2">
+                <label for="chapter-select" class="form-label small text-muted mb-1">Chapter</label>
+                <select name="chapter" id="chapter-select" class="form-select">
+                    <option value="">All Chapters</option>
+                    {% for ch in chapters %}
+                    <option value="{{ ch.id }}" {% if chapter_filter == ch.id|stringformat:"d" %}selected{% endif %}>{{ ch.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 col-lg-2">
+                <label class="form-label small text-muted mb-1 d-block">View</label>
+                <div class="btn-group" role="group" aria-label="View mode">
+                    <a href="?{% for k,v in request.GET.items %}{% if k != 'view' %}{{ k }}={{ v }}&{% endif %}{% endfor %}view=grid" class="btn btn-outline-primary {% if view_mode == 'grid' %}active{% endif %}">
+                        <i class="fas fa-th-large"></i>
+                    </a>
+                    <a href="?{% for k,v in request.GET.items %}{% if k != 'view' %}{{ k }}={{ v }}&{% endif %}{% endfor %}view=list" class="btn btn-outline-primary {% if view_mode == 'list' %}active{% endif %}">
+                        <i class="fas fa-list"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-3 col-lg-5 text-md-end">
+                <button type="submit" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-search me-1"></i>Search
+                </button>
+                <a href="#join" class="btn btn-primary">
+                    <i class="fas fa-user-plus me-1"></i>Join Us
+                </a>
+            </div>
+        </form>
+
+        <!-- Executive Members -->
+        {% if executive_members %}
+        <div class="mb-4">
+            <h2 class="h4 mb-3">Executive Leadership</h2>
+            <div class="row g-4 {% if view_mode == 'list' %}flex-column{% endif %}">
+                {% for member in executive_members %}
+            <div class="{% if view_mode == 'list' %}col-12{% else %}col-md-4 col-lg-3{% endif %}">
+                <div class="card card-elevated h-100 overflow-hidden">
+                    <div class="card-body {% if view_mode == 'list' %}d-flex align-items-center text-start gap-3{% else %}text-center{% endif %}">
+                        {% if member.photo %}
+                        <img src="{{ member.photo.url }}" class="rounded-circle mb-2 shadow-sm" alt="{{ member.name }}" style="width: 88px; height: 88px; object-fit: cover; flex-shrink: 0;">
+                        {% else %}
+                        <div class="rounded-circle img-placeholder d-inline-flex align-items-center justify-content-center mb-2 fw-bold shadow-sm" style="width: 88px; height: 88px; font-size: 1.6rem; text-transform: uppercase; flex-shrink: 0;">
+                            {{ member.initials }}
+                        </div>
+                        {% endif %}
+
+                        <div class="flex-grow-1 ms-{% if view_mode == 'list' %}2{% else %}0{% endif %}">
+                            <div class="d-flex {% if view_mode == 'list' %}justify-content-between align-items-start{% else %}flex-column align-items-center{% endif %} gap-1">
+                                <div>
+                                    <h6 class="mb-1">{{ member.name }}</h6>
+                                    <p class="text-muted small mb-1">{{ member.role }}</p>
+                                    {% if member.member_id %}
+                                    <span class="badge rounded-pill bg-soft-primary text-uppercase small" style="background: rgba(11,83,69,0.06); color: #0B5345; letter-spacing: 0.03em;">
+                                        NHAFN&nbsp;ID&nbsp;·&nbsp;{{ member.member_id }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <div class="text-end d-none d-md-block">
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data={{ request.scheme }}://{{ request.get_host }}{% url 'member_detail' member.pk %}" alt="QR" class="rounded-3 border" width="70" height="70">
+                                </div>
+                            </div>
+                            {% if member.chapter %}
+                            <p class="small mt-2 mb-1">
+                                <i class="fas fa-map-marker-alt me-1 text-muted"></i>
+                                <span class="badge bg-light text-dark">{{ member.chapter.name }}</span>
+                            </p>
+                            {% endif %}
+                            <p class="small text-muted mb-2">{{ member.bio|truncatewords:18 }}</p>
+                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                <a href="{% url 'member_detail' member.pk %}" class="btn btn-sm btn-outline-primary">
+                                    View Profile
+                                </a>
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data={{ request.scheme }}://{{ request.get_host }}{% url 'member_detail' member.pk %}" alt="QR" class="rounded-3 border d-md-none" width="64" height="64">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Core Members -->
+        {% if core_members %}
+        <div class="mb-4">
+            <h2 class="h4 mb-3">Core Management</h2>
+            <div class="row g-4 {% if view_mode == 'list' %}flex-column{% endif %}">
+                {% for member in core_members %}
+                <div class="{% if view_mode == 'list' %}col-12{% else %}col-md-4 col-lg-3{% endif %}">
+                    <div class="card card-elevated h-100 overflow-hidden">
+                        <div class="card-body {% if view_mode == 'list' %}d-flex align-items-center text-start gap-3{% else %}text-center{% endif %}">
+                            {% if member.photo %}
+                            <img src="{{ member.photo.url }}" class="rounded-circle mb-2 shadow-sm" alt="{{ member.name }}" style="width: 88px; height: 88px; object-fit: cover; flex-shrink: 0;">
+                            {% else %}
+                            <div class="rounded-circle img-placeholder d-inline-flex align-items-center justify-content-center mb-2 fw-bold shadow-sm" style="width: 88px; height: 88px; font-size: 1.6rem; text-transform: uppercase; flex-shrink: 0;">
+                                {{ member.initials }}
+                            </div>
+                            {% endif %}
+
+                            <div class="flex-grow-1 ms-{% if view_mode == 'list' %}2{% else %}0{% endif %}">
+                                <div class="d-flex {% if view_mode == 'list' %}justify-content-between align-items-start{% else %}flex-column align-items-center{% endif %} gap-1">
+                                    <div>
+                                        <h6 class="mb-1">{{ member.name }}</h6>
+                                        <p class="text-muted small mb-1">{{ member.role }}</p>
+                                        {% if member.member_id %}
+                                        <span class="badge rounded-pill bg-soft-primary text-uppercase small" style="background: rgba(11,83,69,0.06); color: #0B5345; letter-spacing: 0.03em;">
+                                            NHAFN&nbsp;ID&nbsp;·&nbsp;{{ member.member_id }}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-end d-none d-md-block">
+                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data={{ request.scheme }}://{{ request.get_host }}{% url 'member_detail' member.pk %}" alt="QR" class="rounded-3 border" width="70" height="70">
+                                    </div>
+                                </div>
+                                {% if member.chapter %}
+                                <p class="small mt-2 mb-1">
+                                    <i class="fas fa-map-marker-alt me-1 text-muted"></i>
+                                    <span class="badge bg-light text-dark">{{ member.chapter.name }}</span>
+                                </p>
+                                {% endif %}
+                                <p class="small text-muted mb-2">{{ member.bio|truncatewords:18 }}</p>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <a href="{% url 'member_detail' member.pk %}" class="btn btn-sm btn-outline-primary">
+                                        View Profile
+                                    </a>
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data={{ request.scheme }}://{{ request.get_host }}{% url 'member_detail' member.pk %}" alt="QR" class="rounded-3 border d-md-none" width="64" height="64">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- General Members -->
+        <div class="mt-5">
+            <h2 class="h4 mb-3">General Members</h2>
+            <div class="row g-4 {% if view_mode == 'list' %}flex-column{% endif %}">
+                {% for member in general_page_obj %}
+                <div class="{% if view_mode == 'list' %}col-12{% else %}col-md-4 col-lg-3{% endif %}">
+                    <div class="card card-elevated h-100 overflow-hidden">
+                        <div class="card-body {% if view_mode == 'list' %}d-flex align-items-center text-start gap-3{% else %}text-center{% endif %}">
+                            {% if member.photo %}
+                            <img src="{{ member.photo.url }}" class="rounded-circle mb-2 shadow-sm" alt="{{ member.name }}" style="width: 88px; height: 88px; object-fit: cover; flex-shrink: 0;">
+                            {% else %}
+                            <div class="rounded-circle img-placeholder d-inline-flex align-items-center justify-content-center mb-2 fw-bold shadow-sm" style="width: 88px; height: 88px; font-size: 1.6rem; text-transform: uppercase; flex-shrink: 0;">
+                                {{ member.initials }}
+                            </div>
+                            {% endif %}
+
+                            <div class="flex-grow-1 ms-{% if view_mode == 'list' %}2{% else %}0{% endif %}">
+                                <div class="d-flex {% if view_mode == 'list' %}justify-content-between align-items-start{% else %}flex-column align-items-center{% endif %} gap-1">
+                                    <div>
+                                        <h6 class="mb-1">{{ member.name }}</h6>
+                                        <p class="text-muted small mb-1">{{ member.role }}</p>
+                                        {% if member.member_id %}
+                                        <span class="badge rounded-pill bg-soft-primary text-uppercase small" style="background: rgba(11,83,69,0.06); color: #0B5345; letter-spacing: 0.03em;">
+                                            NHAFN&nbsp;ID&nbsp;·&nbsp;{{ member.member_id }}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-end d-none d-md-block">
+                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data={{ request.scheme }}://{{ request.get_host }}{% url 'member_detail' member.pk %}" alt="QR" class="rounded-3 border" width="70" height="70">
+                                    </div>
+                                </div>
+                                {% if member.chapter %}
+                                <p class="small mt-2 mb-1">
+                                    <i class="fas fa-map-marker-alt me-1 text-muted"></i>
+                                    <span class="badge bg-light text-dark">{{ member.chapter.name }}</span>
+                                </p>
+                                {% endif %}
+                                <p class="small text-muted mb-2">{{ member.bio|truncatewords:18 }}</p>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <a href="{% url 'member_detail' member.pk %}" class="btn btn-sm btn-outline-primary">
+                                        View Profile
+                                    </a>
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data={{ request.scheme }}://{{ request.get_host }}{% url 'member_detail' member.pk %}" alt="QR" class="rounded-3 border d-md-none" width="64" height="64">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center text-muted py-4">
+                    <p>No general members found.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if general_page_obj.paginator.num_pages > 1 %}
+        <nav aria-label="General members pagination" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if general_page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}page={{ general_page_obj.previous_page_number }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" aria-hidden="true">&laquo;</span>
+                </li>
+                {% endif %}
+
+                {% for p in general_pagination_range %}
+                    {% if p %}
+                        <li class="page-item {% if p == general_page_obj.number %}active{% endif %}">
+                            <a class="page-link" href="?{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}page={{ p }}">{{ p }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if general_page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}page={{ general_page_obj.next_page_number }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" aria-hidden="true">&raquo;</span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        <hr class="my-5" id="join">
+        <!-- Join Us Section with Volunteer / Member toggle -->
+        <div class="row mt-5 pt-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="p-4 p-md-5 rounded-4" style="background: linear-gradient(135deg, rgba(11,83,69,0.08), rgba(193,127,89,0.08));">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                        <div>
+                            <h2 class="section-title mb-1">Join Us</h2>
+                            <p class="section-subtitle mb-0">Apply as a volunteer or general member to support our mission.</p>
+                        </div>
+                        <div class="btn-group rounded-pill overflow-hidden bg-white shadow-sm" role="tablist" aria-label="Join us toggle">
+                            <button type="button" class="btn btn-sm px-4 join-toggle active" data-target="join-volunteer">
+                                Volunteer
+                            </button>
+                            <button type="button" class="btn btn-sm px-4 join-toggle" data-target="join-member">
+                                General Member
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-lg-6">
+                            <div id="join-volunteer" class="join-panel">
+                                <h5 class="mb-3">Volunteer Application</h5>
+                                <p class="text-muted small mb-3">Share your time and skills. Profile image max 200 KB.</p>
+                                <form method="post" action="{% url 'volunteer_form' %}" enctype="multipart/form-data" class="bg-white rounded-3 p-3 p-md-4 shadow-sm">
+                                    {% csrf_token %}
+                                    {{ volunteer_join_form|crispy }}
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <button type="submit" class="btn btn-primary">Submit Volunteer Application</button>
+                                        <small class="text-muted d-none d-md-inline">You’ll be redirected after submitting.</small>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div id="join-member" class="join-panel d-none">
+                                <h5 class="mb-3">General Member Application</h5>
+                                {% if membership_fees %}
+                                <div class="alert alert-info small mb-3">
+                                    <strong>Membership Fees (from CMS):</strong>
+                                    <ul class="mb-1 mt-2">
+                                        {% for fee in membership_fees %}
+                                        <li>{{ fee.get_member_type_display }}: NPR {{ fee.amount }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    <p class="mb-0">The appropriate amount will be applied automatically based on your selection.</p>
+                                </div>
+                                {% endif %}
+                                <form method="post" action="{% url 'membership_form' %}" class="bg-white rounded-3 p-3 p-md-4 shadow-sm">
+                                    {% csrf_token %}
+                                    {{ membership_join_form|crispy }}
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <button type="submit" class="btn btn-primary">Submit Membership Application</button>
+                                        <small class="text-muted d-none d-md-inline">Secure payment options will be shown after submit.</small>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 d-none d-lg-block">
+                            <div class="h-100 d-flex align-items-center">
+                                <div class="w-100 ps-lg-4">
+                                    <div class="stat-card alt mb-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h4 class="mb-1">Make an impact</h4>
+                                                <p class="mb-0 small">Your time and membership help us reach more communities with health programs, education, and support.</p>
+                                            </div>
+                                            <i class="fas fa-hand-holding-heart fa-2x stat-icon"></i>
+                                        </div>
+                                    </div>
+                                    <ul class="list-unstyled small mb-0">
+                                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Transparent, CMS-managed membership fees</li>
+                                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Secure payment via eSewa, Khalti, or Bank</li>
+                                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Volunteer opportunities tailored to your skills</li>
+                                        <li><i class="fas fa-check-circle text-success me-2"></i>Responsive design that works on any device</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+(function() {
+    // Join Us toggle functionality
+    const toggleButtons = document.querySelectorAll('.join-toggle');
+    const panels = document.querySelectorAll('.join-panel');
+    toggleButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            toggleButtons.forEach(b => b.classList.remove('btn-primary', 'text-white', 'active'));
+            toggleButtons.forEach(b => b.classList.add('btn-light'));
+            this.classList.add('btn-primary', 'text-white', 'active');
+            this.classList.remove('btn-light');
+            panels.forEach(p => {
+                if (p.id === targetId) {
+                    p.classList.remove('d-none');
+                } else {
+                    p.classList.add('d-none');
+                }
+            });
+        });
+    });
+    if (toggleButtons.length) {
+        toggleButtons.forEach(b => b.classList.add('btn-light'));
+        const active = document.querySelector('.join-toggle.active');
+        if (active) {
+            active.classList.remove('btn-light');
+            active.classList.add('btn-primary', 'text-white');
+        }
+    }
+
+    // Auto-submit on chapter dropdown change
+    const chapterSelect = document.getElementById('chapter-select');
+    const filterForm = document.querySelector('form[method="get"]');
+    if (chapterSelect && filterForm) {
+        chapterSelect.addEventListener('change', function() {
+            filterForm.submit();
+        });
+    }
+})();
+</script>
+{% endblock %}
+{% endblock %}

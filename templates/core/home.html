@@ -1,0 +1,437 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Partners Marquee Styles */
+.partners-marquee-wrapper {
+    overflow: hidden;
+    position: relative;
+    padding: 2rem 0;
+}
+.partners-marquee {
+    display: flex;
+    flex-direction: row-reverse;
+    gap: 2.5rem;
+    animation: scroll-partners-rtl 24s linear infinite;
+    will-change: transform;
+}
+.partners-marquee-wrapper:hover .partners-marquee {
+    animation-play-state: paused;
+}
+.partner-item {
+    flex-shrink: 0;
+    width: 240px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+.partner-link {
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+.partner-link:hover {
+    transform: translateY(-3px);
+    color: var(--primary);
+}
+.partner-logo {
+    width: 170px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    transition: box-shadow 0.2s ease;
+}
+.partner-link:hover .partner-logo {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+}
+.partner-logo img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    filter: grayscale(20%);
+    transition: filter 0.2s ease;
+}
+.partner-link:hover .partner-logo img {
+    filter: grayscale(0%);
+}
+.partner-logo-placeholder {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 0.75rem;
+    line-height: 1.2;
+}
+.partner-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-dark);
+    margin-top: 0.25rem;
+    line-height: 1.3;
+    max-width: 220px;
+}
+.partner-link:hover .partner-name {
+    color: var(--primary);
+}
+@keyframes scroll-partners-rtl {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .partner-item {
+        width: 190px;
+    }
+    .partner-logo {
+        width: 140px;
+        height: 100px;
+        padding: 0.75rem;
+    }
+    .partners-marquee {
+        gap: 2rem;
+    }
+    .partner-name {
+        font-size: 0.85rem;
+        max-width: 170px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Carousel -->
+<div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
+    <div class="carousel-inner">
+        {% for banner in banners %}
+        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+            <div class="position-relative hero-banner-wrap" style="aspect-ratio: {{ banner.aspect_ratio_css }}; min-height: 320px;">
+                {% if banner.image %}
+                <img src="{{ banner.image.url }}" class="d-block w-100 h-100" alt="{{ banner.title }}" style="object-fit: {{ banner.image_fit|default:'cover' }};">
+                {% else %}
+                <div class="d-block w-100 h-100 img-placeholder" style="min-height: 320px; font-size: 1.5rem;">
+                    <div>
+                        <i class="fas fa-mountain-sun fa-4x mb-3 opacity-75"></i>
+                        <p class="mb-0">Health Camps in the Himalayas</p>
+                        <p class="small opacity-90 mt-1">NHAF Nepal • Community Healthcare</p>
+                    </div>
+                </div>
+                {% endif %}
+                {% if banner.show_overlay %}
+                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center hero-overlay-custom" style="background: rgba(11,83,69, {{ banner.overlay_opacity|default:0.7 }});">
+                    <div class="container text-white text-{{ banner.text_position|default:'center' }}{% if banner.text_position == 'center' %} text-center{% elif banner.text_position == 'right' %} text-end{% endif %}">
+                        <h1 class="display-4 fw-bold mb-3">{{ banner.title }}</h1>
+                        {% if banner.subtitle %}<p class="lead opacity-95">{{ banner.subtitle }}</p>{% else %}
+                        <p class="lead opacity-95">Committed to improving healthcare access across Nepal</p>{% endif %}
+                        {% if banner.link_url %}
+                        <a href="{{ banner.link_url }}" class="btn btn-light btn-lg mt-3 px-4 rounded-pill">{{ banner.link_text|default:"Learn More" }}</a>
+                        {% else %}
+                        <a href="{% url 'about' %}" class="btn btn-light btn-lg mt-3 px-4 rounded-pill">Learn More</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center pointer-events-none">
+                    <div class="container text-white text-{{ banner.text_position|default:'center' }}{% if banner.text_position == 'center' %} text-center{% elif banner.text_position == 'right' %} text-end{% endif %}">
+                        <h1 class="display-4 fw-bold mb-3 text-shadow">{{ banner.title }}</h1>
+                        {% if banner.subtitle %}<p class="lead opacity-95 text-shadow">{{ banner.subtitle }}</p>{% else %}
+                        <p class="lead opacity-95 text-shadow">Committed to improving healthcare access across Nepal</p>{% endif %}
+                        {% if banner.link_url %}
+                        <a href="{{ banner.link_url }}" class="btn btn-light btn-lg mt-3 px-4 rounded-pill pointer-events-auto">{{ banner.link_text|default:"Learn More" }}</a>
+                        {% else %}
+                        <a href="{% url 'about' %}" class="btn btn-light btn-lg mt-3 px-4 rounded-pill pointer-events-auto">Learn More</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="carousel-item active">
+            <div class="d-flex align-items-center justify-content-center hero-overlay position-relative" style="aspect-ratio: 16/9; min-height: 320px;">
+                <div class="text-white text-center px-4">
+                    <i class="fas fa-heart-pulse fa-5x mb-4 opacity-75"></i>
+                    <h1 class="display-4 fw-bold mb-3">National Health Association Force Nepal</h1>
+                    <p class="lead mb-4">Empowering communities through accessible healthcare. Health camps, medical outreach, and wellness programs across Nepal.</p>
+                    <a href="{% url 'about' %}" class="btn btn-light btn-lg px-5 rounded-pill">Our Mission</a>
+                    <a href="{% url 'donate' %}" class="btn btn-outline-light btn-lg ms-2 px-5 rounded-pill">Donate Now</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% if banners|length > 1 %}
+    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
+    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
+    {% endif %}
+</div>
+
+<!-- Announcement Popups - multiple, close shows next, session dismiss -->
+{% if announcements %}
+<div class="modal fade" id="announcementModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
+            <div class="modal-header text-white rounded-0" style="background: linear-gradient(90deg, #0B5345, #148f77);">
+                <h5 class="modal-title"><i class="fas fa-bullhorn me-2"></i><span id="annTitle"></span></h5>
+                <button type="button" class="btn-close btn-close-white" id="annClose" data-bs-dismiss="modal"></button>
+            </div>
+            <div id="annImageWrap" style="display:none;"><img id="annImage" src="" class="img-fluid w-100" alt="" style="max-height: 280px; object-fit: cover;"></div>
+            <div class="modal-body p-4">
+                <p class="mb-4" id="annMessage"></p>
+                <a id="annLink" href="#" class="btn btn-primary" style="display:none;"></a>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+(function(){
+    var data = {{ announcements_json|safe }};
+    var key = 'ann_dismissed';
+    function getDismissed(){ try{ return JSON.parse(sessionStorage.getItem(key)||'[]'); }catch(e){ return []; } }
+    function addDismissed(id){ var d=getDismissed(); if(d.indexOf(id)==-1)d.push(id); sessionStorage.setItem(key,JSON.stringify(d)); }
+    var modal = null, idx = 0;
+    function showNext(){
+        while(idx < data.length && getDismissed().indexOf(data[idx].id) >= 0) idx++;
+        if(idx >= data.length){ if(modal) modal.hide(); return; }
+        var a = data[idx];
+        document.getElementById('annTitle').textContent = a.title;
+        document.getElementById('annMessage').textContent = a.message;
+        var imgWrap = document.getElementById('annImageWrap');
+        if(a.image){ imgWrap.style.display='block'; document.getElementById('annImage').src=a.image; document.getElementById('annImage').alt=a.title; } else imgWrap.style.display='none';
+        var link = document.getElementById('annLink');
+        if(a.link_url){ link.href=a.link_url; link.textContent=a.link_text; link.style.display='inline-block'; } else link.style.display='none';
+        if(!modal){ modal = new bootstrap.Modal(document.getElementById('announcementModal')); }
+        modal.show();
+    }
+    document.addEventListener('DOMContentLoaded', function(){
+        if(data.length===0) return;
+        document.getElementById('announcementModal').addEventListener('hidden.bs.modal', function(){
+            if(idx < data.length) addDismissed(data[idx].id);
+            idx++;
+            showNext();
+        });
+        showNext();
+    });
+})();
+</script>
+{% endif %}
+
+<!-- Introduction -->
+<section class="py-5" style="background: var(--bg-warm);">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <span class="badge rounded-pill px-3 py-2 mb-3" style="background: rgba(11,83,69,0.12); color: #0B5345;">About Us</span>
+                <h2 class="section-title mb-4">{% if contents.intro %}{{ contents.intro.title|default:"Building Healthier Communities" }}{% else %}Building Healthier Communities{% endif %}</h2>
+                <p class="lead text-muted">
+                    {% if contents.intro %}{{ contents.intro.content|striptags|truncatewords:60 }}{% else %}
+                    National Health Association Force Nepal (NHAF Nepal) is a registered health-focused NGO dedicated to improving healthcare access in remote and underserved areas. We conduct free health camps, provide medical outreach, and empower communities through wellness education across the Himalayan nation.
+                    {% endif %}
+                </p>
+                <div class="mt-4">
+                    <a href="{% url 'about' %}" class="btn btn-primary me-2">Our Story</a>
+                    <a href="{% url 'impact' %}" class="btn btn-outline-primary">See Our Impact</a>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card card-elevated border-0 p-4">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="p-3 rounded-3 text-center" style="background: rgba(11,83,69,0.08);">
+                                <i class="fas fa-users fa-2x mb-2" style="color: #0B5345;"></i>
+                                <h5 class="mb-0">Active Volunteers</h5>
+                                <p class="text-muted small mb-0">Dedicated team</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded-3 text-center" style="background: rgba(193,127,89,0.12);">
+                                <i class="fas fa-hand-holding-heart fa-2x mb-2" style="color: #c17f59;"></i>
+                                <h5 class="mb-0">Lives Impacted</h5>
+                                <p class="text-muted small mb-0">Across Nepal</p>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <a href="{% url 'donate' %}" class="btn btn-primary w-100 py-3"><i class="fas fa-heart me-2"></i>Support Our Mission</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Programs -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title mb-2">Latest Programs</h2>
+        <p class="section-subtitle mb-5">Health camps, outreach initiatives, and community wellness events</p>
+        <div class="row g-4">
+            {% for program in programs %}
+            <div class="col-md-4">
+                <div class="card card-elevated h-100">
+                    {% if program.image %}
+                    <img src="{{ program.image.url }}" class="card-img-top" alt="{{ program.title }}" style="height: 220px; object-fit: cover;">
+                    {% else %}
+                    <div class="img-placeholder" style="height: 220px;">
+                        <div>
+                            <i class="fas fa-stethoscope fa-3x mb-2 opacity-75"></i>
+                            <p class="mb-0">{{ program.title|truncatewords:4 }}</p>
+                            <p class="small opacity-90 mt-0">{{ program.event_date|date:"M Y" }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <span class="badge rounded-pill mb-2 {% if program.category == 'upcoming' %}bg-success{% else %}bg-secondary{% endif %}">{{ program.get_category_display }}</span>
+                        <h5 class="card-title">{{ program.title }}</h5>
+                        <p class="card-text text-muted small">{{ program.event_date|date:"F d, Y" }}</p>
+                        <p class="card-text small">{{ program.description|striptags|truncatewords:20 }}</p>
+                        <a href="{% url 'program_detail' program.slug %}" class="btn btn-sm btn-outline-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-md-4">
+                <div class="card card-elevated h-100">
+                    <div class="img-placeholder" style="height: 220px;">
+                        <div><i class="fas fa-medkit fa-3x mb-2"></i><p class="mb-0">Free Health Camp</p><p class="small opacity-90">Kathmandu Valley</p></div>
+                    </div>
+                    <div class="card-body"><span class="badge bg-success">Upcoming</span><h5 class="card-title mt-2">Community Health Camp 2024</h5><p class="text-muted small">Date TBA</p><p class="small">Free medical checkups, medicines, and health counseling for underserved communities.</p><a href="{% url 'programs_list' %}" class="btn btn-sm btn-outline-primary">View All</a></div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-elevated h-100">
+                    <div class="img-placeholder" style="height: 220px; background: linear-gradient(135deg, #148f77, #0B5345);">
+                        <div><i class="fas fa-school fa-3x mb-2"></i><p class="mb-0">School Health Program</p><p class="small opacity-90">Rural Schools</p></div>
+                    </div>
+                    <div class="card-body"><span class="badge bg-secondary">Past</span><h5 class="card-title mt-2">School Health Awareness</h5><p class="text-muted small">Ongoing</p><p class="small">Hygiene education and health screenings for school children in remote areas.</p><a href="{% url 'programs_list' %}" class="btn btn-sm btn-outline-primary">View All</a></div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-elevated h-100">
+                    <div class="img-placeholder" style="height: 220px; background: linear-gradient(135deg, #c17f59, #a86d4a);">
+                        <div><i class="fas fa-hand-holding-medical fa-3x mb-2"></i><p class="mb-0">Medical Outreach</p><p class="small opacity-90">Mountain Regions</p></div>
+                    </div>
+                    <div class="card-body"><span class="badge bg-success">Upcoming</span><h5 class="card-title mt-2">Mountain Health Initiative</h5><p class="text-muted small">Coming Soon</p><p class="small">Reaching high-altitude communities with essential healthcare and supplies.</p><a href="{% url 'programs_list' %}" class="btn btn-sm btn-outline-primary">View All</a></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4"><a href="{% url 'programs_list' %}" class="btn btn-primary px-5">View All Programs</a></div>
+    </div>
+</section>
+
+<!-- Collaboration Partners Marquee -->
+{% if collaborations %}
+<section class="py-5" style="background: var(--bg-cream); border-top: 1px solid rgba(0,0,0,0.05); border-bottom: 1px solid rgba(0,0,0,0.05);">
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2 class="section-title mb-1">Our Collaboration Partners</h2>
+            <p class="section-subtitle text-muted mt-1 mb-0">Trusted organizations working together for better healthcare</p>
+        </div>
+        <div class="partners-marquee-wrapper">
+            <div class="partners-marquee" id="partnersMarquee">
+                {% for collaboration in collaborations %}
+                <div class="partner-item">
+                    <a href="{% url 'collaboration_detail' collaboration.pk %}" class="partner-link" title="{{ collaboration.organization_name }}">
+                        {% if collaboration.logo %}
+                        <div class="partner-logo">
+                            <img src="{{ collaboration.logo.url }}" alt="{{ collaboration.organization_name }}" loading="lazy">
+                        </div>
+                        {% else %}
+                        <div class="partner-logo partner-logo-placeholder">
+                            <span>{{ collaboration.organization_name|truncatewords:2 }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="partner-name">{{ collaboration.organization_name }}</div>
+                    </a>
+                </div>
+                {% endfor %}
+                <!-- Duplicate for seamless loop -->
+                {% for collaboration in collaborations %}
+                <div class="partner-item">
+                    <a href="{% url 'collaboration_detail' collaboration.pk %}" class="partner-link" title="{{ collaboration.organization_name }}">
+                        {% if collaboration.logo %}
+                        <div class="partner-logo">
+                            <img src="{{ collaboration.logo.url }}" alt="{{ collaboration.organization_name }}" loading="lazy">
+                        </div>
+                        {% else %}
+                        <div class="partner-logo partner-logo-placeholder">
+                            <span>{{ collaboration.organization_name|truncatewords:2 }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="partner-name">{{ collaboration.organization_name }}</div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Gallery -->
+<section class="py-5" style="background: var(--bg-warm);">
+    <div class="container">
+        <h2 class="section-title mb-2">Gallery</h2>
+        <p class="section-subtitle mb-5">Moments from our health camps and community programs</p>
+        <div class="row g-3">
+            {% for img in gallery %}
+            <div class="col-6 col-md-4 col-lg-3">
+                <a href="{{ img.image.url }}" class="text-decoration-none" data-bs-toggle="lightbox" data-gallery="gallery">
+                    <div class="card card-elevated overflow-hidden">
+                        <img src="{{ img.image.url }}" class="card-img-top" alt="{{ img.caption|default:img.title }}" style="height: 200px; object-fit: cover;">
+                        {% if img.caption or img.title %}<div class="card-body py-2"><p class="small text-muted mb-0">{{ img.caption|default:img.title }}</p></div>{% endif %}
+                    </div>
+                </a>
+            </div>
+            {% empty %}
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card card-elevated overflow-hidden"><div class="img-placeholder small" style="height: 200px;">Health Camp • Kathmandu</div><div class="card-body py-2"><p class="small text-muted mb-0">Community health screening</p></div></div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card card-elevated overflow-hidden"><div class="img-placeholder small" style="height: 200px; background: linear-gradient(135deg, #148f77, #0B5345);">Medical Team • Outreach</div><div class="card-body py-2"><p class="small text-muted mb-0">Volunteer doctors at work</p></div></div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card card-elevated overflow-hidden"><div class="img-placeholder small" style="height: 200px; background: linear-gradient(135deg, #c17f59, #a86d4a);">School Program • 2024</div><div class="card-body py-2"><p class="small text-muted mb-0">Student health awareness</p></div></div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card card-elevated overflow-hidden"><div class="img-placeholder small" style="height: 200px;">Village Camp • Rural Nepal</div><div class="card-body py-2"><p class="small text-muted mb-0">Remote area medical camp</p></div></div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="py-5 text-white" style="background: linear-gradient(135deg, #0B5345 0%, #148f77 50%, #0B5345 100%);">
+    <div class="container text-center">
+        <h3 class="fw-bold mb-3">Join Us in Making a Difference</h3>
+        <p class="lead opacity-90 mb-4">Volunteer your time, become a member, or donate to support our mission of accessible healthcare for all.</p>
+        <a href="{% url 'team_list' %}#join" class="btn btn-light btn-lg px-5 rounded-pill me-2"><i class="fas fa-user-plus me-2"></i>Join Us</a>
+        <a href="{% url 'donate' %}" class="btn btn-outline-light btn-lg px-5 rounded-pill">Donate</a>
+    </div>
+</section>
+{% endblock %}

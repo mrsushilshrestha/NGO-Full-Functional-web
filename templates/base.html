@@ -1,0 +1,349 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="National Health Association Force Nepal - Health NGO committed to improving healthcare access in Nepal.">
+    <title>{% block title %}{{ site_identity.site_title|default:"NHAF Nepal" }}{% endblock %}{% if site_identity.tagline %} | {{ site_identity.tagline }}{% endif %}</title>
+    {% if site_identity.favicon %}<link rel="icon" type="image/x-icon" href="{{ site_identity.favicon.url }}">{% endif %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    {% if site_theme %}
+    <style>
+    :root {
+        --primary: {{ site_theme.primary_color }};
+        --primary-light: {{ site_theme.secondary_color }};
+        --nav-bg: {{ site_theme.nav_bg_color }};
+        --nav-text: {{ site_theme.nav_text_color }};
+        --nav-hover: {{ site_theme.nav_hover_color }};
+        --accent: {{ site_theme.button_color }};
+        --accent-hover: {{ site_theme.button_hover_color }};
+    }
+    .navbar-custom { 
+        background: linear-gradient(90deg, {{ site_theme.nav_bg_color }} 0%, {{ site_theme.secondary_color }} 100%) !important; 
+    }
+    .navbar-custom .nav-link { 
+        color: {{ site_theme.nav_text_color }} !important; 
+    }
+    .navbar-custom .nav-link:hover { 
+        background: {{ site_theme.nav_hover_color }} !important; 
+    }
+    .btn-donate { 
+        background: {{ site_theme.button_color }} !important; 
+        border-color: {{ site_theme.button_color }} !important;
+    }
+    .btn-donate:hover { 
+        background: {{ site_theme.button_hover_color }} !important; 
+        border-color: {{ site_theme.button_hover_color }} !important;
+    }
+    {% if site_theme and site_theme.dark_mode_enabled %}
+    [data-theme="dark"], .dark-mode {
+        --bg-cream: {{ site_theme.dark_bg_color }};
+        --bg-warm: {{ site_theme.dark_bg_color }};
+        --text-dark: {{ site_theme.dark_text_color }};
+        --text-muted: #a0a0a0;
+        --border-soft: #404040;
+        --white: {{ site_theme.dark_card_bg }};
+        background-color: {{ site_theme.dark_bg_color }} !important;
+        color: {{ site_theme.dark_text_color }} !important;
+    }
+    [data-theme="dark"] .card, .dark-mode .card,
+    [data-theme="dark"] .bg-white, .dark-mode .bg-white,
+    [data-theme="dark"] section, .dark-mode section {
+        background-color: {{ site_theme.dark_bg_color }} !important;
+        color: {{ site_theme.dark_text_color }} !important;
+    }
+    [data-theme="dark"] .card-elevated, .dark-mode .card-elevated,
+    [data-theme="dark"] .card, .dark-mode .card {
+        background-color: {{ site_theme.dark_card_bg }} !important;
+        border-color: #404040 !important;
+    }
+    [data-theme="dark"] .text-muted, .dark-mode .text-muted {
+        color: #a0a0a0 !important;
+    }
+    [data-theme="dark"] .bg-light, .dark-mode .bg-light {
+        background-color: {{ site_theme.dark_card_bg }} !important;
+    }
+    [data-theme="dark"] .form-control, .dark-mode .form-control,
+    [data-theme="dark"] .form-select, .dark-mode .form-select {
+        background-color: {{ site_theme.dark_card_bg }} !important;
+        color: {{ site_theme.dark_text_color }} !important;
+        border-color: #404040 !important;
+    }
+    [data-theme="dark"] .alert, .dark-mode .alert {
+        background-color: {{ site_theme.dark_card_bg }} !important;
+        border-color: #404040 !important;
+    }
+    [data-theme="dark"] .footer-custom, .dark-mode .footer-custom {
+        background: var(--primary-dark) !important;
+    }
+    {% endif %}
+    </style>
+    {% endif %}
+    <style>
+    /* Mobile dropdown toggle */
+    @media (max-width: 991.98px) {
+        .navbar-custom .dropdown > .nav-link::after {
+            content: '\f078';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-left: 0.5rem;
+            transition: transform 0.2s;
+        }
+        .navbar-custom .dropdown.show > .nav-link::after {
+            transform: rotate(180deg);
+        }
+    }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top navbar-custom py-3">
+        <div class="container">
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="{% url 'home' %}">
+                {% if site_identity.logo %}<img src="{{ site_identity.logo.url }}" alt="{{ site_identity.site_title|default:'NHAF Nepal' }}" style="height: 40px; margin-right: 10px;">{% endif %}
+                {{ site_identity.site_title|default:"NHAF Nepal" }}
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-controls="nav" aria-expanded="false">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="nav">
+                <ul class="navbar-nav ms-auto">
+                {% if nav_items %}
+                    {% for item in nav_items %}
+                    {% if item.is_active %}
+                    <li class="nav-item {% if item.children.all %}dropdown{% endif %}">
+                        <a class="nav-link {% if item.is_button %}btn btn-donate ms-2{% endif %} {% if request.path == item.url or request.path|slice:':6' == '/team/' and item.url == '/team/' %}active{% endif %}" href="{{ item.url }}">
+                            {% if item.custom_icon %}<img src="{{ item.custom_icon.url }}" alt="" class="me-1" style="height:1em;width:auto">{% elif item.icon_class %}<i class="{{ item.icon_class }} me-1"></i>{% endif %}{{ item.title }}
+                            {% if item.children.all %}<i class="fas fa-chevron-down ms-1" style="font-size: 0.7em; opacity: 0.8;"></i>{% endif %}
+                        </a>
+                        {% if item.children.all %}
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            {% for child in item.children.all %}{% if child.is_active %}
+                            <li><a class="dropdown-item {% if request.path == child.url %}active bg-light{% endif %}" href="{{ child.url }}">{% if child.icon_class %}<i class="{{ child.icon_class }} me-2"></i>{% endif %}{{ child.title }}</a></li>
+                            {% endif %}{% endfor %}
+                        </ul>
+                        {% endif %}
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">{% if nav_icons.nav_home %}{% if nav_icons.nav_home.custom_svg %}<img src="{{ nav_icons.nav_home.custom_svg.url }}" alt="" class="me-1" style="height:1em;width:auto">{% else %}<i class="{{ nav_icons.nav_home.icon_class|default:'fas fa-home' }} me-1"></i>{% endif %}{% endif %}Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'about' %}">{% if nav_icons.nav_about %}{% if nav_icons.nav_about.custom_svg %}<img src="{{ nav_icons.nav_about.custom_svg.url }}" alt="" class="me-1" style="height:1em;width:auto">{% else %}<i class="{{ nav_icons.nav_about.icon_class|default:'fas fa-info-circle' }} me-1"></i>{% endif %}{% endif %}About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'programs_list' %}">{% if nav_icons.nav_programs %}{% if nav_icons.nav_programs.custom_svg %}<img src="{{ nav_icons.nav_programs.custom_svg.url }}" alt="" class="me-1" style="height:1em;width:auto">{% else %}<i class="{{ nav_icons.nav_programs.icon_class|default:'fas fa-calendar-alt' }} me-1"></i>{% endif %}{% endif %}Programs</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'team_list' %}">{% if nav_icons.nav_team %}{% if nav_icons.nav_team.custom_svg %}<img src="{{ nav_icons.nav_team.custom_svg.url }}" alt="" class="me-1" style="height:1em;width:auto">{% else %}<i class="{{ nav_icons.nav_team.icon_class|default:'fas fa-users' }} me-1"></i>{% endif %}{% endif %}Team</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'impact' %}">{% if nav_icons.nav_impact %}{% if nav_icons.nav_impact.custom_svg %}<img src="{{ nav_icons.nav_impact.custom_svg.url }}" alt="" class="me-1" style="height:1em;width:auto">{% else %}<i class="{{ nav_icons.nav_impact.icon_class|default:'fas fa-chart-line' }} me-1"></i>{% endif %}{% endif %}Impact</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}">{% if nav_icons.nav_contact %}{% if nav_icons.nav_contact.custom_svg %}<img src="{{ nav_icons.nav_contact.custom_svg.url }}" alt="" class="me-1" style="height:1em;width:auto">{% else %}<i class="{{ nav_icons.nav_contact.icon_class|default:'fas fa-envelope' }} me-1"></i>{% endif %}{% endif %}Contact</a></li>
+                    <li class="nav-item"><a class="nav-link btn btn-donate ms-2" href="{% url 'donate' %}">{% if nav_icons.nav_donate %}{% if nav_icons.nav_donate.custom_svg %}<img src="{{ nav_icons.nav_donate.custom_svg.url }}" alt="" class="me-1" style="height:1em;width:auto">{% else %}<i class="{{ nav_icons.nav_donate.icon_class|default:'fas fa-heart' }} me-1"></i>{% endif %}{% else %}<i class="fas fa-heart me-1"></i>{% endif %}Donate</a></li>
+                {% endif %}
+                </ul>
+                {% if site_theme and site_theme.dark_mode_enabled %}
+                <div class="d-flex align-items-center ms-3 border-start border-light border-opacity-50 ps-3">
+                    <button type="button" class="btn btn-sm btn-outline-light" id="darkModeToggle" aria-label="Toggle dark mode" title="Toggle dark mode" style="border-radius: 50%; width: 38px; height: 38px; padding: 0; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-moon" id="darkModeIcon"></i>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+
+    <footer class="footer footer-custom mt-5 py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5 class="text-white">NHAF Nepal</h5>
+                    <p>National Health Association Force Nepal - Committed to improving healthcare access across Nepal.</p>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h6 class="text-white">Quick Links</h6>
+                    <a href="{% url 'about' %}" class="d-block text-secondary text-decoration-none">About</a>
+                    <a href="{% url 'programs_list' %}" class="d-block text-secondary text-decoration-none">Programs</a>
+                    <a href="{% url 'team_list' %}" class="d-block text-secondary text-decoration-none">Team</a>
+                    <a href="{% url 'donate' %}" class="d-block text-secondary text-decoration-none">Donate</a>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h6 class="text-white mb-3">Contact</h6>
+                    <p class="mb-1 small"><i class="fas fa-map-marker-alt me-2 opacity-75"></i>New Baneshwor, Kathmandu</p>
+                    <p class="mb-0 small"><i class="fas fa-envelope me-2 opacity-75"></i>info@nhafn.org.np</p>
+                </div>
+            </div>
+            <hr class="border-secondary">
+            <p class="text-center small mb-0">&copy; {% now "Y" %} NHAF Nepal. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Mobile dropdown toggle
+    (function() {
+        function initMobileDropdowns() {
+            if (window.innerWidth <= 991) {
+                document.querySelectorAll('.navbar-custom .dropdown > .nav-link').forEach(function(link) {
+                    link.addEventListener('click', function(e) {
+                        if (this.parentElement.classList.contains('dropdown')) {
+                            e.preventDefault();
+                            const dropdown = this.parentElement;
+                            const isOpen = dropdown.classList.contains('show');
+                            document.querySelectorAll('.navbar-custom .dropdown').forEach(function(d) {
+                                d.classList.remove('show');
+                            });
+                            if (!isOpen) {
+                                dropdown.classList.add('show');
+                            }
+                        }
+                    });
+                });
+            }
+        }
+        initMobileDropdowns();
+        window.addEventListener('resize', initMobileDropdowns);
+    })();
+    </script>
+    {% if site_theme and site_theme.dark_mode_enabled %}
+    <script>
+    (function() {
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const darkModeIcon = document.getElementById('darkModeIcon');
+        const body = document.body;
+        const html = document.documentElement;
+        
+        // Check localStorage for user preference
+        function getDarkModePreference() {
+            const saved = localStorage.getItem('darkMode');
+            if (saved !== null) {
+                return saved === 'true';
+            }
+            // Default to light mode if no preference saved
+            return false;
+        }
+        
+        // Apply dark mode
+        function applyDarkMode(enabled) {
+            if (enabled) {
+                body.setAttribute('data-theme', 'dark');
+                body.classList.add('dark-mode');
+                html.setAttribute('data-theme', 'dark');
+                html.classList.add('dark-mode');
+                if (darkModeIcon) {
+                    darkModeIcon.classList.remove('fa-moon');
+                    darkModeIcon.classList.add('fa-sun');
+                }
+                localStorage.setItem('darkMode', 'true');
+            } else {
+                body.removeAttribute('data-theme');
+                body.classList.remove('dark-mode');
+                html.removeAttribute('data-theme');
+                html.classList.remove('dark-mode');
+                if (darkModeIcon) {
+                    darkModeIcon.classList.remove('fa-sun');
+                    darkModeIcon.classList.add('fa-moon');
+                }
+                localStorage.setItem('darkMode', 'false');
+            }
+        }
+        
+        // Initialize dark mode on page load
+        const isDarkMode = getDarkModePreference();
+        applyDarkMode(isDarkMode);
+        
+        // Toggle dark mode on button click
+        if (darkModeToggle) {
+            darkModeToggle.addEventListener('click', function() {
+                const currentDarkMode = body.classList.contains('dark-mode');
+                applyDarkMode(!currentDarkMode);
+            });
+        }
+    })();
+    </script>
+    {% endif %}
+    {% block extra_js %}{% endblock %}
+    {% if chat_settings.is_enabled and request.resolver_match.url_name != 'contact_chat' %}{% load static %}
+    <!-- Live Chat Widget -->
+    <div id="chatWidget" style="position:fixed;bottom:20px;right:20px;z-index:9999;">
+        <div id="chatToggle" style="width:60px;height:60px;background:{{ site_theme.button_color|default:'#007bff' }};border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,0.18);">
+            <i class="fas fa-comments text-white fa-lg"></i>
+            <span id="chatBadge" class="badge bg-danger position-absolute" style="top:-5px;right:-5px;display:none;">0</span>
+        </div>
+        <div id="chatWindow" style="display:none;width:360px;height:520px;background:white;border-radius:16px;box-shadow:0 18px 48px rgba(0,0,0,0.28);position:absolute;bottom:74px;right:0;flex-direction:column;overflow:hidden;">
+            <div style="background:linear-gradient(90deg, {{ site_theme.primary_color|default:'#0B5345' }} 0%, {{ site_theme.secondary_color|default:'#148f77' }} 100%);color:white;padding:14px 14px;display:flex;justify-content:space-between;align-items:center;">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="rounded-circle d-inline-flex align-items-center justify-content-center" style="width:34px;height:34px;background:rgba(255,255,255,0.18);">
+                        <i class="fas fa-headset"></i>
+                    </span>
+                    <div class="lh-sm">
+                        <strong class="d-block">Live Chat</strong>
+                        <small class="opacity-75">{% if admin_chat_online %}Active now{% else %}We’ll reply soon{% endif %}</small>
+                    </div>
+                </div>
+                <button id="chatClose" style="background:none;border:none;color:white;font-size:20px;cursor:pointer;">&times;</button>
+            </div>
+            <div id="chatMessages" style="flex:1;overflow-y:auto;padding:15px;background:#f9f9f9;"></div>
+            <div style="padding:15px;border-top:1px solid #ddd;">
+                <input type="text" id="chatName" placeholder="Your name (optional)" class="form-control form-control-sm mb-2">
+                <input type="email" id="chatEmail" placeholder="Email (optional)" class="form-control form-control-sm mb-2">
+                <div class="input-group">
+                    <input type="text" id="chatInput" class="form-control" placeholder="Type a message...">
+                    <button id="chatSend" class="btn btn-primary" style="background:{{ site_theme.button_color|default:'#007bff' }};border-color:{{ site_theme.button_color|default:'#007bff' }};">Send</button>
+                </div>
+            </div>
+        </div>
+        <script>
+        (function(){
+            var toggle=document.getElementById('chatToggle'),win=document.getElementById('chatWindow'),close=document.getElementById('chatClose'),send=document.getElementById('chatSend'),input=document.getElementById('chatInput'),messages=document.getElementById('chatMessages'),name=document.getElementById('chatName'),email=document.getElementById('chatEmail');
+            var interval=null;
+            function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+            function loadMessages(){
+                fetch('{% url "chat_get" %}').then(r=>r.json()).then(function(d){
+                    messages.innerHTML='';
+                    d.messages.forEach(function(m){
+                        var wrap=document.createElement('div');
+                        wrap.className='mb-2 '+(m.sender=='user'?'text-end':'text-start');
+                        var bubbleBg = (m.sender=='user' ? '{{ site_theme.button_color|default:"#007bff" }}' : 'white');
+                        var bubbleColor = (m.sender=='user' ? 'white' : '#111');
+                        var bubbleBorder = (m.sender=='user' ? 'none' : '1px solid #e6e6e6');
+                        wrap.innerHTML =
+                            '<div style="display:inline-block;max-width:80%;padding:10px 12px;border-radius:14px;background:'+bubbleBg+';color:'+bubbleColor+';border:'+bubbleBorder+';box-shadow:'+(m.sender=='user'?'none':'0 6px 18px rgba(0,0,0,0.06)')+'">' +
+                            '<div style="font-size:12px;opacity:0.75;margin-bottom:2px;">'+esc(m.name || (m.sender==='user'?'You':'Support'))+'</div>' +
+                            '<div style="white-space:pre-wrap;word-wrap:break-word;">'+esc(m.message)+'</div>' +
+                            '</div>';
+                        messages.appendChild(wrap);
+                    });
+                    messages.scrollTop=messages.scrollHeight;
+                });
+            }
+            toggle.addEventListener('click',function(){
+                win.style.display=win.style.display==='none'?'flex':'none';
+                if(win.style.display==='flex'){loadMessages();interval=setInterval(loadMessages,3000);}
+                else if(interval){clearInterval(interval);}
+            });
+            close.addEventListener('click',function(){win.style.display='none';if(interval){clearInterval(interval);}});
+            send.addEventListener('click',function(){
+                var msg=input.value.trim(); if(!msg) return;
+                var fd=new FormData(); fd.append('message',msg);
+                if(name.value)fd.append('name',name.value); if(email.value)fd.append('email',email.value);
+                fetch('{% url "chat_send" %}',{method:'POST',body:fd}).then(function(){input.value='';loadMessages();});
+            });
+            input.addEventListener('keypress',function(e){if(e.key==='Enter')send.click();});
+        })();
+        </script>
+    </div>
+    {% endif %}
+</body>
+</html>

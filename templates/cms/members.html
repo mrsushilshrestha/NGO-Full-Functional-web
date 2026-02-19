@@ -1,0 +1,82 @@
+{% extends 'cms/base.html' %}
+{% block page_title %}Members &amp; Volunteers{% endblock %}
+{% block content %}
+<div class="cms-card">
+    <h5 class="mb-4">Volunteer Applications</h5>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Contact</th>
+                    <th>Location</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in volunteers %}
+                <tr>
+                    <td>{{ v.name }}</td>
+                    <td>{{ v.email }} / {{ v.contact_number }}</td>
+                    <td>{{ v.location }}</td>
+                    <td>{{ v.submitted_at|date:"M d, Y" }}</td>
+                    <td>
+                        <span class="badge {% if v.status == 'pending' %}bg-warning{% elif v.status == 'approved' %}bg-success{% else %}bg-secondary{% endif %}">{{ v.status|title }}</span>
+                    </td>
+                    <td>
+                        {% if v.status == 'pending' %}
+                        <form method="post" action="{% url 'cms_member_action' 'volunteer' v.pk 'approve' %}" class="d-inline">{% csrf_token %}<button type="submit" class="btn btn-sm btn-success">Approve</button></form>
+                        <form method="post" action="{% url 'cms_member_action' 'volunteer' v.pk 'reject' %}" class="d-inline">{% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-danger">Reject</button></form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-muted">No volunteer applications.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="cms-card">
+    <h5 class="mb-4">Membership Applications</h5>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email / Phone</th>
+                    <th>Type</th>
+                    <th>Payment</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in members %}
+                <tr>
+                    <td>{{ m.name }}</td>
+                    <td>{{ m.email }} / {{ m.phone }}</td>
+                    <td>{{ m.get_member_type_display }}</td>
+                    <td>{{ m.payment_method }} {% if m.amount_paid %}NPR {{ m.amount_paid }}{% endif %}</td>
+                    <td>{{ m.submitted_at|date:"M d, Y" }}</td>
+                    <td>
+                        <span class="badge {% if m.status == 'pending' %}bg-warning{% elif m.status == 'approved' %}bg-success{% else %}bg-secondary{% endif %}">{{ m.status|title }}</span>
+                    </td>
+                    <td>
+                        {% if m.status == 'pending' %}
+                        <form method="post" action="{% url 'cms_member_action' 'membership' m.pk 'approve' %}" class="d-inline">{% csrf_token %}<button type="submit" class="btn btn-sm btn-success">Approve</button></form>
+                        <form method="post" action="{% url 'cms_member_action' 'membership' m.pk 'reject' %}" class="d-inline">{% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-danger">Reject</button></form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-muted">No membership applications.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

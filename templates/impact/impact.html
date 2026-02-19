@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Our Impact{% endblock %}
+
+{% block content %}
+<section class="py-5" style="background: var(--bg-warm);">
+    <div class="container">
+        <h1 class="section-title text-center mb-2">Our Impact</h1>
+        <p class="section-subtitle text-center mb-5">Together we're making a difference across Nepal. Every number represents lives touched.</p>
+
+        <div class="row g-4">
+            {% for stat in stats %}
+            <div class="col-md-4">
+                <div class="stat-card {% cycle '' 'alt' '' %} h-100">
+                    <div class="card-body text-center p-4">
+                        {% if stat.icon %}<i class="fas {{ stat.icon }} stat-icon fa-3x mb-3"></i>{% else %}<i class="fas fa-chart-line stat-icon fa-3x mb-3"></i>{% endif %}
+                        <h3 class="display-5 fw-bold mb-1 counter" data-target="{{ stat.value }}" data-suffix="{{ stat.suffix }}">0{{ stat.suffix }}</h3>
+                        <h5 class="mt-2 mb-1">{{ stat.label }}</h5>
+                        {% if stat.tagline %}<p class="small mb-0 opacity-90">{{ stat.tagline }}</p>{% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-md-4">
+                <div class="stat-card h-100"><div class="card-body text-center p-4"><i class="fas fa-users stat-icon fa-3x mb-3"></i><h3 class="display-5 fw-bold mb-1">5,000</h3><h5 class="mt-2">Lives Impacted</h5><p class="small mb-0 opacity-90">Health camps & outreach</p></div></div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card alt h-100"><div class="card-body text-center p-4"><i class="fas fa-school stat-icon fa-3x mb-3"></i><h3 class="display-5 fw-bold mb-1">50</h3><h5 class="mt-2">Schools Reached</h5><p class="small mb-0 opacity-90">Student health programs</p></div></div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card h-100"><div class="card-body text-center p-4"><i class="fas fa-medkit stat-icon fa-3x mb-3"></i><h3 class="display-5 fw-bold mb-1">120</h3><h5 class="mt-2">Health Camps</h5><p class="small mb-0 opacity-90">Free medical services</p></div></div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var counters = document.querySelectorAll('.counter');
+    var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                var el = entry.target;
+                var target = parseInt(el.dataset.target);
+                var suffix = el.dataset.suffix || '';
+                var current = 0;
+                var step = Math.max(1, Math.ceil(target / 50));
+                var timer = setInterval(function() {
+                    current += step;
+                    if (current >= target) {
+                        el.textContent = target + suffix;
+                        clearInterval(timer);
+                    } else {
+                        el.textContent = Math.floor(current) + suffix;
+                    }
+                }, 30);
+                observer.unobserve(el);
+            }
+        });
+    }, { threshold: 0.5 });
+    counters.forEach(function(c) { observer.observe(c); });
+});
+</script>
+{% endblock %}

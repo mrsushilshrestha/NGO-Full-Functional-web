@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Bank Transfer - Membership{% endblock %}
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <h1 class="text-center mb-4">Complete Membership Payment</h1>
+        <p class="text-center text-muted">Amount: NPR {{ app.amount_paid|floatformat:0 }} ({{ app.get_member_type_display }})</p>
+        {% if bank_details %}
+        <div class="row g-4 justify-content-center">
+            {% for bank in bank_details %}
+            <div class="col-md-5">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="text-primary">{{ bank.bank_name }}</h5>
+                        <p class="mb-1"><strong>Account:</strong> {{ bank.account_name }} - {{ bank.account_number }}</p>
+                        {% if bank.branch %}<p class="mb-1"><strong>Branch:</strong> {{ bank.branch }}</p>{% endif %}
+                        <p class="mt-2 mb-0"><strong>Amount:</strong> NPR {{ app.amount_paid|floatformat:0 }}</p>
+                        <p class="small text-muted">Reference: {{ app.name }} - Membership</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="text-center mt-4">
+            <a href="{% url 'team_list' %}" class="btn btn-primary">Done</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

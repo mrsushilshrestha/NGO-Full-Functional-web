@@ -1,0 +1,37 @@
+{% extends 'cms/base.html' %}
+{% block page_title %}Icon Management{% endblock %}
+{% block content %}
+<div class="cms-card">
+    <p class="text-muted mb-4">Assign Font Awesome classes or upload custom SVG icons for nav and footer. Preview before saving.</p>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Location</th>
+                    <th>Icon preview</th>
+                    <th>Class / Custom</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ic in icons %}
+                <tr>
+                    <td>{{ ic.get_location_display }}</td>
+                    <td>
+                        {% if ic.custom_svg %}
+                        <img src="{{ ic.custom_svg.url }}" alt="" style="height: 24px; width: auto;">
+                        {% else %}
+                        <i class="{{ ic.icon_class|default:'fas fa-circle' }}"></i>
+                        {% endif %}
+                    </td>
+                    <td><code>{{ ic.icon_class|default:'-' }}</code>{% if ic.custom_svg %} <span class="badge bg-secondary">custom SVG</span>{% endif %}</td>
+                    <td><a href="{% url 'cms_icon_edit' ic.pk %}" class="btn btn-sm btn-outline-primary">Edit</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-muted">No icons configured. Run migrations to create defaults.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

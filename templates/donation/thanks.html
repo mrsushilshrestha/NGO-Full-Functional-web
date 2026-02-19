@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Thank You{% endblock %}
+
+{% block content %}
+<section class="py-5" style="background: var(--bg-warm);">
+    <div class="container text-center">
+        <i class="fas fa-heart fa-5x mb-4" style="color: #0B5345;"></i>
+        <h1>Thank You!</h1>
+        <p class="lead">Your donation will help us improve healthcare access across Nepal.</p>
+        <a href="{% url 'home' %}" class="btn btn-primary">Return to Home</a>
+    </div>
+</section>
+{% endblock %}

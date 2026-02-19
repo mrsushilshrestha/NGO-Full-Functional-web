@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ member.name }}{% endblock %}
+
+{% block content %}
+<section class="py-5" style="background: var(--bg-warm);">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'team_list' %}">Team</a></li>
+                <li class="breadcrumb-item active">{{ member.name }}</li>
+            </ol>
+        </nav>
+        <div class="row g-4 align-items-start">
+            <div class="col-md-4">
+                <div class="card card-elevated text-center p-4 h-100">
+                {% if member.photo %}
+                <img src="{{ member.photo.url }}" class="img-fluid rounded-circle mb-3 shadow-sm" alt="{{ member.name }}" style="max-width: 220px;">
+                {% else %}
+                <div class="rounded-circle img-placeholder d-inline-flex align-items-center justify-content-center mb-3 fw-bold shadow-sm" style="width: 200px; height: 200px; font-size: 3rem; text-transform: uppercase;">
+                    {{ member.initials }}
+                </div>
+                {% endif %}
+                <div class="mt-3">
+                    <p class="text-muted small mb-1">Scan for digital profile</p>
+                    <div class="d-inline-block p-2 bg-white rounded-3 shadow-sm">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data={{ request.scheme }}://{{ request.get_host }}{{ request.path }}" alt="Profile QR" class="rounded-3" width="130" height="130">
+                    </div>
+                </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <h1 class="mb-1">{{ member.name }}</h1>
+                <p class="lead mb-2" style="color: #0B5345;">{{ member.role }}</p>
+                {% if member.member_id %}
+                <p class="mb-2">
+                    <span class="badge rounded-pill bg-soft-primary" style="background: rgba(11,83,69,0.06); color: #0B5345; letter-spacing: 0.04em;">
+                        NHAFN&nbsp;ID&nbsp;·&nbsp;{{ member.member_id }}
+                    </span>
+                </p>
+                {% endif %}
+                <div class="mb-3">
+                    {% if member.chapter %}
+                    <span class="badge bg-primary me-2"><i class="fas fa-map-marker-alt me-1"></i>{{ member.chapter.name }}</span>
+                    {% endif %}
+                    {% if member.specialization %}
+                    <span class="badge bg-light text-dark me-2"><i class="fas fa-stethoscope me-1"></i>{{ member.specialization }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="row mb-3 gy-2">
+                    {% if member.education %}
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Education:</strong><br><span class="text-muted">{{ member.education }}</span></p>
+                    </div>
+                    {% endif %}
+                    {% if member.join_year %}
+                    <div class="col-md-3">
+                        <p class="mb-1"><strong>Joined:</strong><br><span class="text-muted">{{ member.join_year }}</span></p>
+                    </div>
+                    {% endif %}
+                    {% if member.date_of_issue %}
+                    <div class="col-md-3">
+                        <p class="mb-1"><strong>ID Issued:</strong><br><span class="text-muted">{{ member.date_of_issue }}</span></p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="text-uppercase text-muted small mb-2">About</h6>
+                    <div class="bg-white rounded-3 p-3 shadow-sm border border-soft">
+                        {{ member.bio|linebreaks }}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    {% if member.email %}
+                    <p class="mb-1"><i class="fas fa-envelope me-2 text-muted"></i>{{ member.email }}</p>
+                    {% endif %}
+                    {% if member.phone %}
+                    <p class="mb-0"><i class="fas fa-phone me-2 text-muted"></i>{{ member.phone }}</p>
+                    {% endif %}
+                </div>
+
+                <a href="{% url 'team_list' %}" class="btn btn-outline-primary">Back to Team</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

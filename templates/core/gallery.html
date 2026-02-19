@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Gallery{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Gallery</h1>
+    {% if programs %}
+    <div class="mb-4">
+        <a href="{% url 'gallery' %}" class="btn btn-outline-primary {% if not program_filter %}active{% endif %}">All</a>
+        {% for p in programs %}
+        <a href="{% url 'gallery' %}?program={{ p.id }}" class="btn btn-outline-primary {% if program_filter == p.id|stringformat:'s' %}active{% endif %}">{{ p.title }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <div class="row g-4" id="galleryGrid">
+        {% for img in images %}
+        <div class="col-md-4 col-lg-3">
+            <div class="card border-0 shadow-sm">
+                <a href="{{ img.image.url }}" data-bs-toggle="modal" data-bs-target="#imageModal" data-image="{{ img.image.url }}" data-title="{{ img.title }}" data-caption="{{ img.caption }}">
+                    <img src="{{ img.image.url }}" class="card-img-top" alt="{{ img.title }}" style="height:200px;object-fit:cover;" loading="lazy" decoding="async" width="300" height="200">
+                </a>
+                {% if img.caption %}<div class="card-body"><p class="card-text small">{{ img.caption }}</p></div>{% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12"><p class="text-muted">No images found.</p></div>
+        {% endfor %}
+    </div>
+</div>
+<div class="modal fade" id="imageModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title" id="modalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body text-center"><img id="modalImage" src="" class="img-fluid" alt=""></div>
+            <div class="modal-footer"><p id="modalCaption" class="text-muted mb-0"></p></div>
+        </div>
+    </div>
+</div>
+<script>
+document.getElementById('imageModal').addEventListener('show.bs.modal',function(e){var btn=e.relatedTarget;document.getElementById('modalImage').src=btn.getAttribute('data-image');document.getElementById('modalTitle').textContent=btn.getAttribute('data-title')||'';document.getElementById('modalCaption').textContent=btn.getAttribute('data-caption')||'';});
+</script>
+{% endblock %}

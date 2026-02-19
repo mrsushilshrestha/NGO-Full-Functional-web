@@ -1,0 +1,19 @@
+{% extends 'cms/base.html' %}
+{% block page_title %}Team{% endblock %}
+{% block content %}
+<div class="cms-card">
+    <p class="text-muted">Team members. Use <a href="/admin/team/member/">Django admin</a> for management.</p>
+    <div class="table-responsive">
+        <table class="table">
+            <thead><tr><th>Name</th><th>Role</th><th>Chapter</th></tr></thead>
+            <tbody>
+            {% for m in members %}
+            <tr><td>{{ m.name }}</td><td>{{ m.role }}</td><td>{{ m.chapter.name|default:"-" }}</td></tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-muted">No members.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

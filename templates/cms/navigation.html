@@ -1,0 +1,96 @@
+{% extends 'cms/base.html' %}
+{% block page_title %}Site Navigation Settings{% endblock %}
+{% block content %}
+<div class="cms-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">Navigation Items</h5>
+        <div>
+            <form method="post" action="{% url 'cms_nav_restore_defaults' %}" class="d-inline me-2">{% csrf_token %}<button type="submit" class="btn btn-outline-secondary btn-sm" onclick="return confirm('Restore default navigation items? This will create default items if they don\'t exist.')">Restore Defaults</button></form>
+            <a href="{% url 'cms_nav_add' %}" class="btn btn-primary btn-sm">Add Item</a>
+        </div>
+    </div>
+    <p class="text-muted small mb-4">Drag to reorder. Enable/disable items. Add sub-menus by setting parent.</p>
+    <div class="table-responsive">
+        <table class="table" id="navTable">
+            <thead>
+                <tr>
+                    <th style="width:40px"></th>
+                    <th>Title</th>
+                    <th>URL</th>
+                    <th>Icon</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in nav_items %}
+                <tr data-id="{{ item.pk }}">
+                    <td class="drag-handle text-muted"><i class="fas fa-grip-vertical"></i></td>
+                    <td>{{ item.title }}</td>
+                    <td><code class="small">{{ item.url }}</code></td>
+                    <td>{% if item.custom_icon %}<img src="{{ item.custom_icon.url }}" style="height:20px">{% elif item.icon_class %}<i class="{{ item.icon_class }}"></i>{% else %}-{% endif %}</td>
+                    <td><span class="badge {% if item.is_active %}bg-success{% else %}bg-secondary{% endif %}">{{ item.is_active|yesno:"Active,Disabled" }}</span></td>
+                    <td>
+                        <a href="{% url 'cms_nav_edit' item.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <form method="post" action="{% url 'cms_nav_delete' item.pk %}" class="d-inline" onsubmit="return confirm('Delete?')">{% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-danger">Delete</button></form>
+                    </td>
+                </tr>
+                {% for child in item.children.all %}
+                <tr data-id="{{ child.pk }}" class="table-light">
+                    <td></td>
+                    <td class="ps-4"><i class="fas fa-level-up-alt fa-rotate-90 text-muted me-1"></i>{{ child.title }}</td>
+                    <td><code class="small">{{ child.url }}</code></td>
+                    <td>{% if child.icon_class %}<i class="{{ child.icon_class }}"></i>{% else %}-{% endif %}</td>
+                    <td><span class="badge {% if child.is_active %}bg-success{% else %}bg-secondary{% endif %}">{{ child.is_active|yesno:"Active,Disabled" }}</span></td>
+                    <td>
+                        <a href="{% url 'cms_nav_edit' child.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <form method="post" action="{% url 'cms_nav_delete' child.pk %}" class="d-inline" onsubmit="return confirm('Delete?')">{% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-danger">Delete</button></form>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% empty %}
+                <tr><td colspan="6" class="text-muted">No nav items. <a href="{% url 'cms_nav_add' %}">Add one</a></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="cms-card">
+    <h6>Live Preview</h6>
+    <div class="p-3 rounded bg-dark" id="navPreview" style="min-height: 60px;">
+        {% if nav_items %}
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            {% for item in nav_items %}
+            {% if item.is_active %}
+            <a href="{{ item.url }}" class="text-white text-decoration-none px-2 py-1 rounded" style="background: rgba(255,255,255,0.2);">{{ item.title }}</a>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% else %}
+        <span class="text-muted small">Add nav items to see preview</span>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    var tbody = document.querySelector('#navTable tbody');
+    if (tbody && tbody.querySelector('[data-id]')) {
+        new Sortable(tbody, {
+            handle: '.drag-handle',
+            animation: 150,
+            onEnd: function(){
+                var order = [];
+                tbody.querySelectorAll('tr[data-id]').forEach(function(r){ order.push(r.getAttribute('data-id')); });
+                var fd = new FormData();
+                order.forEach(function(id){ fd.append('order[]', id); });
+                fd.append('csrfmiddlewaretoken', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+                fetch('{% url "cms_nav_reorder" %}', { method: 'POST', body: fd }).then(function(){ location.reload(); });
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

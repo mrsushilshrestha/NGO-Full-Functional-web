@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ program.title }}{% endblock %}
+
+{% block content %}
+<section class="py-5" style="background: var(--bg-warm);">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'programs_list' %}">Programs</a></li>
+                <li class="breadcrumb-item active">{{ program.title }}</li>
+            </ol>
+        </nav>
+        <div class="row">
+            <div class="col-lg-8">
+                {% if program.image %}<img src="{{ program.image.url }}" class="img-fluid rounded-3 mb-4 shadow-sm" alt="{{ program.title }}" style="max-height: 400px; width: 100%; object-fit: cover;">{% else %}<div class="img-placeholder rounded-3 mb-4" style="height: 350px;"><div><i class="fas fa-calendar-check fa-4x mb-2"></i><p class="mb-0">{{ program.title }}</p><p class="small opacity-90">{{ program.event_date|date:"F d, Y" }}</p></div></div>{% endif %}
+                <h1>{{ program.title }}</h1>
+                <p class="text-muted">
+                    <span class="badge bg-{% if program.category == 'upcoming' %}success{% else %}secondary{% endif %}">{{ program.get_category_display }}</span>
+                    {{ program.event_date|date:"F d, Y" }}
+                </p>
+                <div class="content">{{ program.description|safe }}</div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMS Login - NHAF Nepal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <style>
+        body { min-height: 100vh; background: linear-gradient(135deg, #0f766e 0%, #0d9488 50%, #14b8a6 100%); font-family: 'Segoe UI', sans-serif; }
+        .login-card { border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); overflow: hidden; }
+        .login-left { background: linear-gradient(135deg, #0f766e, #0d9488); color: white; padding: 3rem; }
+        .login-right { padding: 3rem; background: white; }
+        .btn-login { background: #0d9488; border: none; padding: 12px 24px; font-weight: 600; }
+        .btn-login:hover { background: #0f766e; }
+    </style>
+</head>
+<body class="d-flex align-items-center justify-content-center p-3">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card login-card">
+                    <div class="row g-0">
+                        <div class="col-md-5 login-left d-flex flex-column justify-content-center text-center">
+                            <div class="mb-3"><i class="fas fa-heartbeat fa-4x text-white"></i></div>
+                            <h2>NHAF Nepal</h2>
+                            <p class="mb-0 opacity-90">Content Management</p>
+                        </div>
+                        <div class="col-md-7 login-right">
+                            <h4 class="mb-4">Welcome back</h4>
+                            {% if messages %}
+                            {% for m in messages %}
+                            <div class="alert alert-{{ m.tags }} py-2">{{ m }}</div>
+                            {% endfor %}
+                            {% endif %}
+                            <form method="post">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label">Username</label>
+                                    <input type="text" name="username" class="form-control form-control-lg" required autofocus>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label">Password</label>
+                                    <input type="password" name="password" class="form-control form-control-lg" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-login btn-lg w-100">Sign In</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

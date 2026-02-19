@@ -1,0 +1,67 @@
+{% extends 'cms/base.html' %}
+{% block page_title %}Home Content{% endblock %}
+{% block content %}
+<div class="cms-card">
+    <div class="d-flex justify-content-between mb-4">
+        <h5>Hero Banners</h5>
+        <a href="{% url 'cms_banner_add' %}" class="btn btn-primary btn-sm">Add Banner</a>
+    </div>
+    <table class="table">
+        <tr><th>Title</th><th>Active</th><th>Display</th><th></th></tr>
+        {% for b in banners %}
+        <tr>
+            <td>{{ b.title }}</td>
+            <td>{% if b.is_active %}Yes{% else %}No{% endif %}</td>
+            <td><span class="badge bg-secondary">{{ b.aspect_ratio }}</span> Overlay: {{ b.overlay_opacity }}</td>
+            <td><a href="{% url 'cms_banner_edit' b.pk %}">Edit</a> | <a href="{% url 'cms_banner_delete' b.pk %}" onclick="return confirm('Delete?')">Delete</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4">No banners.</td></tr>
+        {% endfor %}
+    </table>
+</div>
+<div class="cms-card">
+    <div class="d-flex justify-content-between mb-4">
+        <h5>Home Content</h5>
+        <a href="{% url 'cms_content_add' %}" class="btn btn-primary btn-sm">Add</a>
+    </div>
+    <table class="table">
+        <tr><th>Key</th><th>Title</th><th></th></tr>
+        {% for c in contents %}
+        <tr><td>{{ c.key }}</td><td>{{ c.title }}</td><td><a href="{% url 'cms_content_edit' c.pk %}">Edit</a></td></tr>
+        {% empty %}
+        <tr><td colspan="3">No content blocks.</td></tr>
+        {% endfor %}
+    </table>
+</div>
+<div class="cms-card">
+    <div class="d-flex justify-content-between mb-4">
+        <h5>Announcements</h5>
+        <a href="{% url 'cms_announcement_add' %}" class="btn btn-primary btn-sm">Add</a>
+    </div>
+    <table class="table">
+        <tr><th>Title</th><th>Status</th><th>Priority</th><th>Dates</th><th>Image</th><th></th></tr>
+        {% for a in announcements %}
+        <tr><td>{{ a.title }}</td><td><span class="badge {% if a.status == 'published' %}bg-success{% elif a.status == 'scheduled' %}bg-info{% elif a.status == 'draft' %}bg-secondary{% else %}bg-warning{% endif %}">{{ a.status }}</span></td><td>{{ a.priority }}</td><td>{{ a.start_date|date:"M d"|default:"-" }} – {{ a.end_date|date:"M d"|default:"-" }}</td><td>{% if a.image %}<i class="fas fa-image text-success"></i>{% else %}-{% endif %}</td><td><a href="{% url 'cms_announcement_edit' a.pk %}">Edit</a></td></tr>
+        {% empty %}
+        <tr><td colspan="3">No announcements.</td></tr>
+        {% endfor %}
+    </table>
+</div>
+<div class="cms-card">
+    <div class="d-flex justify-content-between mb-4">
+        <h5>Gallery</h5>
+        <a href="{% url 'cms_gallery_add' %}" class="btn btn-primary btn-sm">Add</a>
+    </div>
+    <div class="row">
+        {% for g in gallery %}
+        <div class="col-3 mb-3">
+            <img src="{{ g.image.url }}" class="img-fluid rounded" style="height:100px;object-fit:cover">
+            <a href="{% url 'cms_gallery_edit' g.pk %}">Edit</a>
+        </div>
+        {% empty %}
+        <div class="col-12">No gallery images.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

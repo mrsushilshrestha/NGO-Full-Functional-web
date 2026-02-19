@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Chat with us{% endblock %}
+
+{% block content %}
+<section class="py-5" style="background: var(--bg-warm);">
+    <div class="container">
+        <h1 class="section-title mb-2">Chat with us</h1>
+        <p class="section-subtitle mb-4">We'll reply in real time when we're online; otherwise we'll get back to you as soon as we can.</p>
+        {% if chat_settings.is_enabled %}
+        <div class="card card-elevated" style="max-width: 600px; margin: 0 auto;">
+            <div style="background: {{ site_theme.primary_color|default:'#0B5345' }}; color: white; padding: 15px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center;">
+                <strong>Live Chat {% if admin_chat_online %}<span class="badge bg-success ms-2">Active</span>{% endif %}</strong>
+            </div>
+            <div id="chatMessages" style="height: 400px; overflow-y: auto; padding: 15px; background: #f9f9f9;"></div>
+            <div style="padding: 15px; border-top: 1px solid #ddd;">
+                <input type="text" id="chatName" placeholder="Your name (optional)" class="form-control form-control-sm mb-2">
+                <input type="email" id="chatEmail" placeholder="Email (optional)" class="form-control form-control-sm mb-2">
+                <div class="input-group">
+                    <input type="text" id="chatInput" class="form-control" placeholder="Type a message...">
+                    <button id="chatSend" class="btn btn-primary">Send</button>
+                </div>
+            </div>
+        </div>
+        <script>
+        (function(){
+            var messages=document.getElementById('chatMessages'),send=document.getElementById('chatSend'),input=document.getElementById('chatInput'),name=document.getElementById('chatName'),email=document.getElementById('chatEmail');
+            function load(){ fetch('{% url "chat_get" %}').then(r=>r.json()).then(function(d){ messages.innerHTML=''; d.messages.forEach(function(m){ var div=document.createElement('div'); div.className='mb-2 '+(m.sender==='user'?'text-end':'text-start'); div.innerHTML='<div style="display:inline-block;padding:8px 12px;border-radius:12px;background:'+(m.sender==='user'?'#007bff;color:white':'white;border:1px solid #ddd')+'"><strong>'+m.name+'</strong><br>'+m.message+'</div>'; messages.appendChild(div); }); messages.scrollTop=messages.scrollHeight; }); }
+            load(); setInterval(load, 3000);
+            send.addEventListener('click',function(){ var msg=input.value.trim(); if(!msg) return; var fd=new FormData(); fd.append('message',msg); if(name.value) fd.append('name',name.value); if(email.value) fd.append('email',email.value); fetch('{% url "chat_send" %}',{method:'POST',body:fd}).then(function(){ input.value=''; load(); }); });
+            input.addEventListener('keypress',function(e){ if(e.key==='Enter') send.click(); });
+        })();
+        </script>
+        {% else %}
+        <div class="alert alert-info">Chat is currently disabled. Please use the <a href="{% url 'contact' %}">contact form</a> to send us a message.</div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

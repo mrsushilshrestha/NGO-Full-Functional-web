@@ -1,0 +1,39 @@
+{% extends 'cms/base.html' %}
+{% block page_title %}Program Management{% endblock %}
+{% block content %}
+<div class="cms-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">Programs</h5>
+        <a href="{% url 'cms_program_add' %}" class="btn btn-primary btn-sm">Add Program</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Title</th>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in programs %}
+                <tr>
+                    <td>{% if p.image %}<img src="{{ p.image.url }}" style="width: 80px; height: 60px; object-fit: cover;">{% else %}-{% endif %}</td>
+                    <td>{{ p.title }}</td>
+                    <td>{{ p.event_date|date:"M d, Y" }}</td>
+                    <td><span class="badge bg-info">{{ p.category }}</span></td>
+                    <td>
+                        <a href="{% url 'cms_program_edit' p.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <form method="post" action="{% url 'cms_program_delete' p.pk %}" class="d-inline" onsubmit="return confirm('Delete?')">{% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-danger">Delete</button></form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-muted">No programs found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

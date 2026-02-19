@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Contact Us{% endblock %}
+
+{% block content %}
+<section class="py-5" style="background: var(--bg-warm);">
+    <div class="container">
+        <h1 class="section-title mb-2">Contact Us</h1>
+        <p class="section-subtitle mb-4">Get in touch with our team. We'd love to hear from you.</p>
+        <div class="row">
+            <div class="col-lg-5 mb-4">
+                <div class="card card-elevated mb-4">
+                    <div class="card-body">
+                        <h5><i class="fas fa-map-marker-alt me-2" style="color: #0B5345;"></i>Address</h5>
+                        <p class="mb-4">{% if info %}{{ info.address }}{% else %}New Baneshwor, Kathmandu, Nepal{% endif %}</p>
+                        <h5><i class="fas fa-phone me-2" style="color: #0B5345;"></i>Phone</h5>
+                        <p class="mb-4">{% if info %}{{ info.phone }}{% else %}+977 1-XXXXXXX{% endif %}</p>
+                        <h5><i class="fas fa-envelope me-2" style="color: #0B5345;"></i>Email</h5>
+                        <p class="mb-4">{% if info %}{{ info.email }}{% else %}info@nhafn.org.np{% endif %}</p>
+                        {% if info and info.office_hours %}
+                        <h5><i class="fas fa-clock me-2" style="color: #0B5345;"></i>Office Hours</h5>
+                        <p>{{ info.office_hours }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="ratio ratio-16x9">
+                    {% if info and info.map_embed %}
+                    {{ info.map_embed|safe }}
+                    {% else %}
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3532.464262732685!2d85.3373!3d27.6974!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb19c5e0e0e001%3A0x10e8bf8e3e9b8b8b8!2sNew%20Baneshwor%2C%20Kathmandu!5e0!3m2!1sen!2snp!4v1234567890" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="card card-elevated">
+                    <div class="card-body p-4">
+                        <h5 class="mb-4">Send us a message</h5>
+                        <form method="post">
+                            {% csrf_token %}
+                            {{ form|crispy }}
+                            <button type="submit" class="btn btn-primary">Send Message</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends 'cms/base.html' %}
+{% load crispy_forms_tags %}
+{% block page_title %}Chat{% endblock %}
+{% block content %}
+<div class="cms-card mb-4">
+    <h5 class="mb-3">Chat settings</h5>
+    <p class="text-muted small">Connect <strong>WhatsApp</strong> (recommended), use built-in live chat, or add a custom link (e.g. Telegram, Messenger).</p>
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="section" value="settings">
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-primary">Save settings</button>
+    </form>
+</div>
+
+<div class="cms-card mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">Quick responses</h5>
+        <a href="{% url 'cms_quick_response_add' %}" class="btn btn-primary btn-sm">Add response</a>
+    </div>
+    <p class="text-muted small">Used only for the <strong>first message</strong> in a conversation. Add trigger keywords so a response is sent only when the user message matches; leave keywords empty for the default first-message reply.</p>
+    <div class="table-responsive">
+        <table class="table" id="responseTable">
+            <thead>
+                <tr>
+                    <th style="width:40px"></th>
+                    <th>Message</th>
+                    {% if has_trigger_keywords %}<th>Trigger keywords</th>{% endif %}
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in responses %}
+                <tr data-id="{{ r.pk }}">
+                    <td class="drag-handle text-muted"><i class="fas fa-grip-vertical"></i></td>
+                    <td>{{ r.message }}</td>
+                    {% if has_trigger_keywords %}<td><span class="small">{% if r.trigger_keywords %}{{ r.trigger_keywords }}{% else %}<em>Default (first message)</em>{% endif %}</span></td>{% endif %}
+                    <td><span class="badge {% if r.is_active %}bg-success{% else %}bg-secondary{% endif %}">{{ r.is_active|yesno:"Active,Disabled" }}</span></td>
+                    <td>
+                        <a href="{% url 'cms_quick_response_edit' r.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <form method="post" action="{% url 'cms_quick_response_delete' r.pk %}" class="d-inline" onsubmit="return confirm('Delete?')">{% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-danger">Delete</button></form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="{% if has_trigger_keywords %}5{% else %}4{% endif %}" class="text-muted">No quick responses. <a href="{% url 'cms_quick_response_add' %}">Add one</a></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="cms-card">
+    <h5 class="mb-3">Live conversations</h5>
+    <p class="text-muted small">Reply in real time when you're on this page. Users see "Active" when you're here.</p>
+    {% if sessions %}
+    <div class="list-group">
+        {% for s in sessions %}
+        <a href="{% url 'cms_chat_session' s.session_id %}" class="list-group-item list-group-item-action">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h6 class="mb-1">{{ s.name }}</h6>
+                    <p class="mb-1 text-muted small">{{ s.last_message }}</p>
+                    <small class="text-muted">{{ s.last_time|date:"M d, H:i"|default:"-" }}</small>
+                </div>
+                {% if s.unread_count %}<span class="badge bg-danger rounded-pill">{{ s.unread_count }}</span>{% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-muted p-3">No conversations yet.</div>
+    {% endif %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    var tbody = document.querySelector('#responseTable tbody');
+    if (tbody && tbody.querySelector('[data-id]')) {
+        new Sortable(tbody, {
+            handle: '.drag-handle',
+            animation: 150,
+            onEnd: function(){
+                var order = [];
+                tbody.querySelectorAll('tr[data-id]').forEach(function(r){ order.push(r.getAttribute('data-id')); });
+                var fd = new FormData();
+                order.forEach(function(id){ fd.append('order[]', id); });
+                fd.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+                fetch('{% url "cms_quick_response_reorder" %}', { method: 'POST', body: fd }).then(function(){ location.reload(); });
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

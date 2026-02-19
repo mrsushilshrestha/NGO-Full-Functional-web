@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Members{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Our Members</h1>
+    <form method="get" class="mb-4">
+        <input type="text" name="role" class="form-control" placeholder="Filter by role..." value="{{ role_filter }}">
+    </form>
+    <div class="row g-4">
+        {% for m in members %}
+        <div class="col-md-4 col-lg-3">
+            <div class="card border-0 shadow-sm text-center">
+                {% if m.photo %}<img src="{{ m.photo.url }}" class="card-img-top rounded-circle mx-auto mt-3" style="width:120px;height:120px;object-fit:cover;">{% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ m.name }}</h5>
+                    <p class="text-muted small mb-1">{{ m.role }}</p>
+                    {% if m.specialization %}<p class="text-muted small">{{ m.specialization }}</p>{% endif %}
+                    {% if m.email %}<a href="mailto:{{ m.email }}" class="btn btn-sm btn-outline-primary mt-2">Contact</a>{% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12"><p class="text-muted">No members found.</p></div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

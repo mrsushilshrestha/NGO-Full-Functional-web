@@ -1,0 +1,66 @@
+{% extends 'cms/base.html' %}
+{% block page_title %}About Content{% endblock %}
+{% block content %}
+<div class="cms-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">Organization Info</h5>
+        <a href="{% url 'cms_org_edit' %}" class="btn btn-primary btn-sm">Edit</a>
+    </div>
+    {% if org %}<p class="text-muted mb-0">Mission, Vision, Objectives, History.</p>{% else %}
+    <p class="text-muted">No organization info. <a href="{% url 'cms_org_edit' %}">Add</a></p>{% endif %}
+</div>
+<div class="cms-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">Founders</h5>
+        <a href="{% url 'cms_founder_add' %}" class="btn btn-primary btn-sm">Add</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead><tr><th>Name</th><th>Title</th><th></th></tr></thead>
+            <tbody>
+            {% for f in founders %}
+            <tr><td>{{ f.name }}</td><td>{{ f.title }}</td><td><a href="{% url 'cms_founder_edit' f.pk %}" class="btn btn-sm btn-outline-primary">Edit</a></td></tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-muted">No founders.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="cms-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">Chapters</h5>
+        <a href="{% url 'cms_chapter_add' %}" class="btn btn-primary btn-sm">Add</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead><tr><th>Name</th><th>Phone</th><th></th></tr></thead>
+            <tbody>
+            {% for ch in chapters %}
+            <tr><td>{{ ch.name }}</td><td>{{ ch.phone }}</td><td><a href="{% url 'cms_chapter_edit' ch.pk %}" class="btn btn-sm btn-outline-primary">Edit</a></td></tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-muted">No chapters.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="cms-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">Achievements</h5>
+        <a href="{% url 'cms_achievement_add' %}" class="btn btn-primary btn-sm">Add</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead><tr><th>Title</th><th>Year</th><th></th></tr></thead>
+            <tbody>
+            {% for a in achievements %}
+            <tr><td>{{ a.title }}</td><td>{{ a.year }}</td><td><a href="{% url 'cms_achievement_edit' a.pk %}" class="btn btn-sm btn-outline-primary">Edit</a></td></tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-muted">No achievements.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

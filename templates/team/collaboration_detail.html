@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ collaboration.organization_name }} - Collaboration{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Detail page background - CMS configurable */
+.collab-detail-section {
+    position: relative;
+    min-height: 100%;
+    {% if collaboration.detail_background_image %}
+    background: url('{{ collaboration.detail_background_image.url }}') center center no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+    {% elif collaboration.detail_background_color %}
+    background: {{ collaboration.detail_background_color }};
+    {% else %}
+    background: linear-gradient(160deg, #faf8f5 0%, #f5f2ed 35%, #eef5f0 70%, #e8f4f0 100%);
+    background-attachment: fixed;
+    {% endif %}
+}
+{% if collaboration.detail_background_image %}
+.collab-detail-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.92) 0%, rgba(250,248,245,0.95) 100%);
+    pointer-events: none;
+}
+{% endif %}
+.collab-detail-section .container {
+    position: relative;
+    z-index: 1;
+}
+.collab-detail-logo {
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fafbfc;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.collab-detail-logo img {
+    max-height: 150px;
+    max-width: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.08));
+}
+.collab-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    border-radius: 10px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+.collab-action-btn:hover {
+    transform: translateY(-1px);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="py-5 collab-detail-section">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'team_list' %}">Team</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'collaboration_list' %}">Collaboration / Partner Wings</a></li>
+                <li class="breadcrumb-item active">{{ collaboration.organization_name }}</li>
+            </ol>
+        </nav>
+
+        <div class="row g-4">
+            <!-- Left: Logo & Actions -->
+            <div class="col-md-4">
+                <div class="card card-elevated h-100">
+                    <div class="card-body p-4">
+                        {% if collaboration.logo %}
+                        <div class="collab-detail-logo">
+                            <img src="{{ collaboration.logo.url }}" alt="{{ collaboration.organization_name }}">
+                        </div>
+                        {% else %}
+                        <div class="collab-detail-logo" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);">
+                            <i class="fas fa-handshake fa-4x text-white opacity-85"></i>
+                        </div>
+                        {% endif %}
+
+                        <h4 class="mb-3">{{ collaboration.organization_name }}</h4>
+                        <div class="mb-3">
+                            <span class="badge bg-primary">{{ collaboration.get_partnership_type_display }}</span>
+                            {% if collaboration.status %}
+                            <span class="badge {% if collaboration.status == 'active' %}bg-success{% elif collaboration.status == 'ongoing' %}bg-info{% else %}bg-secondary{% endif %}">
+                                {{ collaboration.get_status_display }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        {% if collaboration.agreement_date %}
+                        <p class="text-muted small mb-3">
+                            <i class="fas fa-calendar-alt me-2"></i>
+                            <strong>Agreement Date:</strong> {{ collaboration.agreement_date|date:"F d, Y" }}
+                        </p>
+                        {% endif %}
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex flex-column gap-2">
+                            {% if collaboration.partner_website %}
+                            <a href="{{ collaboration.partner_website }}" target="_blank" rel="noopener" class="btn btn-primary collab-action-btn">
+                                <i class="fas fa-external-link-alt"></i>Visit Website
+                            </a>
+                            {% endif %}
+                            {% if collaboration.mou_document %}
+                            <a href="{{ collaboration.get_mou_view_url }}" target="_blank" class="btn btn-outline-primary collab-action-btn">
+                                <i class="fas fa-file-alt"></i>View MOU
+                            </a>
+                            <a href="{{ collaboration.mou_document.url }}" download class="btn btn-outline-secondary collab-action-btn">
+                                <i class="fas fa-download"></i>Download MOU
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Full Details -->
+            <div class="col-md-8">
+                <div class="card card-elevated">
+                    <div class="card-body p-4">
+                        {% if collaboration.full_description %}
+                        <div class="mb-4">
+                            <h5 class="mb-3">About the Partnership</h5>
+                            <div class="text-muted">{{ collaboration.full_description|linebreaks }}</div>
+                        </div>
+                        {% endif %}
+
+                        {% if collaboration.objectives %}
+                        <div class="mb-4">
+                            <h5 class="mb-3">Objectives & Scope</h5>
+                            <div class="text-muted">{{ collaboration.objectives|linebreaks }}</div>
+                        </div>
+                        {% endif %}
+
+                        {% if collaboration.programs_activities %}
+                        <div class="mb-4">
+                            <h5 class="mb-3">Programs & Activities</h5>
+                            <div class="text-muted">{{ collaboration.programs_activities|linebreaks }}</div>
+                        </div>
+                        {% endif %}
+
+                        {% if collaboration.impact_outcomes %}
+                        <div class="mb-4">
+                            <h5 class="mb-3">Impact & Outcomes</h5>
+                            <div class="text-muted">{{ collaboration.impact_outcomes|linebreaks }}</div>
+                        </div>
+                        {% endif %}
+
+                        {% if collaboration.supporting_images %}
+                        <div class="mb-4">
+                            <h5 class="mb-3">Supporting Media</h5>
+                            <img src="{{ collaboration.supporting_images.url }}" alt="{{ collaboration.organization_name }}" class="img-fluid rounded-3 shadow-sm">
+                        </div>
+                        {% endif %}
+
+                        {% if collaboration.partner_contact %}
+                        <div class="mb-3">
+                            <h5 class="mb-3">Partner Contact</h5>
+                            <p class="text-muted mb-0">{{ collaboration.partner_contact }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <a href="{% url 'collaboration_list' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Collaborations
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

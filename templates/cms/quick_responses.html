@@ -1,0 +1,65 @@
+{% extends 'cms/base.html' %}
+{% block page_title %}Quick Responses{% endblock %}
+{% block content %}
+<div class="cms-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">Quick Response Messages</h5>
+        <a href="{% url 'cms_quick_response_add' %}" class="btn btn-primary btn-sm">Add Response</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table" id="responseTable">
+            <thead>
+                <tr>
+                    <th style="width:40px"></th>
+                    <th>Message</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in responses %}
+                <tr data-id="{{ r.pk }}">
+                    <td class="drag-handle text-muted"><i class="fas fa-grip-vertical"></i></td>
+                    <td>{{ r.message }}</td>
+                    <td><span class="badge {% if r.is_active %}bg-success{% else %}bg-secondary{% endif %}">{{ r.is_active|yesno:"Active,Disabled" }}</span></td>
+                    <td>
+                        <a href="{% url 'cms_quick_response_edit' r.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <form method="post" action="{% url 'cms_quick_response_delete' r.pk %}" class="d-inline" onsubmit="return confirm('Delete?')">{% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-danger">Delete</button></form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-muted">No quick responses. <a href="{% url 'cms_quick_response_add' %}">Add one</a></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="cms-card">
+    <h6>Chat Settings</h6>
+    <p>Auto-response enabled: <strong>{{ settings.auto_response_enabled|yesno:"Yes,No" }}</strong></p>
+    <p>Auto-response message: {{ settings.auto_response_message }}</p>
+    <a href="{% url 'cms_chat_settings' %}" class="btn btn-sm btn-outline-primary">Edit Settings</a>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    var tbody = document.querySelector('#responseTable tbody');
+    if (tbody && tbody.querySelector('[data-id]')) {
+        new Sortable(tbody, {
+            handle: '.drag-handle',
+            animation: 150,
+            onEnd: function(){
+                var order = [];
+                tbody.querySelectorAll('tr[data-id]').forEach(function(r){ order.push(r.getAttribute('data-id')); });
+                var fd = new FormData();
+                order.forEach(function(id){ fd.append('order[]', id); });
+                fd.append('csrfmiddlewaretoken', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+                fetch('{% url "cms_quick_response_reorder" %}', { method: 'POST', body: fd }).then(function(){ location.reload(); });
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

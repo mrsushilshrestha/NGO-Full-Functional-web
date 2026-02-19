@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}About Us{% endblock %}
+
+{% block content %}
+<section class="py-5" style="background: var(--bg-warm);">
+    <div class="container">
+        <span class="badge rounded-pill px-3 py-2 mb-3" style="background: rgba(11,83,69,0.12); color: #0B5345;">Who We Are</span>
+        <h1 class="section-title mb-4">About NHAF Nepal</h1>
+        {% if org %}
+        <div class="row">
+            {% if org.mission %}
+            <div class="col-md-6 mb-4">
+                <div class="card card-elevated h-100">
+                    <div class="card-body">
+                        <h5 class="card-title" style="color: #0B5345;"><i class="fas fa-bullseye me-2"></i>Mission</h5>
+                        <div class="card-text">{{ org.mission|safe }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% if org.vision %}
+            <div class="col-md-6 mb-4">
+                <div class="card card-elevated h-100">
+                    <div class="card-body">
+                        <h5 class="card-title" style="color: #0B5345;"><i class="fas fa-eye me-2"></i>Vision</h5>
+                        <div class="card-text">{{ org.vision|safe }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% if org.objectives %}
+        <div class="mb-4">
+            <h5 style="color: #0B5345;"><i class="fas fa-tasks me-2"></i>Objectives</h5>
+            <div>{{ org.objectives|safe }}</div>
+        </div>
+        {% endif %}
+        {% if org.history %}
+        <div class="mb-4">
+            <h5 style="color: #0B5345;"><i class="fas fa-history me-2"></i>History</h5>
+            <div>{{ org.history|safe }}</div>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="card card-elevated p-4">
+            <p class="lead text-muted mb-0">National Health Association Force Nepal is a registered health NGO dedicated to improving healthcare access across Nepal. We conduct free health camps, medical outreach programs, and community wellness initiatives in remote and underserved areas. Our mission, vision, and detailed objectives are available in the CMS.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{% if founders %}
+<section class="py-5" style="background: white;">
+    <div class="container">
+        <h2 class="mb-4">Our Founders</h2>
+        <div class="row g-4">
+            {% for f in founders %}
+            <div class="col-md-4">
+                <div class="card card-elevated text-center h-100">
+                    {% if f.photo %}<img src="{{ f.photo.url }}" class="card-img-top rounded-circle mx-auto mt-3" style="width: 120px; height: 120px; object-fit: cover;" alt="{{ f.name }}">{% else %}<div class="rounded-circle mx-auto mt-3 img-placeholder d-flex align-items-center justify-content-center" style="width: 120px; height: 120px;"><i class="fas fa-user fa-3x text-white"></i></div>{% endif %}
+                    <div class="card-body">
+                        <h5>{{ f.name }}</h5>
+                        <p class="text-muted small">{{ f.title }}</p>
+                        <div class="small">{{ f.bio|safe|truncatewords_html:30 }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% if chapters %}
+<section class="py-5">
+    <div class="container">
+        <h2 class="mb-4">Our Chapters</h2>
+        <div class="row g-4">
+            {% for ch in chapters %}
+            <div class="col-md-4">
+                <div class="card card-elevated h-100">
+                    <div class="card-body">
+                        <h5><i class="fas fa-map-marker-alt me-2" style="color: #0B5345;"></i>{{ ch.name }}</h5>
+                        {% if ch.address %}<p class="mb-1 small">{{ ch.address }}</p>{% endif %}
+                        {% if ch.phone %}<p class="mb-1 small"><i class="fas fa-phone me-1"></i>{{ ch.phone }}</p>{% endif %}
+                        {% if ch.email %}<p class="mb-0 small"><i class="fas fa-envelope me-1"></i>{{ ch.email }}</p>{% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% if achievements %}
+<section class="py-5" style="background: var(--bg-warm);">
+    <div class="container">
+        <h2 class="mb-4">Key Achievements</h2>
+        <div class="row g-4">
+            {% for a in achievements %}
+            <div class="col-md-4">
+                <div class="card card-elevated h-100">
+                    <div class="card-body">
+                        {% if a.icon %}<i class="fas {{ a.icon }} fa-2x mb-2" style="color: #0B5345;"></i>{% endif %}
+                        <h5>{{ a.title }}</h5>
+                        {% if a.year %}<span class="badge bg-primary">{{ a.year }}</span>{% endif %}
+                        <p class="mt-2 mb-0">{{ a.description|safe|truncatewords_html:20 }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

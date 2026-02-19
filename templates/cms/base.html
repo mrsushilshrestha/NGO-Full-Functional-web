@@ -1,0 +1,167 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>{% block title %}CMS{% endblock %} - NHAF Nepal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <style>
+        :root { --sidebar: #1e293b; --sidebar-hover: #334155; --primary: #0d9488; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; margin: 0; padding: 0; }
+        .cms-sidebar { 
+            background: var(--sidebar); 
+            height: 100vh; 
+            width: 260px; 
+            position: fixed; 
+            left: 0; 
+            top: 0; 
+            z-index: 1000; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+        }
+        .cms-sidebar-header { 
+            flex-shrink: 0; 
+            padding: 16px; 
+            border-bottom: 1px solid rgba(255,255,255,0.1); 
+        }
+        .cms-sidebar-nav { 
+            flex: 1 1 auto; 
+            overflow-y: auto; 
+            overflow-x: hidden; 
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .cms-sidebar-nav::-webkit-scrollbar { width: 8px; }
+        .cms-sidebar-nav::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+        .cms-sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        .cms-sidebar-nav::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+        .cms-sidebar-footer { 
+            flex-shrink: 0; 
+            border-top: 1px solid rgba(255,255,255,0.1); 
+            display: flex;
+            flex-direction: column;
+        }
+        .cms-sidebar .nav-link { 
+            color: #94a3b8; 
+            padding: 10px 20px; 
+            border-radius: 0; 
+            margin: 0; 
+            display: flex; 
+            align-items: center; 
+            text-decoration: none; 
+            white-space: nowrap;
+            transition: all 0.2s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .cms-sidebar .nav-link:hover, .cms-sidebar .nav-link.active { 
+            background: var(--sidebar-hover); 
+            color: white; 
+        }
+        .cms-sidebar .nav-link i { 
+            width: 24px; 
+            text-align: center; 
+            margin-right: 12px; 
+            opacity: 0.8; 
+            flex-shrink: 0;
+        }
+        .cms-main { margin-left: 260px; padding: 24px; min-height: 100vh; }
+        .cms-header { background: white; border-radius: 12px; padding: 16px 24px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); display: flex; justify-content: space-between; align-items: center; }
+        .cms-card { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); padding: 24px; margin-bottom: 24px; }
+        .stat-card { background: linear-gradient(135deg, var(--primary), #14b8a6); color: white; border-radius: 12px; padding: 20px; }
+        .stat-card h3 { font-size: 2rem; font-weight: 700; margin: 0; }
+        .stat-card p { margin: 0; opacity: 0.9; }
+        .btn-edit { padding: 6px 12px; font-size: 0.875rem; }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <aside class="cms-sidebar">
+        <div class="cms-sidebar-header p-4 border-bottom border-secondary">
+            <a href="{% url 'cms_dashboard' %}" class="text-white text-decoration-none fw-bold"><i class="fas fa-heartbeat me-2"></i>NHAF CMS</a>
+        </div>
+        <div class="cms-sidebar-nav">
+            <a class="nav-link" href="{% url 'cms_dashboard' %}"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a class="nav-link" href="{% url 'cms_home' %}"><i class="fas fa-home"></i> Home</a>
+            <a class="nav-link" href="{% url 'cms_identity' %}"><i class="fas fa-id-card"></i> Identity</a>
+            <a class="nav-link" href="{% url 'cms_navigation' %}"><i class="fas fa-sitemap"></i> Navigation</a>
+            <a class="nav-link" href="{% url 'cms_theme' %}"><i class="fas fa-palette"></i> Theme</a>
+            <a class="nav-link" href="{% url 'cms_about' %}"><i class="fas fa-info-circle"></i> About</a>
+            <a class="nav-link" href="{% url 'cms_program_management' %}"><i class="fas fa-calendar"></i> Programs</a>
+            <a class="nav-link" href="{% url 'cms_member_management' %}"><i class="fas fa-user-tie"></i> Members</a>
+            <a class="nav-link" href="{% url 'cms_collaboration_management' %}"><i class="fas fa-handshake"></i> Collaborations</a>
+            <a class="nav-link" href="{% url 'cms_members' %}"><i class="fas fa-user-check"></i> Approvals</a>
+            <a class="nav-link" href="{% url 'cms_impact' %}"><i class="fas fa-chart-line"></i> Impact</a>
+            <a class="nav-link" href="{% url 'cms_contact' %}"><i class="fas fa-envelope"></i> Contact</a>
+            <a class="nav-link" href="{% url 'cms_chat' %}"><i class="fas fa-comments"></i> Chat</a>
+            <a class="nav-link" href="{% url 'cms_donation' %}"><i class="fas fa-donate"></i> Donation</a>
+            <a class="nav-link" href="{% url 'cms_icons' %}"><i class="fas fa-icons"></i> Icons</a>
+        </div>
+        <div class="cms-sidebar-footer">
+            <a class="nav-link" href="/" target="_blank"><i class="fas fa-external-link-alt"></i> View Site</a>
+            <a class="nav-link" href="{% url 'cms_logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </aside>
+    <main class="cms-main">
+        <div class="cms-header">
+            <h5 class="mb-0">{% block page_title %}Dashboard{% endblock %}</h5>
+            <div class="d-flex align-items-center gap-3">
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary btn-sm position-relative" type="button" id="notifDropdown" data-bs-toggle="dropdown">
+                        <i class="fas fa-bell"></i>
+                        {% if cms_unread_count %}<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ cms_unread_count }}</span>{% endif %}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow" style="min-width: 320px; max-height: 400px; overflow-y: auto;" id="notifPanel">
+                        <li class="px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
+                            <strong>Notifications</strong>
+                            {% if cms_unread_count %}<button class="btn btn-sm btn-link p-0" id="markAllRead">Mark all read</button>{% endif %}
+                        </li>
+                        <li id="notifList"><div class="p-3 text-muted text-center">Loading...</div></li>
+                    </ul>
+                </div>
+                <span class="text-muted small">{{ request.user.username }}</span>
+            </div>
+        </div>
+        {% if messages %}
+        {% for m in messages %}
+        <div class="alert alert-{{ m.tags }} alert-dismissible fade show">{{ m }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var dd = document.getElementById('notifDropdown');
+        if (dd) {
+            dd.addEventListener('show.bs.dropdown', function() {
+                fetch('/admin-login/api/notifications/').then(r=>r.json()).then(function(d){
+                    var list = document.getElementById('notifList');
+                    if (d.notifications.length === 0) {
+                        list.innerHTML = '<div class="p-3 text-muted text-center small">No notifications</div>';
+                    } else {
+                        list.innerHTML = d.notifications.map(function(n){
+                            return '<a class="dropdown-item py-2' + (n.is_read ? '' : ' bg-light') + '" href="' + (n.link || '#') + '">' +
+                                '<div class="fw-bold small">' + n.title + '</div>' +
+                                '<div class="small text-muted">' + (n.message || '') + '</div>' +
+                                '</a>';
+                        }).join('');
+                    }
+                });
+            });
+        }
+        document.getElementById('markAllRead')?.addEventListener('click', function(e){
+            e.preventDefault();
+            var csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            fetch('/admin-login/api/notifications/read-all/', {method:'POST', headers:{'X-CSRFToken': csrf, 'Content-Type':'application/json'}}).then(function(){ location.reload(); });
+        });
+    });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

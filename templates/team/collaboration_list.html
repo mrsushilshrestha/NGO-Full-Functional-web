@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+
+{% block title %}Collaboration / Partner Wings{% endblock %}
+
+{% block extra_css %}
+<style>
+.collab-hero {
+    background: linear-gradient(135deg, rgba(11,83,69,0.03) 0%, rgba(193,127,89,0.05) 100%);
+    border-radius: 16px;
+    padding: 2.5rem;
+}
+.collab-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.collab-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.14);
+}
+.collab-card-link {
+    text-decoration: none;
+    color: inherit;
+}
+/* Image cover - hero-style */
+.collab-cover-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+}
+.collab-cover-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.4s ease;
+}
+.collab-card:hover .collab-cover-wrap img {
+    transform: scale(1.05);
+}
+/* Gradient overlay for text readability */
+.collab-cover-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 40%, transparent 70%, rgba(0,0,0,0.4) 100%);
+}
+/* Organization name overlay at top */
+.collab-title-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 1.25rem 1.25rem 2rem;
+}
+.collab-title-overlay h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #fff;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    margin: 0;
+    line-height: 1.35;
+}
+/* View More button overlay at bottom of image */
+.collab-view-more-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem 1.25rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.collab-view-more {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    border-radius: 8px;
+    background: var(--primary);
+    color: #fff !important;
+    border: none;
+    transition: background 0.25s ease, transform 0.2s ease;
+    text-decoration: none;
+}
+.collab-view-more:hover {
+    background: var(--primary-dark);
+    color: #fff !important;
+    transform: translateY(-1px);
+}
+/* Placeholder when no image */
+.collab-cover-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+}
+.collab-cover-placeholder i {
+    font-size: 3.5rem;
+    color: rgba(255,255,255,0.9);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="py-5" style="background: var(--bg-warm);">
+    <div class="container">
+        <!-- Header Section -->
+        <div class="collab-hero mb-5">
+            <div class="row align-items-center">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h1 class="section-title mb-3">Collaboration / Partner Wings</h1>
+                    <p class="lead text-muted mb-0">
+                        We are proud to collaborate with leading institutions, organizations, and partners 
+                        to advance our mission of improving healthcare access and community well-being. 
+                        Our partnerships strengthen our impact and expand our reach.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <form method="get" class="row g-3 mb-4">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Search by organization name..." value="{{ search }}">
+            </div>
+            <div class="col-md-3">
+                <select name="type" class="form-select">
+                    <option value="">All Partnership Types</option>
+                    {% for value, label in partnership_types %}
+                    <option value="{{ value }}" {% if partnership_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="sort" class="form-select">
+                    <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest First</option>
+                    <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>Oldest First</option>
+                    <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name (A-Z)</option>
+                </select>
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i></button>
+            </div>
+        </form>
+
+        <!-- Cards Grid -->
+        <div class="row g-4">
+            {% for collaboration in page_obj %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card collab-card h-100">
+                    <a href="{% url 'collaboration_detail' collaboration.pk %}" class="collab-card-link">
+                        <div class="collab-cover-wrap">
+                            {% if collaboration.supporting_images %}
+                            <img src="{{ collaboration.supporting_images.url }}" alt="{{ collaboration.organization_name }}" loading="lazy">
+                            {% elif collaboration.logo %}
+                            <img src="{{ collaboration.logo.url }}" alt="{{ collaboration.organization_name }}" loading="lazy">
+                            {% else %}
+                            <div class="collab-cover-placeholder">
+                                <i class="fas fa-handshake"></i>
+                            </div>
+                            {% endif %}
+                            <div class="collab-cover-overlay" aria-hidden="true"></div>
+                            <div class="collab-title-overlay">
+                                <h3>{{ collaboration.organization_name }}</h3>
+                            </div>
+                            <div class="collab-view-more-overlay">
+                                <span class="collab-view-more">
+                                    View More <i class="fas fa-arrow-right" style="font-size: 0.7rem;"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="fas fa-handshake fa-4x text-muted mb-3"></i>
+                <p class="text-muted">No collaborations found matching your criteria.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.paginator.num_pages > 1 %}
+        <nav aria-label="Collaboration pagination" class="mt-5">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">&laquo;</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                {% endif %}
+                {% for p in pagination_range %}
+                    {% if p %}
+                    <li class="page-item {% if p == page_obj.number %}active{% endif %}">
+                        <a class="page-link" href="?{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}page={{ p }}">{{ p }}</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                    {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">&raquo;</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
