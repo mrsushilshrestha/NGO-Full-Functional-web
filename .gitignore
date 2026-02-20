@@ -1,11 +1,5 @@
-__pycache__/
-*.py[cod]
-*$py.class
 .env
 venv/
 virtualev
-*.sqlite3
-db.sqlite3
-media/
-staticfiles/
-*.log
+
+
