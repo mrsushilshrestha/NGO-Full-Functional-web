@@ -86,6 +86,7 @@ class SiteTheme(models.Model):
     dark_bg_color = models.CharField(max_length=7, default='#1a1a1a', help_text='Dark mode background')
     dark_text_color = models.CharField(max_length=7, default='#e0e0e0', help_text='Dark mode text')
     dark_card_bg = models.CharField(max_length=7, default='#2d2d2d', help_text='Dark mode card background')
+    show_nav_arrows = models.BooleanField(default=True, help_text='Show back/forward arrows in the navbar')
 
     class Meta:
         verbose_name = 'Site theme'

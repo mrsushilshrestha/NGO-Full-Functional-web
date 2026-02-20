@@ -1,44 +1,177 @@
 {% extends 'cms/base.html' %}
 {% block page_title %}Member Management{% endblock %}
+
 {% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'cms_team' %}">Team</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Members</li>
+  </ol>
+</nav>
+
 <div class="cms-card">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="mb-0">Members</h5>
-        <a href="{% url 'cms_member_add' %}" class="btn btn-primary btn-sm">Add Member</a>
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <h5 class="mb-1">Members</h5>
+      <p class="text-muted small mb-0">Add, edit, and reorder team members. Drag rows to change display order.</p>
     </div>
-    <form method="get" class="mb-3">
-        <input type="text" name="role" class="form-control" placeholder="Filter by role..." value="{{ role_filter }}">
-    </form>
-    <div class="table-responsive">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Photo</th>
-                    <th>Name</th>
-                    <th>Role</th>
-                    <th>Email</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for m in members %}
-                <tr>
-                    <td>{% if m.photo %}<img src="{{ m.photo.url }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">{% else %}-{% endif %}</td>
-                    <td>{{ m.name }}</td>
-                    <td>{{ m.role }}</td>
-                    <td>{{ m.email|default:"-" }}</td>
-                    <td><span class="badge {% if m.is_active %}bg-success{% else %}bg-secondary{% endif %}">{{ m.is_active|yesno:"Active,Inactive" }}</span></td>
-                    <td>
-                        <a href="{% url 'cms_member_edit' m.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
-                        <form method="post" action="{% url 'cms_member_delete' m.pk %}" class="d-inline" onsubmit="return confirm('Delete?')">{% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-danger">Delete</button></form>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="6" class="text-muted">No members found.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+      <a href="{% url 'cms_team' %}" class="btn btn-outline-secondary btn-sm">Back to Team</a>
+      <a href="{% url 'cms_member_add' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i> Add member</a>
     </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-auto">
+      <span class="text-muted small">Showing:</span> <strong>{{ total_count }}</strong>
+    </div>
+    <div class="col-auto">
+      <span class="badge bg-primary">{{ board_count }} Board</span>
+    </div>
+    <div class="col-auto">
+      <span class="badge bg-secondary">{{ volunteer_count }} Volunteers</span>
+    </div>
+  </div>
+
+  <form method="get" class="row g-2 mb-4">
+    <div class="col-md-4">
+      <input type="text" name="role" class="form-control form-control-sm" placeholder="Filter by role..." value="{{ role_filter }}">
+    </div>
+    <div class="col-md-3">
+      <select name="type" class="form-select form-select-sm">
+        <option value="">All types</option>
+        <option value="board" {% if type_filter == 'board' %}selected{% endif %}>Board only</option>
+        <option value="volunteer" {% if type_filter == 'volunteer' %}selected{% endif %}>Volunteers only</option>
+      </select>
+    </div>
+    <div class="col-auto">
+      <button type="submit" class="btn btn-sm btn-outline-primary">Filter</button>
+      <a href="{% url 'cms_member_management' %}" class="btn btn-sm btn-outline-secondary">Clear</a>
+    </div>
+  </form>
+
+  <div id="orderSavedToast" class="alert alert-success alert-dismissible fade py-2 small mb-3" role="alert" style="display: none;">
+    <i class="fas fa-check-circle me-1"></i> Order saved.
+    <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0" id="membersTable">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 40px;" class="text-center" title="Drag to reorder"><i class="fas fa-grip-vertical text-muted"></i></th>
+          <th style="width: 56px;">Photo</th>
+          <th>Name</th>
+          <th>Role</th>
+          <th>Type</th>
+          <th>Chapter</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in members %}
+        <tr draggable="true" data-id="{{ m.pk }}" class="cms-member-row" style="cursor: grab;">
+          <td class="text-center text-muted"><i class="fas fa-grip-vertical"></i></td>
+          <td>
+            {% if m.photo %}
+            <img src="{{ m.photo.url }}" alt="" style="width: 44px; height: 44px; object-fit: cover; border-radius: 50%;">
+            {% else %}
+            <span class="rounded-circle d-inline-flex align-items-center justify-content-center bg-light text-muted" style="width: 44px; height: 44px; font-size: 0.8rem;">{{ m.initials }}</span>
+            {% endif %}
+          </td>
+          <td><strong>{{ m.name }}</strong></td>
+          <td>{{ m.role|default:"—" }}</td>
+          <td><span class="badge {% if m.member_type == 'board' %}bg-primary{% else %}bg-secondary{% endif %}">{{ m.get_member_type_display }}</span></td>
+          <td>{{ m.chapter.name|default:"—" }}</td>
+          <td><span class="badge {% if m.is_active %}bg-success{% else %}bg-secondary{% endif %}">{{ m.is_active|yesno:"Active,Inactive" }}</span></td>
+          <td class="text-end">
+            <a href="{% url 'cms_member_edit' m.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+            <form method="post" action="{% url 'cms_member_delete' m.pk %}" class="d-inline" onsubmit="return confirm('Delete this member?');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" class="text-muted text-center py-4">
+            No members found. {% if role_filter or type_filter %}<a href="{% url 'cms_member_management' %}">Clear filters</a> or {% endif %}<a href="{% url 'cms_member_add' %}">add a member</a>.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
+
+<form id="csrfForm" class="d-none">{% csrf_token %}</form>
+
+<script>
+(function () {
+  var table = document.getElementById('membersTable');
+  var tbody = table ? table.querySelector('tbody') : null;
+  if (!tbody) return;
+
+  var toast = document.getElementById('orderSavedToast');
+  function showOrderSaved() {
+    if (!toast) return;
+    toast.style.display = 'block';
+    if (typeof bootstrap !== 'undefined' && toast.classList) {
+      var b = new bootstrap.Alert(toast);
+      setTimeout(function() { toast.style.display = 'none'; }, 4000);
+    }
+  }
+
+  function getCsrf() {
+    var tokenEl = document.querySelector('#csrfForm input[name="csrfmiddlewaretoken"]');
+    return tokenEl ? tokenEl.value : '';
+  }
+
+  function saveOrder() {
+    var rows = tbody.querySelectorAll('tr[data-id]');
+    var ids = Array.prototype.slice.call(rows).map(function (tr) { return tr.getAttribute('data-id'); });
+    if (!ids.length) return;
+
+    var formData = new FormData();
+    ids.forEach(function (id) { formData.append('order[]', id); });
+
+    fetch("{% url 'cms_member_reorder' %}", {
+      method: 'POST',
+      headers: { 'X-CSRFToken': getCsrf() },
+      body: formData
+    }).then(function() { showOrderSaved(); }).catch(function () {});
+  }
+
+  var dragged = null;
+
+  tbody.addEventListener('dragstart', function (e) {
+    var tr = e.target.closest('tr[data-id]');
+    if (!tr) return;
+    dragged = tr;
+    tr.classList.add('opacity-50');
+    tr.style.cursor = 'grabbing';
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', tr.getAttribute('data-id'));
+  });
+
+  tbody.addEventListener('dragend', function () {
+    if (dragged) {
+      dragged.classList.remove('opacity-50');
+      dragged.style.cursor = 'grab';
+      dragged = null;
+      saveOrder();
+    }
+  });
+
+  tbody.addEventListener('dragover', function (e) {
+    e.preventDefault();
+    var tr = e.target.closest('tr[data-id]');
+    if (!dragged || !tr || tr === dragged) return;
+    var rect = tr.getBoundingClientRect();
+    var next = (e.clientY - rect.top) > (rect.height / 2);
+    tbody.insertBefore(dragged, next ? tr.nextSibling : tr);
+  });
+})();
+</script>
 {% endblock %}

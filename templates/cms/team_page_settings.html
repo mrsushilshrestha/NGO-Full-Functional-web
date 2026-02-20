@@ -1,0 +1,467 @@
+{% extends 'cms/base.html' %}
+
+{% block page_title %}Team Page Settings{% endblock %}
+
+{% block extra_css %}
+<style>
+.cms-team-accordion .accordion-button { font-weight: 600; }
+.cms-team-accordion .accordion-button:not(.collapsed) { background: #f8fafc; }
+.cms-team-preview-wrapper { position: sticky; top: 24px; }
+.cms-team-preview-box { min-height: 320px; transition: background 0.3s, border-color 0.3s; }
+.cms-team-preview-dark .fw-semibold,
+.cms-team-preview-dark #previewTitle,
+.cms-team-preview-dark #previewSubtitle { color: #e2e8f0 !important; }
+.cms-team-preview-dark .cms-team-preview-box { color: #94a3b8; }
+@keyframes cms-preview-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes cms-preview-slide { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes cms-preview-zoom { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+@keyframes cms-preview-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+#previewTitle.cms-preview-anim-fade { animation: cms-preview-fade 0.6s ease-out; }
+#previewTitle.cms-preview-anim-slide { animation: cms-preview-slide 0.6s ease-out; }
+#previewTitle.cms-preview-anim-zoom { animation: cms-preview-zoom 0.5s ease-out; }
+#previewTitle.cms-preview-anim-bounce { animation: cms-preview-bounce 0.6s ease; }
+.form-control-color { padding: 0.125rem; cursor: pointer; }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'cms_team' %}">Team</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Page Settings</li>
+  </ol>
+</nav>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="cms-card">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div>
+          <h5 class="mb-1">Team Page Settings</h5>
+          <p class="text-muted small mb-0">Control the heading, layout, and card appearance. Changes update the live preview on the right.</p>
+        </div>
+        <a href="{% url 'team_list' %}" target="_blank" class="btn btn-outline-primary btn-sm"><i class="fas fa-external-link-alt me-1"></i> View page</a>
+      </div>
+
+      <form method="post" enctype="multipart/form-data" id="teamSettingsForm">
+        {% csrf_token %}
+
+        <div class="accordion accordion-flush cms-team-accordion" id="teamSettingsAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHeading" aria-expanded="true" aria-controls="collapseHeading">
+                <i class="fas fa-heading me-2 text-muted"></i> Page title & subtitle
+              </button>
+            </h2>
+            <div id="collapseHeading" class="accordion-collapse collapse show" data-bs-parent="#teamSettingsAccordion">
+              <div class="accordion-body">
+                <div class="mb-3">
+                  <label class="form-label" for="{{ form.title_text.id_for_label }}">{{ form.title_text.label }}</label>
+                  {{ form.title_text }}
+                </div>
+                <div class="mb-3">
+                  <label class="form-label" for="{{ form.subtitle_template.id_for_label }}">{{ form.subtitle_template.label }}</label>
+                  {{ form.subtitle_template }}
+                  <div class="form-text">Use <code>{count}</code> where the member count should appear.</div>
+                </div>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label" for="{{ form.title_font_family.id_for_label }}">{{ form.title_font_family.label }}</label>
+                    {{ form.title_font_family }}
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="{{ form.subtitle_font_family.id_for_label }}">{{ form.subtitle_font_family.label }}</label>
+                    {{ form.subtitle_font_family }}
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label" for="{{ form.title_font_size_px.id_for_label }}">{{ form.title_font_size_px.label }}</label>
+                    {{ form.title_font_size_px }}
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label" for="{{ form.subtitle_font_size_px.id_for_label }}">{{ form.subtitle_font_size_px.label }}</label>
+                    {{ form.subtitle_font_size_px }}
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label" for="{{ form.heading_align.id_for_label }}">{{ form.heading_align.label }}</label>
+                    {{ form.heading_align }}
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="{{ form.title_color.id_for_label }}">{{ form.title_color.label }}</label>
+                    <div class="input-group">
+                      <input type="color" id="title_color_picker" class="form-control form-control-color" style="width: 3rem; height: 2.25rem;" title="Pick color">
+                      {{ form.title_color }}
+                    </div>
+                    <div class="form-text">Hex (e.g. <code>#0b5345</code>) or <code>var(--text-dark)</code>. Use picker for hex.</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="{{ form.subtitle_color.id_for_label }}">{{ form.subtitle_color.label }}</label>
+                    <div class="input-group">
+                      <input type="color" id="subtitle_color_picker" class="form-control form-control-color" style="width: 3rem; height: 2.25rem;" title="Pick color">
+                      {{ form.subtitle_color }}
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <button type="submit" name="reset" value="heading" class="btn btn-outline-secondary btn-sm">Reset heading to default</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTyping" aria-expanded="false" aria-controls="collapseTyping">
+                <i class="fas fa-keyboard me-2 text-muted"></i> Title animation & search
+              </button>
+            </h2>
+            <div id="collapseTyping" class="accordion-collapse collapse" data-bs-parent="#teamSettingsAccordion">
+              <div class="accordion-body">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label" for="{{ form.title_animation.id_for_label }}">Title/subtitle animation</label>
+                    {{ form.title_animation }}
+                    <div class="form-text">Preview updates on the right.</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="{{ form.typing_speed_ms.id_for_label }}">{{ form.typing_speed_ms.label }}</label>
+                    {{ form.typing_speed_ms }}
+                    <span class="form-text">(when animation is Typing)</span>
+                  </div>
+                  <div class="col-12">
+                    <div class="form-check form-switch">
+                      {{ form.typing_enabled }}
+                      <label class="form-check-label" for="{{ form.typing_enabled.id_for_label }}">Enable typing animation (when animation type is Typing)</label>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="form-check form-switch">
+                      {{ form.show_search }}
+                      <label class="form-check-label" for="{{ form.show_search.id_for_label }}">Show search box on Team page (with clear/reset)</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLines" aria-expanded="false" aria-controls="collapseLines">
+                <i class="fas fa-minus me-2 text-muted"></i> Category decorative lines
+              </button>
+            </h2>
+            <div id="collapseLines" class="accordion-collapse collapse" data-bs-parent="#teamSettingsAccordion">
+              <div class="accordion-body">
+                <p class="text-muted small mb-3">Lines shown above “Board Members” and “Volunteers” sections.</p>
+                <h6 class="mb-2">Board Members line</h6>
+                <div class="row g-3 mb-4">
+                  <div class="col-md-4"><label class="form-label">{{ form.board_line_style.label }}</label>{{ form.board_line_style }}</div>
+                  <div class="col-md-4"><label class="form-label">{{ form.board_line_thickness_px.label }}</label>{{ form.board_line_thickness_px }}</div>
+                  <div class="col-md-4">
+                    <div class="form-check form-switch mt-4">
+                      {{ form.board_line_full_width }}
+                      <label class="form-check-label" for="{{ form.board_line_full_width.id_for_label }}">Full width</label>
+                    </div>
+                  </div>
+                  <div class="col-md-4"><label class="form-label">{{ form.board_line_length_percent.label }}</label>{{ form.board_line_length_percent }}</div>
+                  <div class="col-md-4"><label class="form-label">{{ form.board_line_color.label }}</label>{{ form.board_line_color }}</div>
+                  <div class="col-md-4"><label class="form-label">{{ form.board_line_color_2.label }}</label>{{ form.board_line_color_2 }}<span class="form-text"> (gradient)</span></div>
+                </div>
+                <h6 class="mb-2">Volunteers line</h6>
+                <div class="row g-3">
+                  <div class="col-md-4"><label class="form-label">{{ form.volunteer_line_style.label }}</label>{{ form.volunteer_line_style }}</div>
+                  <div class="col-md-4"><label class="form-label">{{ form.volunteer_line_thickness_px.label }}</label>{{ form.volunteer_line_thickness_px }}</div>
+                  <div class="col-md-4">
+                    <div class="form-check form-switch mt-4">
+                      {{ form.volunteer_line_full_width }}
+                      <label class="form-check-label" for="{{ form.volunteer_line_full_width.id_for_label }}">Full width</label>
+                    </div>
+                  </div>
+                  <div class="col-md-4"><label class="form-label">{{ form.volunteer_line_length_percent.label }}</label>{{ form.volunteer_line_length_percent }}</div>
+                  <div class="col-md-4"><label class="form-label">{{ form.volunteer_line_color.label }}</label>{{ form.volunteer_line_color }}</div>
+                  <div class="col-md-4"><label class="form-label">{{ form.volunteer_line_color_2.label }}</label>{{ form.volunteer_line_color_2 }}</div>
+                </div>
+                <div class="mt-2">
+                  <button type="submit" name="reset" value="lines" class="btn btn-outline-secondary btn-sm">Reset category lines to default</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWatermark" aria-expanded="false" aria-controls="collapseWatermark">
+                <i class="fas fa-image me-2 text-muted"></i> Background watermark
+              </button>
+            </h2>
+            <div id="collapseWatermark" class="accordion-collapse collapse" data-bs-parent="#teamSettingsAccordion">
+              <div class="accordion-body">
+                <div class="mb-3">
+                  <label class="form-label" for="{{ form.background_watermark.id_for_label }}">{{ form.background_watermark.label }}</label>
+                  {{ form.background_watermark }}
+                </div>
+                <div class="mb-3">
+                  <div class="form-check">
+                    {{ form.clear_watermark }}
+                    <label class="form-check-label" for="{{ form.clear_watermark.id_for_label }}">{{ form.clear_watermark.label }}</label>
+                  </div>
+                </div>
+                <div class="row g-3">
+                  <div class="col-md-4">
+                    <label class="form-label">{{ form.watermark_opacity.label }}</label>
+                    {{ form.watermark_opacity }}
+                    <div class="form-text">0–1</div>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">{{ form.watermark_position.label }}</label>
+                    {{ form.watermark_position }}
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">{{ form.watermark_size_percent.label }}</label>
+                    {{ form.watermark_size_percent }}
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <button type="submit" name="reset" value="background" class="btn btn-outline-secondary btn-sm">Remove background & reset to default</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTheme" aria-expanded="false" aria-controls="collapseTheme">
+                <i class="fas fa-moon me-2 text-muted"></i> Theme (light / dark)
+              </button>
+            </h2>
+            <div id="collapseTheme" class="accordion-collapse collapse" data-bs-parent="#teamSettingsAccordion">
+              <div class="accordion-body">
+                <label class="form-label">{{ form.theme_mode.label }}</label>
+                {{ form.theme_mode }}
+                <div class="form-text">Preview updates on the right.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCards" aria-expanded="false" aria-controls="collapseCards">
+                <i class="fas fa-id-card me-2 text-muted"></i> Member card styling
+              </button>
+            </h2>
+            <div id="collapseCards" class="accordion-collapse collapse" data-bs-parent="#teamSettingsAccordion">
+              <div class="accordion-body">
+                <p class="text-muted small mb-3">Sizes in px. Hover, shadow, and animation affect cards on the Team page.</p>
+                <div class="row g-3">
+                  <div class="col-md-4"><label class="form-label">{{ form.card_radius_px.label }}</label>{{ form.card_radius_px }}</div>
+                  <div class="col-md-4"><label class="form-label">{{ form.card_min_height_px.label }}</label>{{ form.card_min_height_px }}</div>
+                  <div class="col-md-4"><label class="form-label">{{ form.card_max_height_px.label }}</label>{{ form.card_max_height_px }}</div>
+                  <div class="col-md-4"><label class="form-label">{{ form.card_padding_px.label }}</label>{{ form.card_padding_px }}</div>
+                  <div class="col-md-4"><label class="form-label">{{ form.section_spacing_px.label }}</label>{{ form.section_spacing_px }}</div>
+                  <div class="col-md-4"><label class="form-label">{{ form.card_hover_effect.label }}</label>{{ form.card_hover_effect }}</div>
+                  <div class="col-md-4"><label class="form-label">{{ form.card_shadow.label }}</label>{{ form.card_shadow }}</div>
+                  <div class="col-md-4"><label class="form-label">{{ form.card_animation.label }}</label>{{ form.card_animation }}</div>
+                  <div class="col-md-4"><label class="form-label">{{ form.social_icon_size_px.label }}</label>{{ form.social_icon_size_px }}</div>
+                  <div class="col-md-4"><label class="form-label">{{ form.name_font_size_px.label }}</label>{{ form.name_font_size_px }}</div>
+                  <div class="col-md-4"><label class="form-label">{{ form.role_font_size_px.label }}</label>{{ form.role_font_size_px }}</div>
+                  <div class="col-md-4"><label class="form-label">{{ form.id_font_size_px.label }}</label>{{ form.id_font_size_px }}</div>
+                </div>
+                <div class="mt-2">
+                  <button type="submit" name="reset" value="cards" class="btn btn-outline-secondary btn-sm">Reset card styling to default</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top">
+          <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Save settings</button>
+          <a href="{% url 'cms_team' %}" class="btn btn-outline-secondary">Back to Team</a>
+          <button type="submit" name="reset" value="all" class="btn btn-outline-danger ms-auto" onclick="return confirm('Restore all Team page settings to default?');"><i class="fas fa-undo me-1"></i> Restore all to default</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="cms-card cms-team-preview-wrapper">
+      <h6 class="mb-2">Live preview</h6>
+      <p class="text-muted small mb-3">Updates as you edit. Save to apply to the site.</p>
+      <div id="teamPreview" class="p-4 rounded-4 cms-team-preview-box cms-team-preview-light" style="background: #f8fafc; border: 1px solid rgba(0,0,0,0.05); position: relative; overflow: hidden;">
+        <div id="previewWatermark" aria-hidden="true" style="position:absolute; inset:0; opacity:0.08; background-repeat:no-repeat; background-position:center; background-size:55%; pointer-events:none;"></div>
+        <div style="position:relative;">
+          <div id="previewTitle" style="font-family: Nunito, sans-serif; font-weight: 800; font-size: 44px; color: #0b5345; line-height: 1.15;">Our Team</div>
+          <div id="previewSubtitle" style="font-family: Nunito, sans-serif; font-size: 20px; color: #5d6d5d; margin-top: 6px;">Meet the people behind NHAF Nepal. <strong>20</strong> members dedicated to community health.</div>
+          <div class="mt-4">
+            <div class="fw-semibold mb-2">Board Members</div>
+            <div id="previewLineBoard" style="height:4px; border-radius:2px; width:100%; background: linear-gradient(90deg, transparent 0%, #0b5345 18%, #148f77 50%, #0b5345 82%, transparent 100%);"></div>
+          </div>
+          <div class="mt-4">
+            <div class="fw-semibold mb-2">Volunteers</div>
+            <div id="previewLineVol" style="height:4px; border-radius:2px; width:100%; background: linear-gradient(90deg, transparent 0%, #0b5345 18%, #148f77 50%, #0b5345 82%, transparent 100%);"></div>
+          </div>
+          <div class="mt-4">
+            <div class="fw-semibold mb-2">Sample card</div>
+            <div id="previewCard" style="border-radius:18px; height: 260px; background: linear-gradient(135deg, rgba(11,83,69,0.15), rgba(193,127,89,0.12)); border: 1px solid rgba(0,0,0,0.05); position:relative; overflow:hidden;">
+              <div style="position:absolute; inset:0; background: linear-gradient(to top, rgba(0,0,0,0.55), transparent 65%);"></div>
+              <div style="position:absolute; left:16px; right:16px; bottom:12px; color:#fff;">
+                <div id="previewCardName" style="font-weight:800; font-size:22px;">Member Name</div>
+                <div id="previewCardRole" style="text-transform:uppercase; letter-spacing:0.06em; opacity:0.9; font-size:14px; margin-top:4px;">Volunteer · Doctors</div>
+                <div style="margin-top:10px;">
+                  <span id="previewCardId" style="display:inline-block; font-size:12px; padding:6px 12px; border-radius:999px; background: rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.22);">NHAFN-M-001-2026</span>
+                  <span style="float:right;">
+                    <span id="previewIcon" style="display:inline-flex; width:32px; height:32px; border-radius:50%; background: rgba(255,255,255,0.18); align-items:center; justify-content:center;">f</span>
+                    <span style="display:inline-flex; width:32px; height:32px; border-radius:50%; background: rgba(255,255,255,0.18); align-items:center; justify-content:center; margin-left:6px;">in</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  function $(id) { return document.getElementById(id); }
+  var form = document.getElementById('teamSettingsForm');
+  if (!form) return;
+
+  function lineStyle(el, style, thickness, c1, c2, full, lenPct) {
+    if (!el) return;
+    el.style.height = thickness + 'px';
+    el.style.borderRadius = Math.max(1, Math.floor(thickness/2)) + 'px';
+    el.style.width = full ? '100%' : (Math.min(100, Math.max(10, lenPct)) + '%');
+    el.style.marginLeft = full ? '0' : 'auto';
+    el.style.marginRight = full ? '0' : 'auto';
+    el.style.border = 'none';
+    if (style === 'solid' || style === 'dashed') {
+      el.style.background = 'transparent';
+      el.style.borderTop = thickness + 'px ' + style + ' ' + c1;
+      el.style.height = '0';
+    } else {
+      el.style.background = 'linear-gradient(90deg, transparent 0%, ' + c1 + ' 18%, ' + c2 + ' 50%, ' + c1 + ' 82%, transparent 100%)';
+    }
+  }
+
+  function updatePreview() {
+    var title = form.querySelector('[name="title_text"]')?.value || 'Our Team';
+    var subtitleTpl = form.querySelector('[name="subtitle_template"]')?.value || '';
+    var sizeTitle = parseInt(form.querySelector('[name="title_font_size_px"]')?.value || '44', 10);
+    var sizeSub = parseInt(form.querySelector('[name="subtitle_font_size_px"]')?.value || '20', 10);
+    var colorTitle = form.querySelector('[name="title_color"]')?.value || '#0b5345';
+    var colorSub = form.querySelector('[name="subtitle_color"]')?.value || '#5d6d5d';
+    var align = form.querySelector('[name="heading_align"]')?.value || 'left';
+
+    if ($('previewTitle')) {
+      $('previewTitle').textContent = title;
+      $('previewTitle').style.fontSize = sizeTitle + 'px';
+      $('previewTitle').style.color = colorTitle;
+      $('previewTitle').style.textAlign = align;
+    }
+    if ($('previewSubtitle')) {
+      var subtitle = subtitleTpl.replace('{count}', '20');
+      $('previewSubtitle').innerHTML = subtitle.replace('20', '<strong>20</strong>');
+      $('previewSubtitle').style.fontSize = sizeSub + 'px';
+      $('previewSubtitle').style.color = colorSub;
+      $('previewSubtitle').style.textAlign = align;
+    }
+
+    lineStyle(
+      $('previewLineBoard'),
+      form.querySelector('[name="board_line_style"]')?.value || 'gradient',
+      parseInt(form.querySelector('[name="board_line_thickness_px"]')?.value || '4', 10),
+      form.querySelector('[name="board_line_color"]')?.value || '#0b5345',
+      form.querySelector('[name="board_line_color_2"]')?.value || '#148f77',
+      !!form.querySelector('[name="board_line_full_width"]')?.checked,
+      parseInt(form.querySelector('[name="board_line_length_percent"]')?.value || '100', 10)
+    );
+    lineStyle(
+      $('previewLineVol'),
+      form.querySelector('[name="volunteer_line_style"]')?.value || 'gradient',
+      parseInt(form.querySelector('[name="volunteer_line_thickness_px"]')?.value || '4', 10),
+      form.querySelector('[name="volunteer_line_color"]')?.value || '#0b5345',
+      form.querySelector('[name="volunteer_line_color_2"]')?.value || '#148f77',
+      !!form.querySelector('[name="volunteer_line_full_width"]')?.checked,
+      parseInt(form.querySelector('[name="volunteer_line_length_percent"]')?.value || '100', 10)
+    );
+
+    var radius = parseInt(form.querySelector('[name="card_radius_px"]')?.value || '18', 10);
+    if ($('previewCard')) $('previewCard').style.borderRadius = radius + 'px';
+    if ($('previewCardName')) $('previewCardName').style.fontSize = (parseInt(form.querySelector('[name="name_font_size_px"]')?.value || '22', 10)) + 'px';
+    if ($('previewCardRole')) $('previewCardRole').style.fontSize = (parseInt(form.querySelector('[name="role_font_size_px"]')?.value || '14', 10)) + 'px';
+    if ($('previewCardId')) $('previewCardId').style.fontSize = (parseInt(form.querySelector('[name="id_font_size_px"]')?.value || '12', 10)) + 'px';
+    var iconSize = parseInt(form.querySelector('[name="social_icon_size_px"]')?.value || '32', 10);
+    if ($('previewIcon')) {
+      $('previewIcon').style.width = iconSize + 'px';
+      $('previewIcon').style.height = iconSize + 'px';
+    }
+
+    var opacity = parseFloat(form.querySelector('[name="watermark_opacity"]')?.value || '0.08');
+    var sizePct = parseInt(form.querySelector('[name="watermark_size_percent"]')?.value || '55', 10);
+    var pos = form.querySelector('[name="watermark_position"]')?.value || 'center';
+    var wm = $('previewWatermark');
+    if (wm) {
+      wm.style.opacity = isNaN(opacity) ? 0.08 : opacity;
+      wm.style.backgroundSize = (isNaN(sizePct) ? 55 : sizePct) + '%';
+      wm.style.backgroundPosition =
+        pos === 'top-left' ? 'left top' :
+        pos === 'top-right' ? 'right top' :
+        pos === 'bottom-left' ? 'left bottom' :
+        pos === 'bottom-right' ? 'right bottom' :
+        'center';
+    }
+
+    var theme = form.querySelector('[name="theme_mode"]')?.value || 'light';
+    var box = $('teamPreview');
+    if (box) {
+      box.classList.remove('cms-team-preview-light', 'cms-team-preview-dark');
+      box.classList.add(theme === 'dark' ? 'cms-team-preview-dark' : 'cms-team-preview-light');
+      if (theme === 'dark') {
+        box.style.background = '#1e293b';
+        box.style.borderColor = 'rgba(255,255,255,0.1)';
+      } else {
+        box.style.background = '#f8fafc';
+        box.style.borderColor = 'rgba(0,0,0,0.05)';
+      }
+    }
+
+    var anim = form.querySelector('[name="title_animation"]')?.value || 'typing';
+    var titleEl = $('previewTitle');
+    if (titleEl) {
+      titleEl.classList.remove('cms-preview-anim-none', 'cms-preview-anim-fade', 'cms-preview-anim-slide', 'cms-preview-anim-zoom', 'cms-preview-anim-bounce');
+      titleEl.classList.add('cms-preview-anim-' + anim);
+    }
+  }
+
+  function hexToRgb(hex) {
+    var m = hex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+    return m ? 'rgb(' + parseInt(m[1], 16) + ',' + parseInt(m[2], 16) + ',' + parseInt(m[3], 16) + ')' : null;
+  }
+  function syncColorPicker(pickerId, inputName) {
+    var picker = $(pickerId);
+    var input = form.querySelector('[name="' + inputName + '"]');
+    if (!picker || !input) return;
+    var val = input.value.trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+      picker.value = val;
+    }
+    picker.addEventListener('input', function() {
+      input.value = picker.value;
+      updatePreview();
+    });
+    input.addEventListener('input', function() {
+      if (/^#[0-9a-fA-F]{6}$/.test(input.value)) picker.value = input.value;
+    });
+  }
+  syncColorPicker('title_color_picker', 'title_color');
+  syncColorPicker('subtitle_color_picker', 'subtitle_color');
+
+  form.addEventListener('input', updatePreview);
+  form.addEventListener('change', updatePreview);
+  updatePreview();
+})();
+</script>
+{% endblock %}

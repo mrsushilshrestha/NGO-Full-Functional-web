@@ -21,6 +21,7 @@
         --nav-hover: {{ site_theme.nav_hover_color }};
         --accent: {{ site_theme.button_color }};
         --accent-hover: {{ site_theme.button_hover_color }};
+        --footer-bg: {{ site_theme.nav_bg_color }};
     }
     .navbar-custom { 
         background: linear-gradient(90deg, {{ site_theme.nav_bg_color }} 0%, {{ site_theme.secondary_color }} 100%) !important; 
@@ -31,6 +32,20 @@
     .navbar-custom .nav-link:hover { 
         background: {{ site_theme.nav_hover_color }} !important; 
     }
+    .navbar-custom .dropdown-item:hover {
+        background-color: rgba(0,0,0,0.05) !important;
+        color: {{ site_theme.primary_color }} !important;
+    }
+    .footer-custom {
+        background: linear-gradient(90deg, {{ site_theme.nav_bg_color }} 0%, {{ site_theme.secondary_color }} 100%) !important;
+    }
+    .btn-primary:hover {
+        background: {{ site_theme.secondary_color }} !important;
+    }
+    .btn-outline-primary:hover {
+        background: {{ site_theme.primary_color }} !important;
+        color: {{ site_theme.nav_text_color }} !important;
+    }
     .btn-donate { 
         background: {{ site_theme.button_color }} !important; 
         border-color: {{ site_theme.button_color }} !important;
@@ -40,6 +55,7 @@
         border-color: {{ site_theme.button_hover_color }} !important;
     }
     {% if site_theme and site_theme.dark_mode_enabled %}
+    /* Dark mode design tokens */
     [data-theme="dark"], .dark-mode {
         --bg-cream: {{ site_theme.dark_bg_color }};
         --bg-warm: {{ site_theme.dark_bg_color }};
@@ -47,38 +63,191 @@
         --text-muted: #a0a0a0;
         --border-soft: #404040;
         --white: {{ site_theme.dark_card_bg }};
+    }
+    body[data-theme="dark"], body.dark-mode {
         background-color: {{ site_theme.dark_bg_color }} !important;
         color: {{ site_theme.dark_text_color }} !important;
     }
-    [data-theme="dark"] .card, .dark-mode .card,
-    [data-theme="dark"] .bg-white, .dark-mode .bg-white,
-    [data-theme="dark"] section, .dark-mode section {
+    /* Navbar - black background in dark mode */
+    [data-theme="dark"] .navbar-custom, .dark-mode .navbar-custom {
+        background: #000000 !important;
+        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+    }
+    [data-theme="dark"] .navbar-custom .nav-link, .dark-mode .navbar-custom .nav-link {
+        color: #ffffff !important;
+    }
+    [data-theme="dark"] .navbar-custom .nav-link:hover, .dark-mode .navbar-custom .nav-link:hover {
+        background: rgba(255, 255, 255, 0.15) !important;
+        color: #ffffff !important;
+    }
+    [data-theme="dark"] .navbar-custom .navbar-brand, .dark-mode .navbar-custom .navbar-brand {
+        color: #ffffff !important;
+    }
+    [data-theme="dark"] .navbar-custom .dropdown-menu,
+    .dark-mode .navbar-custom .dropdown-menu {
+        background: #2d2d2d !important;
+        color: var(--text-dark, #e0e0e0) !important;
+    }
+    [data-theme="dark"] .navbar-custom .dropdown-item, 
+    .dark-mode .navbar-custom .dropdown-item {
+        color: var(--text-dark, #e0e0e0) !important;
+        border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    [data-theme="dark"] .navbar-custom .dropdown-item:hover, 
+    .dark-mode .navbar-custom .dropdown-item:hover {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        color: #ffffff !important;
+    }
+    /* Footer - black background in dark mode */
+    [data-theme="dark"] .footer-custom, .dark-mode .footer-custom {
+        background: #000000 !important;
+        color: rgba(255, 255, 255, 0.8) !important;
+    }
+    [data-theme="dark"] .footer-custom h5, .dark-mode .footer-custom h5,
+    [data-theme="dark"] .footer-custom h6, .dark-mode .footer-custom h6 {
+        color: #ffffff !important;
+    }
+    [data-theme="dark"] .footer-custom a, .dark-mode .footer-custom a {
+        color: rgba(255, 255, 255, 0.7) !important;
+    }
+    [data-theme="dark"] .footer-custom a:hover, .dark-mode .footer-custom a:hover {
+        color: #ffffff !important;
+    }
+    [data-theme="dark"] .footer-custom hr, .dark-mode .footer-custom hr {
+        border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+    /* Main content containers */
+    [data-theme="dark"] .bg-white, .dark-mode .bg-white {
         background-color: {{ site_theme.dark_bg_color }} !important;
         color: {{ site_theme.dark_text_color }} !important;
     }
+    /* Cards */
     [data-theme="dark"] .card-elevated, .dark-mode .card-elevated,
     [data-theme="dark"] .card, .dark-mode .card {
         background-color: {{ site_theme.dark_card_bg }} !important;
         border-color: #404040 !important;
+        color: var(--text-dark, {{ site_theme.dark_text_color }}) !important;
     }
+    [data-theme="dark"] .card-title, .dark-mode .card-title,
+    [data-theme="dark"] .card-text, .dark-mode .card-text {
+        color: var(--text-dark, {{ site_theme.dark_text_color }}) !important;
+    }
+    /* All text elements - ensure proper dark mode colors */
+    [data-theme="dark"] p, .dark-mode p,
+    [data-theme="dark"] div, .dark-mode div,
+    [data-theme="dark"] span, .dark-mode span,
+    [data-theme="dark"] li, .dark-mode li,
+    [data-theme="dark"] td, .dark-mode td,
+    [data-theme="dark"] th, .dark-mode th {
+        color: var(--text-dark, {{ site_theme.dark_text_color }}) !important;
+    }
+    /* Headings */
+    [data-theme="dark"] h1, .dark-mode h1,
+    [data-theme="dark"] h2, .dark-mode h2,
+    [data-theme="dark"] h3, .dark-mode h3,
+    [data-theme="dark"] h4, .dark-mode h4,
+    [data-theme="dark"] h5, .dark-mode h5,
+    [data-theme="dark"] h6, .dark-mode h6,
+    [data-theme="dark"] .h1, .dark-mode .h1,
+    [data-theme="dark"] .h2, .dark-mode .h2,
+    [data-theme="dark"] .h3, .dark-mode .h3,
+    [data-theme="dark"] .h4, .dark-mode .h4,
+    [data-theme="dark"] .h5, .dark-mode .h5,
+    [data-theme="dark"] .h6, .dark-mode .h6 {
+        color: var(--text-dark, {{ site_theme.dark_text_color }}) !important;
+    }
+    /* Section titles */
+    [data-theme="dark"] .section-title, .dark-mode .section-title {
+        color: var(--text-dark, {{ site_theme.dark_text_color }}) !important;
+    }
+    /* Links */
+    [data-theme="dark"] a:not(.btn):not(.nav-link):not(.dropdown-item), 
+    .dark-mode a:not(.btn):not(.nav-link):not(.dropdown-item) {
+        color: var(--primary-light, {{ site_theme.secondary_color }}) !important;
+    }
+    [data-theme="dark"] a:not(.btn):not(.nav-link):not(.dropdown-item):hover, 
+    .dark-mode a:not(.btn):not(.nav-link):not(.dropdown-item):hover {
+        color: var(--primary-light, {{ site_theme.secondary_color }}) !important;
+        opacity: 0.8;
+    }
+    /* Muted text */
     [data-theme="dark"] .text-muted, .dark-mode .text-muted {
         color: #a0a0a0 !important;
     }
+    /* Secondary text */
+    [data-theme="dark"] .text-secondary, .dark-mode .text-secondary {
+        color: rgba(255, 255, 255, 0.6) !important;
+    }
+    /* Card text */
+    [data-theme="dark"] .card-body, .dark-mode .card-body,
+    [data-theme="dark"] .card-body *, .dark-mode .card-body * {
+        color: var(--text-dark, {{ site_theme.dark_text_color }}) !important;
+    }
+    [data-theme="dark"] .card-body .text-muted, .dark-mode .card-body .text-muted {
+        color: #a0a0a0 !important;
+    }
+    /* Badges and labels */
+    [data-theme="dark"] .badge, .dark-mode .badge {
+        color: #ffffff !important;
+    }
+    /* Inline styles override - force light colors */
+    [data-theme="dark"] [style*="color: #0B5345"], 
+    [data-theme="dark"] [style*="color:#0B5345"],
+    .dark-mode [style*="color: #0B5345"],
+    .dark-mode [style*="color:#0B5345"] {
+        color: var(--primary-light, {{ site_theme.secondary_color }}) !important;
+    }
+    [data-theme="dark"] [style*="color: #2c3e2c"], 
+    [data-theme="dark"] [style*="color:#2c3e2c"],
+    .dark-mode [style*="color: #2c3e2c"],
+    .dark-mode [style*="color:#2c3e2c"] {
+        color: var(--text-dark, {{ site_theme.dark_text_color }}) !important;
+    }
+    /* Light backgrounds inside dark mode */
     [data-theme="dark"] .bg-light, .dark-mode .bg-light {
         background-color: {{ site_theme.dark_card_bg }} !important;
     }
+    /* Forms */
     [data-theme="dark"] .form-control, .dark-mode .form-control,
     [data-theme="dark"] .form-select, .dark-mode .form-select {
         background-color: {{ site_theme.dark_card_bg }} !important;
         color: {{ site_theme.dark_text_color }} !important;
         border-color: #404040 !important;
     }
+    [data-theme="dark"] .form-control::placeholder, .dark-mode .form-control::placeholder,
+    [data-theme="dark"] .form-label, .dark-mode .form-label {
+        color: rgba(255, 255, 255, 0.7) !important;
+    }
+    /* Alerts */
     [data-theme="dark"] .alert, .dark-mode .alert {
         background-color: {{ site_theme.dark_card_bg }} !important;
         border-color: #404040 !important;
+        color: var(--text-dark, {{ site_theme.dark_text_color }}) !important;
     }
-    [data-theme="dark"] .footer-custom, .dark-mode .footer-custom {
-        background: var(--primary-dark) !important;
+    /* Buttons in dark mode */
+    [data-theme="dark"] .btn-primary, .dark-mode .btn-primary {
+        background: {{ site_theme.primary_color }} !important;
+        border-color: {{ site_theme.primary_color }} !important;
+    }
+    [data-theme="dark"] .btn-primary:hover, .dark-mode .btn-primary:hover {
+        background: {{ site_theme.secondary_color }} !important;
+        border-color: {{ site_theme.secondary_color }} !important;
+    }
+    [data-theme="dark"] .btn-outline-primary, .dark-mode .btn-outline-primary {
+        border-color: {{ site_theme.primary_color }} !important;
+        color: {{ site_theme.primary_color }} !important;
+    }
+    [data-theme="dark"] .btn-outline-primary:hover, .dark-mode .btn-outline-primary:hover {
+        background: {{ site_theme.primary_color }} !important;
+        color: #ffffff !important;
+    }
+    [data-theme="dark"] .btn-donate, .dark-mode .btn-donate {
+        background: {{ site_theme.button_color }} !important;
+        border-color: {{ site_theme.button_color }} !important;
+    }
+    [data-theme="dark"] .btn-donate:hover, .dark-mode .btn-donate:hover {
+        background: {{ site_theme.button_hover_color }} !important;
+        border-color: {{ site_theme.button_hover_color }} !important;
     }
     {% endif %}
     </style>
@@ -112,6 +281,12 @@
             </button>
             <div class="collapse navbar-collapse" id="nav">
                 <ul class="navbar-nav ms-auto">
+                    {% if not site_theme or site_theme.show_nav_arrows %}
+                    <li class="nav-item d-flex align-items-center me-1 d-none d-lg-flex">
+                        <a href="#" class="nav-link nav-arrow py-2 px-2" onclick="window.history.back(); return false;" title="Back" aria-label="Back"><i class="fas fa-arrow-left"></i></a>
+                        <a href="#" class="nav-link nav-arrow py-2 px-2" onclick="window.history.forward(); return false;" title="Forward" aria-label="Forward"><i class="fas fa-arrow-right"></i></a>
+                    </li>
+                    {% endif %}
                 {% if nav_items %}
                     {% for item in nav_items %}
                     {% if item.is_active %}
@@ -131,13 +306,13 @@
                     {% endif %}
                     {% endfor %}
                 {% else %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">{% if nav_icons.nav_home %}{% if nav_icons.nav_home.custom_svg %}<img src="{{ nav_icons.nav_home.custom_svg.url }}" alt="" class="me-1" style="height:1em;width:auto">{% else %}<i class="{{ nav_icons.nav_home.icon_class|default:'fas fa-home' }} me-1"></i>{% endif %}{% endif %}Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'about' %}">{% if nav_icons.nav_about %}{% if nav_icons.nav_about.custom_svg %}<img src="{{ nav_icons.nav_about.custom_svg.url }}" alt="" class="me-1" style="height:1em;width:auto">{% else %}<i class="{{ nav_icons.nav_about.icon_class|default:'fas fa-info-circle' }} me-1"></i>{% endif %}{% endif %}About</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'programs_list' %}">{% if nav_icons.nav_programs %}{% if nav_icons.nav_programs.custom_svg %}<img src="{{ nav_icons.nav_programs.custom_svg.url }}" alt="" class="me-1" style="height:1em;width:auto">{% else %}<i class="{{ nav_icons.nav_programs.icon_class|default:'fas fa-calendar-alt' }} me-1"></i>{% endif %}{% endif %}Programs</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'team_list' %}">{% if nav_icons.nav_team %}{% if nav_icons.nav_team.custom_svg %}<img src="{{ nav_icons.nav_team.custom_svg.url }}" alt="" class="me-1" style="height:1em;width:auto">{% else %}<i class="{{ nav_icons.nav_team.icon_class|default:'fas fa-users' }} me-1"></i>{% endif %}{% endif %}Team</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'impact' %}">{% if nav_icons.nav_impact %}{% if nav_icons.nav_impact.custom_svg %}<img src="{{ nav_icons.nav_impact.custom_svg.url }}" alt="" class="me-1" style="height:1em;width:auto">{% else %}<i class="{{ nav_icons.nav_impact.icon_class|default:'fas fa-chart-line' }} me-1"></i>{% endif %}{% endif %}Impact</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}">{% if nav_icons.nav_contact %}{% if nav_icons.nav_contact.custom_svg %}<img src="{{ nav_icons.nav_contact.custom_svg.url }}" alt="" class="me-1" style="height:1em;width:auto">{% else %}<i class="{{ nav_icons.nav_contact.icon_class|default:'fas fa-envelope' }} me-1"></i>{% endif %}{% endif %}Contact</a></li>
-                    <li class="nav-item"><a class="nav-link btn btn-donate ms-2" href="{% url 'donate' %}">{% if nav_icons.nav_donate %}{% if nav_icons.nav_donate.custom_svg %}<img src="{{ nav_icons.nav_donate.custom_svg.url }}" alt="" class="me-1" style="height:1em;width:auto">{% else %}<i class="{{ nav_icons.nav_donate.icon_class|default:'fas fa-heart' }} me-1"></i>{% endif %}{% else %}<i class="fas fa-heart me-1"></i>{% endif %}Donate</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.path == '/' or request.path == '' %}active{% endif %}" href="{% url 'home' %}">{% if nav_icons.nav_home %}{% if nav_icons.nav_home.custom_svg %}<img src="{{ nav_icons.nav_home.custom_svg.url }}" alt="" class="me-1" style="height:1em;width:auto">{% else %}<i class="{{ nav_icons.nav_home.icon_class|default:'fas fa-home' }} me-1"></i>{% endif %}{% endif %}Home</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.path == '/about/' or request.path == '/about' %}active{% endif %}" href="{% url 'about' %}">{% if nav_icons.nav_about %}{% if nav_icons.nav_about.custom_svg %}<img src="{{ nav_icons.nav_about.custom_svg.url }}" alt="" class="me-1" style="height:1em;width:auto">{% else %}<i class="{{ nav_icons.nav_about.icon_class|default:'fas fa-info-circle' }} me-1"></i>{% endif %}{% endif %}About</a></li>
+                    <li class="nav-item"><a class="nav-link {% if '/programs' in request.path %}active{% endif %}" href="{% url 'programs_list' %}">{% if nav_icons.nav_programs %}{% if nav_icons.nav_programs.custom_svg %}<img src="{{ nav_icons.nav_programs.custom_svg.url }}" alt="" class="me-1" style="height:1em;width:auto">{% else %}<i class="{{ nav_icons.nav_programs.icon_class|default:'fas fa-calendar-alt' }} me-1"></i>{% endif %}{% endif %}Programs</a></li>
+                    <li class="nav-item"><a class="nav-link {% if '/team' in request.path %}active{% endif %}" href="{% url 'team_list' %}">{% if nav_icons.nav_team %}{% if nav_icons.nav_team.custom_svg %}<img src="{{ nav_icons.nav_team.custom_svg.url }}" alt="" class="me-1" style="height:1em;width:auto">{% else %}<i class="{{ nav_icons.nav_team.icon_class|default:'fas fa-users' }} me-1"></i>{% endif %}{% endif %}Team</a></li>
+                    <li class="nav-item"><a class="nav-link {% if '/impact' in request.path %}active{% endif %}" href="{% url 'impact' %}">{% if nav_icons.nav_impact %}{% if nav_icons.nav_impact.custom_svg %}<img src="{{ nav_icons.nav_impact.custom_svg.url }}" alt="" class="me-1" style="height:1em;width:auto">{% else %}<i class="{{ nav_icons.nav_impact.icon_class|default:'fas fa-chart-line' }} me-1"></i>{% endif %}{% endif %}Impact</a></li>
+                    <li class="nav-item"><a class="nav-link {% if '/contact' in request.path %}active{% endif %}" href="{% url 'contact' %}">{% if nav_icons.nav_contact %}{% if nav_icons.nav_contact.custom_svg %}<img src="{{ nav_icons.nav_contact.custom_svg.url }}" alt="" class="me-1" style="height:1em;width:auto">{% else %}<i class="{{ nav_icons.nav_contact.icon_class|default:'fas fa-envelope' }} me-1"></i>{% endif %}{% endif %}Contact</a></li>
+                    <li class="nav-item"><a class="nav-link btn btn-donate ms-2 {% if '/donate' in request.path %}active{% endif %}" href="{% url 'donate' %}">{% if nav_icons.nav_donate %}{% if nav_icons.nav_donate.custom_svg %}<img src="{{ nav_icons.nav_donate.custom_svg.url }}" alt="" class="me-1" style="height:1em;width:auto">{% else %}<i class="{{ nav_icons.nav_donate.icon_class|default:'fas fa-heart' }} me-1"></i>{% endif %}{% else %}<i class="fas fa-heart me-1"></i>{% endif %}Donate</a></li>
                 {% endif %}
                 </ul>
                 {% if site_theme and site_theme.dark_mode_enabled %}

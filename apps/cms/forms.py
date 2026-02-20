@@ -4,7 +4,7 @@ from apps.about.models import OrganizationInfo, Founder, ChapterLocation, Achiev
 from apps.impact.models import ImpactStat
 from apps.contact.models import ContactInfo, QuickResponse, ChatSettings
 from apps.donation.models import DonationTier, BankDetail
-from apps.team.models import Member, Chapter, Collaboration
+from apps.team.models import Member, Chapter, Collaboration, TeamPageSettings
 from apps.programs.models import Program, Category
 from apps.cms.models import IconConfig
 from ckeditor.widgets import CKEditorWidget
@@ -198,6 +198,59 @@ class MemberForm(forms.ModelForm):
         fields = '__all__'
         widgets = {
             'bio': forms.Textarea(attrs={'rows': 4}),
+            'member_id': forms.TextInput(attrs={'readonly': True, 'style': 'background-color: #f5f5f5; cursor: not-allowed;'}),
+        }
+        help_texts = {
+            'member_id': 'Auto-generated based on member type. Cannot be edited manually.',
+            'member_type': 'Select Board Member or Volunteer. Member ID will be generated automatically.',
+        }
+
+
+class TeamPageSettingsForm(forms.ModelForm):
+    clear_watermark = forms.BooleanField(required=False, label='Remove background image (clear to default)')
+
+    class Meta:
+        model = TeamPageSettings
+        fields = '__all__'
+        widgets = {
+            'title_text': forms.TextInput(attrs={'class': 'form-control'}),
+            'subtitle_template': forms.TextInput(attrs={'class': 'form-control'}),
+            'title_color': forms.TextInput(attrs={'class': 'form-control', 'type': 'text'}),
+            'subtitle_color': forms.TextInput(attrs={'class': 'form-control', 'type': 'text'}),
+            'board_line_color': forms.TextInput(attrs={'class': 'form-control'}),
+            'board_line_color_2': forms.TextInput(attrs={'class': 'form-control'}),
+            'volunteer_line_color': forms.TextInput(attrs={'class': 'form-control'}),
+            'volunteer_line_color_2': forms.TextInput(attrs={'class': 'form-control'}),
+            'title_font_family': forms.Select(attrs={'class': 'form-select'}),
+            'subtitle_font_family': forms.Select(attrs={'class': 'form-select'}),
+            'heading_align': forms.Select(attrs={'class': 'form-select'}),
+            'title_animation': forms.Select(attrs={'class': 'form-select'}),
+            'theme_mode': forms.Select(attrs={'class': 'form-select'}),
+            'card_hover_effect': forms.Select(attrs={'class': 'form-select'}),
+            'card_shadow': forms.Select(attrs={'class': 'form-select'}),
+            'card_animation': forms.Select(attrs={'class': 'form-select'}),
+            'board_line_style': forms.Select(attrs={'class': 'form-select'}),
+            'volunteer_line_style': forms.Select(attrs={'class': 'form-select'}),
+            'watermark_position': forms.Select(attrs={'class': 'form-select'}),
+            'title_font_size_px': forms.NumberInput(attrs={'min': 18, 'max': 90, 'class': 'form-control'}),
+            'subtitle_font_size_px': forms.NumberInput(attrs={'min': 12, 'max': 40, 'class': 'form-control'}),
+            'typing_speed_ms': forms.NumberInput(attrs={'min': 20, 'max': 250, 'class': 'form-control'}),
+            'watermark_opacity': forms.NumberInput(attrs={'min': 0, 'max': 1, 'step': 0.01, 'class': 'form-control'}),
+            'watermark_size_percent': forms.NumberInput(attrs={'min': 10, 'max': 150, 'class': 'form-control'}),
+            'board_line_thickness_px': forms.NumberInput(attrs={'min': 1, 'max': 14, 'class': 'form-control'}),
+            'board_line_length_percent': forms.NumberInput(attrs={'min': 10, 'max': 100, 'class': 'form-control'}),
+            'volunteer_line_thickness_px': forms.NumberInput(attrs={'min': 1, 'max': 14, 'class': 'form-control'}),
+            'volunteer_line_length_percent': forms.NumberInput(attrs={'min': 10, 'max': 100, 'class': 'form-control'}),
+            'card_radius_px': forms.NumberInput(attrs={'min': 8, 'max': 40, 'class': 'form-control'}),
+            'card_min_height_px': forms.NumberInput(attrs={'min': 240, 'max': 800, 'class': 'form-control'}),
+            'card_max_height_px': forms.NumberInput(attrs={'min': 240, 'max': 900, 'class': 'form-control'}),
+            'social_icon_size_px': forms.NumberInput(attrs={'min': 20, 'max': 48, 'class': 'form-control'}),
+            'name_font_size_px': forms.NumberInput(attrs={'min': 14, 'max': 38, 'class': 'form-control'}),
+            'role_font_size_px': forms.NumberInput(attrs={'min': 10, 'max': 24, 'class': 'form-control'}),
+            'id_font_size_px': forms.NumberInput(attrs={'min': 9, 'max': 20, 'class': 'form-control'}),
+            'section_spacing_px': forms.NumberInput(attrs={'min': 8, 'max': 64, 'class': 'form-control'}),
+            'card_padding_px': forms.NumberInput(attrs={'min': 8, 'max': 48, 'class': 'form-control'}),
+            'background_watermark': forms.FileInput(attrs={'class': 'form-control'}),
         }
 
 

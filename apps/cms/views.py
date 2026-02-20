@@ -9,6 +9,7 @@ from .forms import (
     ImpactStatForm, ContactInfoForm, DonationTierForm, BankDetailForm, IconConfigForm,
     NavItemForm, SiteThemeForm, SiteIdentityForm, MemberForm, ProgramForm,
     QuickResponseForm, ChatSettingsForm, CollaborationForm,
+    TeamPageSettingsForm,
 )
 
 # Core models
@@ -18,7 +19,7 @@ from apps.about.models import OrganizationInfo, Founder, ChapterLocation, Achiev
 # Programs
 from apps.programs.models import Program, Category
 # Team
-from apps.team.models import Member, Chapter, Collaboration
+from apps.team.models import Member, Chapter, Collaboration, TeamPageSettings
 # Impact
 from apps.impact.models import ImpactStat
 # Contact
@@ -138,10 +139,91 @@ def cms_programs(request):
 @cms_required
 @require_GET
 def cms_team(request):
-    members = Member.objects.all()
+    members = Member.objects.select_related('chapter').order_by('order', 'name')
     chapters = Chapter.objects.all()
     collaborations = Collaboration.objects.all()
-    return render(request, 'cms/team.html', {'members': members, 'chapters': chapters, 'collaborations': collaborations})
+    board_count = Member.objects.filter(member_type='board', is_active=True).count()
+    volunteer_count = Member.objects.filter(member_type='volunteer', is_active=True).count()
+    recent_members = list(members[:10])
+    return render(request, 'cms/team.html', {
+        'members': members,
+        'recent_members': recent_members,
+        'chapters': chapters,
+        'collaborations': collaborations,
+        'board_count': board_count,
+        'volunteer_count': volunteer_count,
+    })
+
+
+@cms_required
+def cms_team_page_settings(request):
+    """CMS editor for Team page appearance and behavior."""
+    settings_obj = TeamPageSettings.get()
+    defaults = TeamPageSettings.get_defaults()
+
+    if request.method == 'POST':
+        # Handle reset actions first (before form validation)
+        reset = request.POST.get('reset')
+        if reset:
+            if reset == 'all':
+                for key, value in defaults.items():
+                    if key != 'background_watermark' and hasattr(settings_obj, key):
+                        setattr(settings_obj, key, value)
+                settings_obj.background_watermark = None
+                settings_obj.save()
+                messages.success(request, 'All settings restored to default.')
+            elif reset == 'heading':
+                for key in ('title_text', 'subtitle_template', 'title_font_family', 'subtitle_font_family',
+                            'title_font_size_px', 'subtitle_font_size_px', 'title_color', 'subtitle_color',
+                            'heading_align', 'title_animation', 'typing_enabled', 'typing_speed_ms'):
+                    if key in defaults:
+                        setattr(settings_obj, key, defaults[key])
+                settings_obj.save()
+                messages.success(request, 'Heading restored to default.')
+            elif reset == 'lines':
+                for key in ('board_line_style', 'board_line_thickness_px', 'board_line_color', 'board_line_color_2',
+                            'board_line_full_width', 'board_line_length_percent',
+                            'volunteer_line_style', 'volunteer_line_thickness_px', 'volunteer_line_color',
+                            'volunteer_line_color_2', 'volunteer_line_full_width', 'volunteer_line_length_percent'):
+                    if key in defaults:
+                        setattr(settings_obj, key, defaults[key])
+                settings_obj.save()
+                messages.success(request, 'Category lines restored to default.')
+            elif reset == 'background':
+                settings_obj.background_watermark = None
+                settings_obj.watermark_opacity = defaults['watermark_opacity']
+                settings_obj.watermark_position = defaults['watermark_position']
+                settings_obj.watermark_size_percent = defaults['watermark_size_percent']
+                settings_obj.save()
+                messages.success(request, 'Background/watermark cleared and restored to default.')
+            elif reset == 'cards':
+                for key in ('card_radius_px', 'card_min_height_px', 'card_max_height_px', 'card_padding_px',
+                            'social_icon_size_px', 'name_font_size_px', 'role_font_size_px', 'id_font_size_px',
+                            'card_hover_effect', 'card_shadow', 'card_animation', 'section_spacing_px'):
+                    if key in defaults:
+                        setattr(settings_obj, key, defaults[key])
+                settings_obj.save()
+                messages.success(request, 'Card styling restored to default.')
+            return redirect('cms_team_page_settings')
+
+        form = TeamPageSettingsForm(request.POST, request.FILES, instance=settings_obj)
+        if form.is_valid():
+            if form.cleaned_data.get('clear_watermark'):
+                settings_obj.background_watermark = None
+                settings_obj.save(update_fields=['background_watermark'])
+            form.save()
+            if form.cleaned_data.get('clear_watermark'):
+                # Already cleared above; form.save() might have re-set it from FILES, so clear again
+                settings_obj.background_watermark = None
+                settings_obj.save(update_fields=['background_watermark'])
+            messages.success(request, 'Team page settings saved!')
+            return redirect('cms_team_page_settings')
+    else:
+        form = TeamPageSettingsForm(instance=settings_obj)
+    return render(request, 'cms/team_page_settings.html', {
+        'form': form,
+        'settings': settings_obj,
+    })
 
 
 @cms_required
@@ -571,11 +653,24 @@ def cms_identity(request):
 @cms_required
 @require_GET
 def cms_member_management(request):
-    members = Member.objects.all()
+    members = Member.objects.select_related('chapter').order_by('order', 'name')
     role_filter = request.GET.get('role', '')
+    type_filter = request.GET.get('type', '')
     if role_filter:
         members = members.filter(role__icontains=role_filter)
-    return render(request, 'cms/member_management.html', {'members': members, 'role_filter': role_filter})
+    if type_filter and type_filter in ('board', 'volunteer'):
+        members = members.filter(member_type=type_filter)
+    board_count = Member.objects.filter(member_type='board').count()
+    volunteer_count = Member.objects.filter(member_type='volunteer').count()
+    total_count = members.count()
+    return render(request, 'cms/member_management.html', {
+        'members': members,
+        'role_filter': role_filter,
+        'type_filter': type_filter,
+        'board_count': board_count,
+        'volunteer_count': volunteer_count,
+        'total_count': total_count,
+    })
 
 
 @cms_required
@@ -599,6 +694,17 @@ def cms_member_delete(request, pk):
     obj.delete()
     messages.success(request, 'Member deleted.')
     return redirect('cms_member_management')
+
+
+@cms_required
+@require_POST
+def cms_member_reorder(request):
+    """Update Member.order from a drag-and-drop list."""
+    from django.http import JsonResponse
+    order = request.POST.getlist('order[]')
+    for i, pk in enumerate(order):
+        Member.objects.filter(pk=pk).update(order=i)
+    return JsonResponse({'ok': True})
 
 
 # Collaboration Management

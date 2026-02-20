@@ -1,12 +1,13 @@
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Q
 from django.core.paginator import Paginator
-from .models import Member, Chapter, Collaboration
+from .models import Member, Chapter, Collaboration, TeamPageSettings
 from apps.membership.forms import VolunteerApplicationForm, MembershipApplicationForm
 from apps.membership.models import MembershipFee
 
 
 def team_list(request):
+    team_settings = TeamPageSettings.get()
     members_qs = Member.objects.filter(is_active=True)
     search = request.GET.get('search', '')
     chapter_filter = request.GET.get('chapter', '')
@@ -24,35 +25,36 @@ def team_list(request):
 
     member_count = members_qs.count()
 
-    executive_members = members_qs.filter(role_level='executive')
-    core_members = members_qs.filter(role_level='core')
-    general_qs = members_qs.filter(role_level='general')
+    # Filter by member type
+    board_members = members_qs.filter(member_type='board').order_by('order', 'name')
+    volunteer_qs = members_qs.filter(member_type='volunteer').order_by('order', 'name')
 
-    paginator = Paginator(general_qs, 8)
+    # Paginate volunteers
+    paginator = Paginator(volunteer_qs, 12)
     page_number = request.GET.get('page')
-    general_page_obj = paginator.get_page(page_number)
+    volunteer_page_obj = paginator.get_page(page_number)
 
     # Build smart pagination range with ellipsis markers (None)
     if paginator.num_pages <= 1:
-        general_pagination_range = []
+        volunteer_pagination_range = []
     else:
-        current = general_page_obj.number
+        current = volunteer_page_obj.number
         pages = []
         for n in [1, *range(current - 2, current + 3), paginator.num_pages]:
             if 1 <= n <= paginator.num_pages and (not pages or n != pages[-1]):
                 pages.append(n)
-        general_pagination_range = []
+        volunteer_pagination_range = []
         for n in pages:
-            if general_pagination_range and n - general_pagination_range[-1] > 1:
-                general_pagination_range.append(None)
-            general_pagination_range.append(n)
+            if volunteer_pagination_range and n - volunteer_pagination_range[-1] > 1:
+                volunteer_pagination_range.append(None)
+            volunteer_pagination_range.append(n)
 
     context = {
+        'team_settings': team_settings,
         'members': members_qs,
-        'executive_members': executive_members,
-        'core_members': core_members,
-        'general_page_obj': general_page_obj,
-        'general_pagination_range': general_pagination_range,
+        'board_members': board_members,
+        'volunteer_page_obj': volunteer_page_obj,
+        'volunteer_pagination_range': volunteer_pagination_range,
         'member_count': member_count,
         'chapters': Chapter.objects.all(),
         'search': search,

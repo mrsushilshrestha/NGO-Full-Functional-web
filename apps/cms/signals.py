@@ -33,17 +33,21 @@ def notify_volunteer(sender, instance, created, **kwargs):
         member_defaults = {
             'name': instance.name,
             'role': 'Volunteer',
-            'role_level': 'general',
+            'member_type': 'volunteer',
             'email': getattr(instance, 'email', '') or '',
             'phone': instance.contact_number,
             'is_active': True,
         }
         if getattr(instance, 'profile_image', None):
             member_defaults['photo'] = instance.profile_image
-        Member.objects.update_or_create(
+        member, created = Member.objects.update_or_create(
             email=member_defaults['email'] or None,
             defaults=member_defaults,
         )
+        # Ensure member_id is generated if missing
+        if not member.member_id or member.member_id.strip() == '':
+            member.member_id = member.generate_member_id()
+            member.save(update_fields=['member_id'])
         CMSNotification.objects.create(
             notification_type='member_approved',
             title=f'Volunteer approved: {instance.name}',
@@ -62,25 +66,22 @@ def notify_membership(sender, instance, created, **kwargs):
             link='/admin-login/members/',
         )
     elif instance.status == 'approved':
-        # Map membership type to a Member role/level
-        if instance.member_type == 'general':
-            role = 'General Member'
-            role_level = 'general'
-        else:
-            role = 'Active Member'
-            role_level = 'general'
-
-        Member.objects.update_or_create(
+        # Map membership application to Volunteer member type
+        member, created = Member.objects.update_or_create(
             email=instance.email,
             defaults={
                 'name': instance.name,
-                'role': role,
-                'role_level': role_level,
+                'role': 'Volunteer',
+                'member_type': 'volunteer',
                 'email': instance.email,
                 'phone': instance.phone,
                 'is_active': True,
             },
         )
+        # Ensure member_id is generated if missing
+        if not member.member_id or member.member_id.strip() == '':
+            member.member_id = member.generate_member_id()
+            member.save(update_fields=['member_id'])
         CMSNotification.objects.create(
             notification_type='member_approved',
             title=f'Member approved: {instance.name}',

@@ -5,27 +5,30 @@
 {% block extra_css %}
 <style>
 .collab-hero {
-    background: linear-gradient(135deg, rgba(11,83,69,0.03) 0%, rgba(193,127,89,0.05) 100%);
-    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(11,83,69,0.04) 0%, rgba(193,127,89,0.06) 100%);
+    border-radius: 20px;
     padding: 2.5rem;
+    border: 1px solid rgba(11,83,69,0.08);
 }
 .collab-card {
     border: none;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border-radius: 18px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.06), 0 2px 12px rgba(0,0,0,0.04);
     overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
     height: 100%;
     display: flex;
     flex-direction: column;
+    background: #fff;
 }
 .collab-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 16px 48px rgba(0,0,0,0.14);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 56px rgba(0,0,0,0.1), 0 8px 24px rgba(0,0,0,0.06);
 }
 .collab-card-link {
     text-decoration: none;
     color: inherit;
+    display: block;
 }
 /* Image cover - hero-style */
 .collab-cover-wrap {
@@ -42,7 +45,7 @@
     transition: transform 0.4s ease;
 }
 .collab-card:hover .collab-cover-wrap img {
-    transform: scale(1.05);
+    transform: scale(1.06);
 }
 /* Gradient overlay for text readability */
 .collab-cover-overlay {
@@ -51,7 +54,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 40%, transparent 70%, rgba(0,0,0,0.4) 100%);
+    background: linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.12) 35%, transparent 60%, rgba(0,0,0,0.5) 100%);
 }
 /* Organization name overlay at top */
 .collab-title-overlay {
@@ -59,23 +62,23 @@
     top: 0;
     left: 0;
     right: 0;
-    padding: 1.25rem 1.25rem 2rem;
+    padding: 1.35rem 1.35rem 2.5rem;
 }
 .collab-title-overlay h3 {
-    font-size: 1.15rem;
-    font-weight: 600;
+    font-size: 1.2rem;
+    font-weight: 700;
     color: #fff;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    text-shadow: 0 2px 12px rgba(0,0,0,0.5);
     margin: 0;
     line-height: 1.35;
 }
-/* View More button overlay at bottom of image */
+/* View More – positioned slightly lower */
 .collab-view-more-overlay {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 1rem 1.25rem;
+    padding: 1.5rem 1.35rem 1.35rem;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -85,20 +88,22 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    padding: 0.5rem 1rem;
+    padding: 0.6rem 1.25rem;
     font-weight: 600;
-    font-size: 0.875rem;
-    border-radius: 8px;
+    font-size: 0.9rem;
+    border-radius: 10px;
     background: var(--primary);
     color: #fff !important;
     border: none;
-    transition: background 0.25s ease, transform 0.2s ease;
+    transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
     text-decoration: none;
+    box-shadow: 0 4px 14px rgba(11,83,69,0.35);
 }
 .collab-view-more:hover {
     background: var(--primary-dark);
     color: #fff !important;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(11,83,69,0.4);
 }
 /* Placeholder when no image */
 .collab-cover-placeholder {
@@ -112,6 +117,9 @@
 .collab-cover-placeholder i {
     font-size: 3.5rem;
     color: rgba(255,255,255,0.9);
+}
+@media (max-width: 767px) {
+    .collab-card { border-radius: 16px; }
 }
 </style>
 {% endblock %}
@@ -166,10 +174,10 @@
             </div>
         </form>
 
-        <!-- Cards Grid -->
+        <!-- Cards Grid – three per row on desktop/tablet -->
         <div class="row g-4">
             {% for collaboration in page_obj %}
-            <div class="col-md-6 col-lg-4">
+            <div class="col-12 col-md-4">
                 <div class="card collab-card h-100">
                     <a href="{% url 'collaboration_detail' collaboration.pk %}" class="collab-card-link">
                         <div class="collab-cover-wrap">
