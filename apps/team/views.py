@@ -1,33 +1,75 @@
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Q
 from django.core.paginator import Paginator
-from .models import Member, Chapter, Collaboration, TeamPageSettings
+from django.http import HttpResponse
+from .models import Member, Chapter, Location, Collaboration, TeamPageSettings
 from apps.membership.forms import VolunteerApplicationForm, MembershipApplicationForm
 from apps.membership.models import MembershipFee
 
 
-def team_list(request):
-    team_settings = TeamPageSettings.get()
-    members_qs = Member.objects.filter(is_active=True)
-    search = request.GET.get('search', '')
-    chapter_filter = request.GET.get('chapter', '')
-    view_mode = request.GET.get('view', 'grid')
+def _location_choices():
+    """Public location choices for volunteer tabs (from Location model)."""
+    return [(loc.code, loc.name) for loc in Location.objects.filter(is_active=True).order_by('order', 'name')]
 
+
+def team_board_filter(request):
+    """Return board member cards HTML fragment for AJAX chapter filtering (no full page refresh)."""
+    chapter_id = request.GET.get('chapter', '').strip()
+    search = request.GET.get('search', '').strip()
+    board = Member.objects.filter(is_active=True, member_type='board').order_by('order', 'name')
+    if chapter_id and chapter_id.isdigit():
+        board = board.filter(chapter_id=int(chapter_id))
     if search:
-        members_qs = members_qs.filter(
+        board = board.filter(
             Q(name__icontains=search) |
             Q(role__icontains=search) |
             Q(member_id__icontains=search) |
             Q(specialization__icontains=search)
         )
-    if chapter_filter:
-        members_qs = members_qs.filter(chapter_id=chapter_filter)
+    board = list(board[:200])
+    html = render(request, 'team/partials/board_cards.html', {'board_members': board}).content.decode()
+    return HttpResponse(html, content_type='text/html; charset=utf-8')
+
+
+def team_volunteer_filter(request):
+    """Return volunteer cards HTML fragment for AJAX location filtering (no full page refresh)."""
+    location = request.GET.get('location', '').strip()
+    search = request.GET.get('search', '').strip()
+    volunteers = Member.objects.filter(is_active=True, member_type='volunteer').order_by('order', 'name')
+    valid_codes = {loc.code for loc in Location.objects.filter(is_active=True)}
+    if location and location in valid_codes:
+        volunteers = volunteers.filter(location=location)
+    if search:
+        volunteers = volunteers.filter(
+            Q(name__icontains=search) |
+            Q(role__icontains=search) |
+            Q(member_id__icontains=search) |
+            Q(specialization__icontains=search)
+        )
+    volunteers = list(volunteers[:200])
+    html = render(request, 'team/partials/volunteer_cards.html', {'volunteers': volunteers}).content.decode()
+    return HttpResponse(html, content_type='text/html; charset=utf-8')
+
+
+def team_list(request):
+    team_settings = TeamPageSettings.get()
+    members_qs = Member.objects.filter(is_active=True)
+    chapter_filter = request.GET.get('chapter', '').strip()  # for board
+    location_filter = request.GET.get('location', '').strip()  # for volunteers
 
     member_count = members_qs.count()
 
-    # Filter by member type
-    board_members = members_qs.filter(member_type='board').order_by('order', 'name')
+    # Board: filter by chapter
+    board_qs = members_qs.filter(member_type='board').order_by('order', 'name')
+    if chapter_filter and chapter_filter.isdigit():
+        board_qs = board_qs.filter(chapter_id=int(chapter_filter))
+    board_members = list(board_qs[:200])
+
+    # Volunteers: filter by location
     volunteer_qs = members_qs.filter(member_type='volunteer').order_by('order', 'name')
+    valid_codes = {loc.code for loc in Location.objects.filter(is_active=True)}
+    if location_filter and location_filter in valid_codes:
+        volunteer_qs = volunteer_qs.filter(location=location_filter)
 
     # Paginate volunteers
     paginator = Paginator(volunteer_qs, 12)
@@ -56,10 +98,10 @@ def team_list(request):
         'volunteer_page_obj': volunteer_page_obj,
         'volunteer_pagination_range': volunteer_pagination_range,
         'member_count': member_count,
-        'chapters': Chapter.objects.all(),
-        'search': search,
+        'chapters': Chapter.objects.filter(is_active=True).order_by('order', 'name'),
         'chapter_filter': chapter_filter,
-        'view_mode': view_mode,
+        'location_choices': _location_choices(),
+        'location_filter': location_filter,
         'volunteer_join_form': VolunteerApplicationForm(),
         'membership_join_form': MembershipApplicationForm(),
         'membership_fees': MembershipFee.objects.all(),

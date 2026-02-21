@@ -4,7 +4,7 @@ from apps.about.models import OrganizationInfo, Founder, ChapterLocation, Achiev
 from apps.impact.models import ImpactStat
 from apps.contact.models import ContactInfo, QuickResponse, ChatSettings
 from apps.donation.models import DonationTier, BankDetail
-from apps.team.models import Member, Chapter, Collaboration, TeamPageSettings
+from apps.team.models import Member, Chapter, Location, Collaboration, TeamPageSettings
 from apps.programs.models import Program, Category
 from apps.cms.models import IconConfig
 from ckeditor.widgets import CKEditorWidget
@@ -192,6 +192,21 @@ class CollaborationForm(forms.ModelForm):
         }
 
 
+class TeamChapterForm(forms.ModelForm):
+    """Team Chapter (board filter) - CMS CRUD."""
+    class Meta:
+        model = Chapter
+        fields = ['name', 'order', 'is_active']
+
+
+class LocationForm(forms.ModelForm):
+    """Location (volunteer filter) - CMS CRUD."""
+    class Meta:
+        model = Location
+        fields = ['name', 'code', 'order', 'is_active']
+        help_texts = {'code': 'Unique code used in URLs/filters (e.g. kathmandu). Do not change if members use it.'}
+
+
 class MemberForm(forms.ModelForm):
     class Meta:
         model = Member
@@ -204,6 +219,13 @@ class MemberForm(forms.ModelForm):
             'member_id': 'Auto-generated based on member type. Cannot be edited manually.',
             'member_type': 'Select Board Member or Volunteer. Member ID will be generated automatically.',
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Location dropdown from Location model (CMS-managed)
+        locs = Location.objects.filter(is_active=True).order_by('order', 'name')
+        choices = [('', 'Not set')] + [(loc.code, loc.name) for loc in locs]
+        self.fields['location'].choices = choices
 
 
 class TeamPageSettingsForm(forms.ModelForm):

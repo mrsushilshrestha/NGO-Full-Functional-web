@@ -1,0 +1,44 @@
+{% extends 'cms/base.html' %}
+{% block page_title %}Chapter Management{% endblock %}
+{% block content %}
+<div class="cms-card">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <h5 class="mb-0">Chapters</h5>
+        <a href="{% url 'cms_chapter_add_crud' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i> Add Chapter</a>
+    </div>
+    <p class="text-muted small mb-3">Chapters are used to filter board members on the public team page. Deleting a chapter used by members is not allowed.</p>
+    <form method="get" class="mb-3">
+        <div class="input-group" style="max-width: 320px;">
+            <input type="text" name="q" class="form-control form-control-sm" placeholder="Search by name..." value="{{ search_q|default:'' }}">
+            <button type="submit" class="btn btn-outline-secondary btn-sm">Search</button>
+        </div>
+    </form>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Order</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in chapters %}
+                <tr>
+                    <td>{{ c.name }}</td>
+                    <td>{{ c.order }}</td>
+                    <td><span class="badge {% if c.is_active %}bg-success{% else %}bg-secondary{% endif %}">{% if c.is_active %}Active{% else %}Inactive{% endif %}</span></td>
+                    <td>
+                        <a href="{% url 'cms_chapter_edit_crud' c.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <form method="post" action="{% url 'cms_chapter_delete' c.pk %}" class="d-inline" onsubmit="return confirm('Delete this chapter? Members assigned to it must be reassigned first.');">{% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-danger">Delete</button></form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-muted">No chapters found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

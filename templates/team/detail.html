@@ -206,11 +206,11 @@
                     </div>
                     {% endif %}
 
-                    <!-- Badges -->
-                    {% if member.chapter or member.specialization %}
+                    <!-- Badges (public: location only; chapter/category are admin-only) -->
+                    {% if member.location or member.specialization %}
                     <div class="mb-4">
-                        {% if member.chapter %}
-                        <span class="badge bg-primary me-2 mb-2"><i class="fas fa-map-marker-alt me-1"></i>{{ member.chapter.name }}</span>
+                        {% if member.location %}
+                        <span class="badge bg-primary me-2 mb-2"><i class="fas fa-map-marker-alt me-1"></i>{{ member.location_display }}</span>
                         {% endif %}
                         {% if member.specialization %}
                         <span class="badge bg-light text-dark me-2 mb-2"><i class="fas fa-stethoscope me-1"></i>{{ member.specialization }}</span>

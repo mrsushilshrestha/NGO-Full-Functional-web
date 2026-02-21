@@ -21,3 +21,281 @@
     </div>
 </section>
 {% endblock %}
+
+
+
+<!-- use this design code -->
+ <!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volunteer Registration Form - Nepal</title>
+    <style>
+        :root {
+            --bg-color: #f3f3fe;
+            --card-bg: #ffffff;
+            --primary: #2e5bff;
+            --text-dark: #2c3345;
+            --border: #dcdfe6;
+        }
+
+        body {
+            font-family: "Inter", -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .form-container {
+            max-width: 750px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-radius: 12px;
+        }
+
+        h2 { border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 30px; }
+
+        .section-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin: 25px 0 15px 0;
+            display: block;
+            color: var(--primary);
+        }
+
+        .row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
+        .col { flex: 1; min-width: 200px; }
+
+        label { display: block; font-size: 0.9rem; margin-bottom: 5px; color: #555; }
+        
+        input[type="text"], input[type="email"], input[type="date"], input[type="time"], select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        .phone-input-container { display: flex; align-items: center; }
+
+        .prefix-box {
+            background: #e9ecef;
+            border: 1px solid var(--border);
+            border-right: none;
+            padding: 12px;
+            border-radius: 6px 0 0 6px;
+            font-weight: bold;
+            color: #444;
+        }
+
+        .phone-input { border-radius: 0 6px 6px 0 !important; }
+
+        .sub-label { font-size: 0.75rem; color: #888; margin-top: 4px; display: block; }
+
+        .time-box {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        .submit-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 30px;
+            transition: background 0.3s;
+        }
+
+        .submit-btn:hover { background: #1e45cc; }
+        .hidden { display: none; }
+        #success { text-align: center; padding: 50px; }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <form id="volunteerForm">
+        <h2>Volunteer Application Form</h2>
+
+        <label class="section-title">Personal Details</label>
+        <div class="row">
+            <div style="width: 100px;">
+                <select name="prefix">
+                    <option value="Mr">Mr.</option>
+                    <option value="Mrs">Mrs.</option>
+                    <option value="Ms">Ms.</option>
+                    <option value="Dr">Dr.</option>
+                </select>
+                <span class="sub-label">Prefix</span>
+            </div>
+            <div class="col">
+                <input type="text" name="firstName" required placeholder="First Name">
+            </div>
+            <div class="col">
+                <input type="text" name="lastName" required placeholder="Last Name">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <label>Birth Date</label>
+                <input type="date" name="birthDate" required>
+            </div>
+            <div class="col">
+                <label>Phone Number</label>
+                <div class="phone-input-container">
+                    <div class="prefix-box">+977</div>
+                    <input type="text" name="phone" class="phone-input" placeholder="98XXXXXXXX" required pattern="[0-9]{10}">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" name="email" placeholder="example@gmail.com" required>
+        </div>
+
+        <label class="section-title">Address Details</label>
+        <div class="row">
+            <div class="col">
+                <select id="province" name="province" required onchange="updateDistricts()">
+                    <option value="">Select Province</option>
+                    <option value="Koshi">Koshi Province</option>
+                    <option value="Madhesh">Madhesh Province</option>
+                    <option value="Bagmati">Bagmati Province</option>
+                    <option value="Gandaki">Gandaki Province</option>
+                    <option value="Lumbini">Lumbini Province</option>
+                    <option value="Karnali">Karnali Province</option>
+                    <option value="Sudurpashchim">Sudurpashchim Province</option>
+                </select>
+                <span class="sub-label">Province</span>
+            </div>
+            <div class="col">
+                <select id="district" name="district" required disabled>
+                    <option value="">Select District</option>
+                </select>
+                <span class="sub-label">District</span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <input type="text" name="municipality" placeholder="Municipality Name" required>
+                <span class="sub-label">Municipality / Rural Municipality</span>
+            </div>
+            <div style="width: 100px;">
+                <input type="text" name="ward" placeholder="0" required>
+                <span class="sub-label">Ward No.</span>
+            </div>
+            <div class="col">
+                <input type="text" name="area" placeholder="Tole/Area Name" required>
+                <span class="sub-label">Area / Tole</span>
+            </div>
+        </div>
+
+        <label class="section-title">Volunteering Interests</label>
+        <div class="form-group">
+            <label for="interests">In which areas would you like to volunteer?</label>
+            <select id="interests" name="interests" required>
+                <option value="">-- Please select an area --</option>
+                <option>Education & Teaching</option>
+                <option>Health & Medical Support</option>
+                <option>Environment & Sanitation</option>
+                <option>Disaster Relief & Management</option>
+                <option>Administrative & Data Entry</option>
+                <option>Social Media & Marketing</option>
+                <option>Community Development</option>
+                <option>Event Coordination</option>
+            </select>
+        </div>
+
+        <label style="margin-top: 15px;">Previous Volunteering Experience (if any)</label>
+        <textarea name="experience" rows="3"></textarea>
+
+        <label class="section-title">Professional Background</label>
+        <div class="row">
+            <div class="col"><input type="text" name="college" placeholder="College/School"></div>
+            <div class="col"><input type="text" name="position" placeholder="Occupation"></div>
+        </div>
+        <div class="form-group" style="margin-top:10px;">
+            <label>Upload CV (PDF/DOC)</label>
+            <input type="file" name="cv" accept=".pdf,.doc,.docx">
+        </div>
+
+        <label class="section-title">Availability</label>
+        <div class="time-box">
+            <div class="row">
+                <div class="col">
+                    <label>From</label>
+                    <input type="time" name="timeFrom">
+                </div>
+                <div class="col">
+                    <label>To</label>
+                    <input type="time" name="timeTo">
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="submit-btn">VOLUNTEER!</button>
+    </form>
+
+    <div id="success" class="hidden">
+        <h2 style="color: #10b981;">✔ Submission Successful!</h2>
+        <p>Thank you. Your data has been recorded.</p>
+        <button onclick="location.reload()" style="background:#f3f4f6; color:#333; border:none; padding:10px 20px; border-radius:5px; cursor:pointer;">Reset Form</button>
+    </div>
+</div>
+
+<script>
+    const districtData = {
+        "Koshi": ["Bhojpur", "Dhankuta", "Ilam", "Jhapa", "Khotang", "Morang", "Okhaldhunga", "Panchthar", "Sankhuwasabha", "Solukhumbu", "Sunsari", "Taplejung", "Terhathum", "Udayapur"],
+        "Madhesh": ["Bara", "Dhanusha", "Mahottari", "Parsa", "Rautahat", "Saptari", "Sarlahi", "Siraha"],
+        "Bagmati": ["Bhaktapur", "Chitwan", "Dhading", "Dolakha", "Kathmandu", "Kavrepalanchok", "Lalitpur", "Makwanpur", "Nuwakot", "Ramechhap", "Rasuwa", "Sindhuli", "Sindhupalchok"],
+        "Gandaki": ["Baglung", "Gorkha", "Kaski", "Lamjung", "Manang", "Mustang", "Myagdi", "Nawalpur", "Parbat", "Syangja", "Tanahu"],
+        "Lumbini": ["Arghakhanchi", "Banke", "Bardia", "Dang", "Gulmi", "Kapilvastu", "Parasi", "Palpa", "Pyuthan", "Rolpa", "Rukum East", "Rupandehi"],
+        "Karnali": ["Dailekh", "Dolpa", "Humla", "Jajarkot", "Jumla", "Kalikot", "Mugu", "Rukum West", "Salyan", "Surkhet"],
+        "Sudurpashchim": ["Achham", "Baitadi", "Bajhang", "Bajura", "Dadeldhura", "Darchula", "Doti", "Kailali", "Kanchanpur"]
+    };
+
+    function updateDistricts() {
+        const provinceSelect = document.getElementById('province');
+        const districtSelect = document.getElementById('district');
+        const selectedProvince = provinceSelect.value;
+
+        // Clear existing options
+        districtSelect.innerHTML = '<option value="">Select District</option>';
+
+        if (selectedProvince && districtData[selectedProvince]) {
+            districtSelect.disabled = false;
+            districtData[selectedProvince].forEach(district => {
+                let opt = document.createElement('option');
+                opt.value = district;
+                opt.innerHTML = district;
+                districtSelect.appendChild(opt);
+            });
+        } else {
+            districtSelect.disabled = true;
+        }
+    }
+
+    document.getElementById('volunteerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        this.classList.add('hidden');
+        document.getElementById('success').classList.remove('hidden');
+        window.scrollTo(0, 0);
+    });
+</script>
+
+</body>
+</html> -->

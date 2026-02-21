@@ -4,6 +4,9 @@
 {% block page_title %}{{ title }}{% endblock %}
 {% block content %}
 <div class="cms-card">
+    {% if show_chapter_location_links %}
+    <p class="text-muted small mb-3">To add a new Chapter or Location: <a href="{% url 'cms_chapter_management' %}" target="_blank">Chapters</a> · <a href="{% url 'cms_location_management' %}" target="_blank">Locations</a>. Then refresh this page to see them in the dropdowns.</p>
+    {% endif %}
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form|crispy }}

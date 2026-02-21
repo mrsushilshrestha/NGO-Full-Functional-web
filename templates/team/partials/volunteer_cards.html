@@ -1,0 +1,45 @@
+{% for member in volunteers %}
+<div class="col-12 col-md-4 volunteer-card-col" data-search="{{ member.name|lower }} {{ member.role|lower }} {{ member.member_id|lower }}">
+    <a href="{% url 'member_detail' member.pk %}" class="text-decoration-none">
+        <div class="member-card-modern">
+            {% if member.photo %}
+            <img src="{{ member.photo.url }}" alt="{{ member.name }}" class="member-card-image">
+            {% else %}
+            <div class="member-card-placeholder">{{ member.initials }}</div>
+            {% endif %}
+            <div class="member-card-overlay"></div>
+            <div class="member-card-content">
+                <div class="member-card-name">{{ member.name }}</div>
+                <div class="member-card-role">
+                    {% if member.role %}Volunteer{% if member.role != 'Volunteer' %} · {{ member.role }}{% endif %}{% else %}Volunteer{% endif %}
+                </div>
+                {% if member.member_id %}
+                <div class="member-card-id-wrap"><span class="member-card-id">{{ member.member_id }}</span></div>
+                {% endif %}
+                {% if member.location %}
+                <div class="member-card-location small text-white-50 mt-1">{{ member.location_display }}</div>
+                {% endif %}
+                <div class="member-card-social">
+                    {% if member.facebook_url %}
+                    <a href="{{ member.facebook_url }}" target="_blank" rel="noopener" class="member-social-icon" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    {% endif %}
+                    {% if member.instagram_url %}
+                    <a href="{{ member.instagram_url }}" target="_blank" rel="noopener" class="member-social-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+                    {% endif %}
+                    {% if member.linkedin_url %}
+                    <a href="{{ member.linkedin_url }}" target="_blank" rel="noopener" class="member-social-icon" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    {% endif %}
+                    {% if member.email %}
+                    <a href="mailto:{{ member.email }}" class="member-social-icon" title="Email"><i class="fas fa-envelope"></i></a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </a>
+</div>
+{% empty %}
+<div class="col-12 text-center text-muted py-5 volunteer-empty-state">
+    <i class="fas fa-users fa-3x mb-3 opacity-50"></i>
+    <p class="mb-0">No volunteers in this location.</p>
+</div>
+{% endfor %}

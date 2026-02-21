@@ -4,8 +4,27 @@ from django.urls import reverse
 
 
 class Chapter(models.Model):
-    """Chapter/Location for team members"""
+    """Chapter for board members (filter tabs on team page)"""
     name = models.CharField(max_length=200)
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order', 'name']
+
+    def __str__(self):
+        return self.name
+
+
+class Location(models.Model):
+    """Location for volunteers (filter tabs on team page). Managed in CMS."""
+    name = models.CharField(max_length=200)
+    code = models.CharField(max_length=50, unique=True, help_text='Internal code (e.g. kathmandu)')
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order', 'name']
 
     def __str__(self):
         return self.name
@@ -17,6 +36,14 @@ class Member(models.Model):
         ('board', 'Board Member'),
         ('volunteer', 'Volunteer'),
     ]
+    LOCATION_CHOICES = [
+        ('', 'Not set'),
+        ('kathmandu', 'Kathmandu'),
+        ('nepalgunj', 'Nepalgunj'),
+        ('pokhara', 'Pokhara'),
+        ('dharan', 'Dharan'),
+        ('other', 'Other'),
+    ]
     name = models.CharField(max_length=200)
     member_id = models.CharField(max_length=50, blank=True, editable=False, help_text='Auto-generated based on member type')
     role = models.CharField(max_length=200, blank=True, help_text='Optional: Specific role or position')
@@ -24,7 +51,9 @@ class Member(models.Model):
     photo = models.ImageField(upload_to='team/', blank=True, null=True)
     bio = models.TextField(blank=True)
     specialization = models.CharField(max_length=200, blank=True)
-    chapter = models.ForeignKey(Chapter, on_delete=models.SET_NULL, null=True, blank=True)
+    chapter = models.ForeignKey(Chapter, on_delete=models.SET_NULL, null=True, blank=True, help_text='Internal/admin: chapter assignment')
+    category = models.CharField(max_length=100, blank=True, help_text='Internal/admin: category for organization')
+    location = models.CharField(max_length=50, blank=True, choices=LOCATION_CHOICES, help_text='Public location for filtering (e.g. Kathmandu, Nepalgunj)')
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=50, blank=True)
     education = models.CharField(max_length=255, blank=True)
@@ -54,6 +83,14 @@ class Member(models.Model):
         if len(parts) == 1:
             return parts[0][:2].upper()
         return (parts[0][0] + parts[1][0]).upper()
+
+    @property
+    def location_display(self):
+        """Display name for location (from Location model or fallback to code)."""
+        if not self.location:
+            return ''
+        loc = Location.objects.filter(code=self.location).first()
+        return loc.name if loc else self.location
 
     def generate_member_id(self):
         """Auto-generate member ID based on member type: NHAFN-B-XXX-YYYY (Board) or NHAFN-M-XXX-YYYY (Volunteer)"""

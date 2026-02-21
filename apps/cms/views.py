@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
+from django.db.models import Q
 from django.views.decorators.http import require_GET, require_POST
 from .decorators import cms_required
 from .forms import (
@@ -9,7 +10,7 @@ from .forms import (
     ImpactStatForm, ContactInfoForm, DonationTierForm, BankDetailForm, IconConfigForm,
     NavItemForm, SiteThemeForm, SiteIdentityForm, MemberForm, ProgramForm,
     QuickResponseForm, ChatSettingsForm, CollaborationForm,
-    TeamPageSettingsForm,
+    TeamPageSettingsForm, TeamChapterForm, LocationForm,
 )
 
 # Core models
@@ -19,7 +20,7 @@ from apps.about.models import OrganizationInfo, Founder, ChapterLocation, Achiev
 # Programs
 from apps.programs.models import Program, Category
 # Team
-from apps.team.models import Member, Chapter, Collaboration, TeamPageSettings
+from apps.team.models import Member, Chapter, Location, Collaboration, TeamPageSettings
 # Impact
 from apps.impact.models import ImpactStat
 # Contact
@@ -684,7 +685,12 @@ def cms_member_edit(request, pk=None):
             return redirect('cms_member_management')
     else:
         form = MemberForm(instance=obj)
-    return render(request, 'cms/edit_form.html', {'form': form, 'title': 'Edit Member' if obj else 'Add Member', 'back_url': 'cms_member_management'})
+    return render(request, 'cms/edit_form.html', {
+        'form': form,
+        'title': 'Edit Member' if obj else 'Add Member',
+        'back_url': 'cms_member_management',
+        'show_chapter_location_links': True,
+    })
 
 
 @cms_required
@@ -749,12 +755,99 @@ def cms_collaboration_delete(request, pk):
     return redirect('cms_collaboration_management')
 
 
+# Team Chapter Management (team.Chapter – board filter)
+@cms_required
+@require_GET
+def cms_chapter_management(request):
+    chapters = Chapter.objects.all()
+    q = request.GET.get('q', '').strip()
+    if q:
+        chapters = chapters.filter(name__icontains=q)
+    return render(request, 'cms/chapter_management.html', {'chapters': chapters, 'search_q': q})
+
+
+@cms_required
+def cms_chapter_edit_crud(request, pk=None):
+    obj = get_object_or_404(Chapter, pk=pk) if pk else None
+    if request.method == 'POST':
+        form = TeamChapterForm(request.POST, instance=obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Chapter saved.')
+            return redirect('cms_chapter_management')
+    else:
+        form = TeamChapterForm(instance=obj)
+    return render(request, 'cms/edit_form.html', {
+        'form': form,
+        'title': 'Edit Chapter' if obj else 'Add Chapter',
+        'back_url': 'cms_chapter_management',
+    })
+
+
+@cms_required
+@require_POST
+def cms_chapter_delete(request, pk):
+    obj = get_object_or_404(Chapter, pk=pk)
+    used = Member.objects.filter(chapter=obj).exists()
+    if used:
+        messages.error(request, 'Cannot delete: this chapter is assigned to one or more members. Reassign or remove them first.')
+        return redirect('cms_chapter_management')
+    obj.delete()
+    messages.success(request, 'Chapter deleted.')
+    return redirect('cms_chapter_management')
+
+
+# Location Management (volunteer filter)
+@cms_required
+@require_GET
+def cms_location_management(request):
+    locations = Location.objects.all()
+    q = request.GET.get('q', '').strip()
+    if q:
+        locations = locations.filter(Q(name__icontains=q) | Q(code__icontains=q))
+    return render(request, 'cms/location_management.html', {'locations': locations, 'search_q': q})
+
+
+@cms_required
+def cms_location_edit(request, pk=None):
+    obj = get_object_or_404(Location, pk=pk) if pk else None
+    if request.method == 'POST':
+        form = LocationForm(request.POST, instance=obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Location saved.')
+            return redirect('cms_location_management')
+    else:
+        form = LocationForm(instance=obj)
+    return render(request, 'cms/edit_form.html', {
+        'form': form,
+        'title': 'Edit Location' if obj else 'Add Location',
+        'back_url': 'cms_location_management',
+    })
+
+
+@cms_required
+@require_POST
+def cms_location_delete(request, pk):
+    obj = get_object_or_404(Location, pk=pk)
+    used = Member.objects.filter(location=obj.code).exists()
+    if used:
+        messages.error(request, 'Cannot delete: this location is assigned to one or more members. Reassign them first.')
+        return redirect('cms_location_management')
+    obj.delete()
+    messages.success(request, 'Location deleted.')
+    return redirect('cms_location_management')
+
+
 # Program Management
 @cms_required
 @require_GET
 def cms_program_management(request):
     programs = Program.objects.all()
-    return render(request, 'cms/program_management.html', {'programs': programs})
+    q = request.GET.get('q', '').strip()
+    if q:
+        programs = programs.filter(Q(title__icontains=q) | Q(slug__icontains=q))
+    return render(request, 'cms/program_management.html', {'programs': programs, 'search_q': q})
 
 
 @cms_required

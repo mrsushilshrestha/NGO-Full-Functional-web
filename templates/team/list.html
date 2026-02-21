@@ -82,6 +82,93 @@
 .team-page-dark .btn-outline-primary:hover { background: #475569; border-color: #64748b; color: #fff; }
 .team-page-dark .btn-primary { background: #0d9488; border-color: #0d9488; }
 
+/* Location filter tabs – active matches nav (var(--primary)), sliding underline */
+.team-location-tabs-wrap { position: relative; margin-bottom: 0; }
+.team-location-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+    position: relative;
+}
+.team-location-tab {
+    background: none;
+    border: none;
+    padding: 0.5rem 0 0.75rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: inherit;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.25s ease;
+    opacity: 0.85;
+}
+.team-page-dark .team-location-tab { color: #94a3b8; }
+.team-location-tab:hover { opacity: 1; }
+.team-location-tab.active {
+    color: var(--primary);
+    opacity: 1;
+}
+.team-page-dark .team-location-tab.active { color: var(--primary); }
+.team-location-indicator {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: var(--primary);
+    border-radius: 2px;
+    transition: left 0.3s ease, width 0.3s ease;
+    pointer-events: none;
+    order: 9999;
+}
+.team-location-tabs-sep {
+    margin: 0;
+    border: none;
+    border-top: 1px solid rgba(0,0,0,0.08);
+}
+.team-page-dark .team-location-tabs-sep { border-top-color: rgba(255,255,255,0.1); }
+.volunteer-cards-transition { transition: opacity 0.25s ease; }
+.volunteer-cards-transition.is-loading { opacity: 0.6; pointer-events: none; }
+
+/* Top bar: search icon + Join Us */
+.team-top-actions { min-height: 2.5rem; }
+.btn-icon.btn-search-toggle {
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.08);
+    color: var(--primary);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.team-page-dark .btn-icon.btn-search-toggle { background: #334155; border-color: rgba(255,255,255,0.1); color: var(--primary); }
+.btn-icon.btn-search-toggle:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.team-search-wrap { display: inline-flex; align-items: center; }
+.team-search-expand {
+    display: none;
+    align-items: center;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.08);
+    padding: 0.25rem 0.75rem 0.25rem 1rem;
+    min-width: 200px;
+}
+.team-search-expand.is-open { display: inline-flex; }
+.team-page-dark .team-search-expand { background: #334155; border-color: rgba(255,255,255,0.1); }
+.team-search-expand input { background: transparent !important; }
+.team-search-close { margin-left: 0.25rem; }
+.team-location-tabs-sep { margin-bottom: 1rem; }
+
+@media (max-width: 767px) {
+    .team-location-tabs { gap: 0.25rem 1rem; }
+    .team-location-tab { font-size: 0.9rem; padding: 0.4rem 0 0.6rem; }
+}
+
 .team-watermark {
     position: absolute;
     inset: 0;
@@ -301,54 +388,26 @@
             <span id="team-subtitle"></span><span class="typed-cursor" id="team-cursor" aria-hidden="true"></span>
         </p>
 
-        <!-- Search, Filters, and Join Us navigation -->
-        <form method="get" class="row g-3 mb-4 align-items-end team-filters">
+        <!-- Top bar: Search (expandable) + Join Us only -->
+        <div class="d-flex flex-wrap justify-content-end align-items-center gap-2 mb-4 team-top-actions">
             {% if team_settings.show_search %}
-            <div class="col-md-4 col-lg-3">
-                <label for="search-input" class="form-label small text-muted mb-1">Search Members</label>
-                <input type="text" name="search" id="search-input" class="form-control rounded-3" placeholder="Name, role, ID..." value="{{ search }}">
-            </div>
-            {% endif %}
-            <div class="col-md-3 col-lg-2">
-                <label for="chapter-select" class="form-label small text-muted mb-1">Chapter</label>
-                <select name="chapter" id="chapter-select" class="form-select">
-                    <option value="">All Chapters</option>
-                    {% for ch in chapters %}
-                    <option value="{{ ch.id }}" {% if chapter_filter == ch.id|stringformat:"d" %}selected{% endif %}>{{ ch.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-2 col-lg-2">
-                <label class="form-label small text-muted mb-1 d-block">View</label>
-                <div class="btn-group" role="group" aria-label="View mode">
-                    <a href="?{% for k,v in request.GET.items %}{% if k != 'view' %}{{ k }}={{ v }}&{% endif %}{% endfor %}view=grid" class="btn btn-outline-primary {% if view_mode == 'grid' %}active{% endif %}">
-                        <i class="fas fa-th-large"></i>
-                    </a>
-                    <a href="?{% for k,v in request.GET.items %}{% if k != 'view' %}{{ k }}={{ v }}&{% endif %}{% endfor %}view=list" class="btn btn-outline-primary {% if view_mode == 'list' %}active{% endif %}">
-                        <i class="fas fa-list"></i>
-                    </a>
+            <div class="team-search-wrap position-relative">
+                <button type="button" class="btn btn-icon btn-search-toggle rounded-pill shadow-sm" id="team-search-toggle" aria-label="Search members" title="Search">
+                    <i class="fas fa-search"></i>
+                </button>
+                <div class="team-search-expand rounded-pill shadow-sm" id="team-search-expand" aria-hidden="true">
+                    <input type="text" class="form-control form-control-sm border-0 rounded-pill" id="team-search-input" placeholder="Search name, role, ID..." autocomplete="off">
+                    <button type="button" class="btn btn-link btn-sm p-0 text-muted team-search-close" id="team-search-close" aria-label="Close search"><i class="fas fa-times"></i></button>
                 </div>
             </div>
-            <div class="col-md-3 col-lg-5 text-md-end">
-                {% if search or chapter_filter %}
-                <a href="{% url 'team_list' %}" class="btn btn-outline-secondary me-2" title="Clear search and filters">
-                    <i class="fas fa-times me-1"></i>Clear
-                </a>
-                {% endif %}
-                {% if team_settings.show_search %}
-                <button type="submit" class="btn btn-outline-primary me-2">
-                    <i class="fas fa-search me-1"></i>Search
-                </button>
-                {% endif %}
-                <a href="#join" class="btn btn-primary">
-                    <i class="fas fa-user-plus me-1"></i>Join Us
-                </a>
-            </div>
-        </form>
+            {% endif %}
+            <a href="#join" class="btn btn-primary rounded-pill shadow-sm px-4">
+                <i class="fas fa-user-plus me-2"></i>Join Us
+            </a>
+        </div>
 
-        <!-- Board Members – three cards per row -->
-        {% if board_members %}
-        <div class="mb-5" style="margin-bottom: var(--team-section-spacing);">
+        <!-- Board Members – location tabs + AJAX cards -->
+        <div class="mb-5 board-section" style="margin-bottom: var(--team-section-spacing);">
             <h2 class="h4 mb-2">Board Members</h2>
             <hr class="team-category-line" style="
                 {% if team_settings.board_line_style == 'gradient' %}
@@ -363,58 +422,61 @@
                 margin-left: {% if team_settings.board_line_full_width %}0{% else %}auto{% endif %};
                 margin-right: {% if team_settings.board_line_full_width %}0{% else %}auto{% endif %};
             ">
-            <div class="row g-4">
-                {% for member in board_members %}
-                <div class="col-12 col-md-4">
-                    <a href="{% url 'member_detail' member.pk %}" class="text-decoration-none">
-                        <div class="member-card-modern">
-                            {% if member.photo %}
-                            <img src="{{ member.photo.url }}" alt="{{ member.name }}" class="member-card-image">
-                            {% else %}
-                            <div class="member-card-placeholder">{{ member.initials }}</div>
-                            {% endif %}
-                            <div class="member-card-overlay"></div>
-                            <div class="member-card-content">
-                                <div class="member-card-name">{{ member.name }}</div>
-                                <div class="member-card-role">
-                                    {% if member.role %}Board Member · {{ member.role }}{% else %}Board Member{% endif %}
-                                </div>
-                                {% if member.member_id %}
-                                <div class="member-card-id-wrap"><span class="member-card-id">{{ member.member_id }}</span></div>
+            <div class="team-location-tabs-wrap">
+                <nav class="team-location-tabs board-location-tabs" role="tablist" aria-label="Filter board members by chapter">
+                    <button type="button" class="team-location-tab {% if not chapter_filter %}active{% endif %}" data-chapter="" aria-selected="{% if not chapter_filter %}true{% else %}false{% endif %}">All Members</button>
+                    {% for ch in chapters %}
+                    <button type="button" class="team-location-tab {% if chapter_filter == ch.id|stringformat:'d' %}active{% endif %}" data-chapter="{{ ch.id }}" aria-selected="{% if chapter_filter == ch.id|stringformat:'d' %}true{% else %}false{% endif %}">{{ ch.name }}</button>
+                    {% endfor %}
+                    <div class="team-location-indicator" aria-hidden="true"></div>
+                </nav>
+                <hr class="team-location-tabs-sep">
+            </div>
+            <div id="board-cards-container" class="volunteer-cards-transition">
+                <div class="row g-4" id="board-cards-row">
+                    {% for member in board_members %}
+                    <div class="col-12 col-md-4 board-card-col">
+                        <a href="{% url 'member_detail' member.pk %}" class="text-decoration-none">
+                            <div class="member-card-modern">
+                                {% if member.photo %}
+                                <img src="{{ member.photo.url }}" alt="{{ member.name }}" class="member-card-image">
+                                {% else %}
+                                <div class="member-card-placeholder">{{ member.initials }}</div>
                                 {% endif %}
-                                <div class="member-card-social">
-                                {% if member.facebook_url %}
-                                <a href="{{ member.facebook_url }}" target="_blank" rel="noopener" class="member-social-icon" title="Facebook">
-                                    <i class="fab fa-facebook-f"></i>
-                                </a>
-                                {% endif %}
-                                {% if member.instagram_url %}
-                                <a href="{{ member.instagram_url }}" target="_blank" rel="noopener" class="member-social-icon" title="Instagram">
-                                    <i class="fab fa-instagram"></i>
-                                </a>
-                                {% endif %}
-                                {% if member.linkedin_url %}
-                                <a href="{{ member.linkedin_url }}" target="_blank" rel="noopener" class="member-social-icon" title="LinkedIn">
-                                    <i class="fab fa-linkedin-in"></i>
-                                </a>
-                                {% endif %}
-                                {% if member.email %}
-                                <a href="mailto:{{ member.email }}" class="member-social-icon" title="Email">
-                                    <i class="fas fa-envelope"></i>
-                                </a>
-                                {% endif %}
+                                <div class="member-card-overlay"></div>
+                                <div class="member-card-content">
+                                    <div class="member-card-name">{{ member.name }}</div>
+                                    <div class="member-card-role">
+                                        {% if member.role %}Board Member · {{ member.role }}{% else %}Board Member{% endif %}
+                                    </div>
+                                    {% if member.member_id %}
+                                    <div class="member-card-id-wrap"><span class="member-card-id">{{ member.member_id }}</span></div>
+                                    {% endif %}
+                                    {% if member.location %}
+                                    <div class="member-card-location small text-white-50 mt-1">{{ member.location_display }}</div>
+                                    {% endif %}
+                                    <div class="member-card-social">
+                                        {% if member.facebook_url %}<a href="{{ member.facebook_url }}" target="_blank" rel="noopener" class="member-social-icon" title="Facebook"><i class="fab fa-facebook-f"></i></a>{% endif %}
+                                        {% if member.instagram_url %}<a href="{{ member.instagram_url }}" target="_blank" rel="noopener" class="member-social-icon" title="Instagram"><i class="fab fa-instagram"></i></a>{% endif %}
+                                        {% if member.linkedin_url %}<a href="{{ member.linkedin_url }}" target="_blank" rel="noopener" class="member-social-icon" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>{% endif %}
+                                        {% if member.email %}<a href="mailto:{{ member.email }}" class="member-social-icon" title="Email"><i class="fas fa-envelope"></i></a>{% endif %}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </a>
+                        </a>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center text-muted py-5">
+                        <i class="fas fa-user-tie fa-3x mb-3 opacity-50"></i>
+                        <p class="mb-0">No board members.</p>
+                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
             </div>
         </div>
-        {% endif %}
 
         <!-- Volunteers – three cards per row -->
-        <div class="{% if board_members %}mt-5{% endif %}" style="margin-top: var(--team-section-spacing);">
+        <div class="{% if board_members %}mt-5{% endif %} volunteer-section" style="margin-top: var(--team-section-spacing);">
             <h2 class="h4 mb-2">Volunteers</h2>
             <hr class="team-category-line" style="
                 {% if team_settings.volunteer_line_style == 'gradient' %}
@@ -429,7 +491,18 @@
                 margin-left: {% if team_settings.volunteer_line_full_width %}0{% else %}auto{% endif %};
                 margin-right: {% if team_settings.volunteer_line_full_width %}0{% else %}auto{% endif %};
             ">
-            <div class="row g-4">
+            <div class="team-location-tabs-wrap">
+                <nav class="team-location-tabs volunteer-location-tabs" role="tablist" aria-label="Filter volunteers by location">
+                    <button type="button" class="team-location-tab {% if not location_filter %}active{% endif %}" data-location="" aria-selected="{% if not location_filter %}true{% else %}false{% endif %}">All Volunteers</button>
+                    {% for loc_key, loc_label in location_choices %}
+                    <button type="button" class="team-location-tab {% if location_filter == loc_key %}active{% endif %}" data-location="{{ loc_key }}" aria-selected="{% if location_filter == loc_key %}true{% else %}false{% endif %}">{{ loc_label }}</button>
+                    {% endfor %}
+                    <div class="team-location-indicator" aria-hidden="true"></div>
+                </nav>
+                <hr class="team-location-tabs-sep">
+            </div>
+            <div id="volunteer-cards-container" class="volunteer-cards-transition">
+                <div class="row g-4" id="volunteer-cards-row">
                 {% for member in volunteer_page_obj %}
                 <div class="col-12 col-md-4">
                     <a href="{% url 'member_detail' member.pk %}" class="text-decoration-none">
@@ -480,11 +553,12 @@
                     <p>No volunteers found.</p>
                 </div>
                 {% endfor %}
+                </div>
             </div>
         </div>
 
         {% if volunteer_page_obj.paginator.num_pages > 1 %}
-        <nav aria-label="Volunteers pagination" class="mt-4">
+        <nav id="volunteer-pagination-nav" aria-label="Volunteers pagination" class="mt-4">
             <ul class="pagination justify-content-center">
                 {% if volunteer_page_obj.has_previous %}
                 <li class="page-item">
@@ -639,12 +713,157 @@
         runSequence();
     }
 
-    // Auto-submit on chapter dropdown change
-    var chapterSelect = document.getElementById('chapter-select');
-    const filterForm = document.querySelector('form[method="get"]');
-    if (chapterSelect && filterForm) {
-        chapterSelect.addEventListener('change', function() {
-            filterForm.submit();
+    // Board = chapter tabs; Volunteers = location tabs; sliding indicator per section
+    var boardFilterUrl = "{% url 'team_board_filter' %}";
+    var volunteerFilterUrl = "{% url 'team_volunteer_filter' %}";
+    var currentBoardChapter = "{{ chapter_filter|escapejs }}";
+    var currentVolunteerLocation = "{{ location_filter|escapejs }}";
+    var searchQuery = '';
+
+    function setIndicatorPosition(indicator, tab) {
+        if (!indicator || !tab) return;
+        var nav = indicator.closest('.team-location-tabs');
+        if (!nav) return;
+        var navRect = nav.getBoundingClientRect();
+        var tabRect = tab.getBoundingClientRect();
+        indicator.style.left = (tabRect.left - navRect.left) + 'px';
+        indicator.style.width = tabRect.width + 'px';
+    }
+
+    function setupBoardTabs() {
+        var nav = document.querySelector('.board-location-tabs');
+        if (!nav) return;
+        var tabs = nav.querySelectorAll('.team-location-tab');
+        var indicator = nav.querySelector('.team-location-indicator');
+        var row = document.getElementById('board-cards-row');
+        var container = document.getElementById('board-cards-container');
+
+        function setActive(activeTab) {
+            tabs.forEach(function(t) { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+            if (activeTab) { activeTab.classList.add('active'); activeTab.setAttribute('aria-selected', 'true'); setIndicatorPosition(indicator, activeTab); }
+        }
+        var activeTab = nav.querySelector('.team-location-tab.active');
+        if (activeTab && indicator) setIndicatorPosition(indicator, activeTab);
+
+        tabs.forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                if (tab.classList.contains('active')) return;
+                setActive(tab);
+                currentBoardChapter = tab.getAttribute('data-chapter') || '';
+                if (container) container.classList.add('is-loading');
+                var params = new URLSearchParams();
+                if (currentBoardChapter) params.set('chapter', currentBoardChapter);
+                if (searchQuery) params.set('search', searchQuery);
+                var url = boardFilterUrl + (params.toString() ? '?' + params.toString() : '');
+                fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(function(r) { return r.text(); })
+                    .then(function(html) { row.innerHTML = html; if (container) container.classList.remove('is-loading'); })
+                    .catch(function() { if (container) container.classList.remove('is-loading'); });
+            });
+        });
+        window.addEventListener('resize', function() {
+            var active = nav.querySelector('.team-location-tab.active');
+            if (active && indicator) setIndicatorPosition(indicator, active);
+        });
+    }
+
+    function setupVolunteerTabs() {
+        var nav = document.querySelector('.volunteer-location-tabs');
+        if (!nav) return;
+        var tabs = nav.querySelectorAll('.team-location-tab');
+        var indicator = nav.querySelector('.team-location-indicator');
+        var row = document.getElementById('volunteer-cards-row');
+        var container = document.getElementById('volunteer-cards-container');
+        var paginationNav = document.getElementById('volunteer-pagination-nav');
+
+        function setActive(activeTab) {
+            tabs.forEach(function(t) { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+            if (activeTab) { activeTab.classList.add('active'); activeTab.setAttribute('aria-selected', 'true'); setIndicatorPosition(indicator, activeTab); }
+        }
+        var activeTab = nav.querySelector('.team-location-tab.active');
+        if (activeTab && indicator) setIndicatorPosition(indicator, activeTab);
+
+        tabs.forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                if (tab.classList.contains('active')) return;
+                setActive(tab);
+                currentVolunteerLocation = tab.getAttribute('data-location') || '';
+                if (container) container.classList.add('is-loading');
+                if (paginationNav) paginationNav.style.display = 'none';
+                var params = new URLSearchParams();
+                if (currentVolunteerLocation) params.set('location', currentVolunteerLocation);
+                if (searchQuery) params.set('search', searchQuery);
+                var url = volunteerFilterUrl + (params.toString() ? '?' + params.toString() : '');
+                fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(function(r) { return r.text(); })
+                    .then(function(html) { row.innerHTML = html; if (container) container.classList.remove('is-loading'); })
+                    .catch(function() { if (container) container.classList.remove('is-loading'); });
+            });
+        });
+        window.addEventListener('resize', function() {
+            var active = nav.querySelector('.team-location-tab.active');
+            if (active && indicator) setIndicatorPosition(indicator, active);
+        });
+    }
+
+    setupBoardTabs();
+    setupVolunteerTabs();
+
+    function fetchBothSections() {
+        var boardRow = document.getElementById('board-cards-row');
+        var volunteerRow = document.getElementById('volunteer-cards-row');
+        var boardContainer = document.getElementById('board-cards-container');
+        var volunteerContainer = document.getElementById('volunteer-cards-container');
+        var paginationNav = document.getElementById('volunteer-pagination-nav');
+        if (!boardRow || !volunteerRow) return;
+        if (boardContainer) boardContainer.classList.add('is-loading');
+        if (volunteerContainer) volunteerContainer.classList.add('is-loading');
+        if (paginationNav) paginationNav.style.display = 'none';
+
+        var boardParams = new URLSearchParams();
+        if (currentBoardChapter) boardParams.set('chapter', currentBoardChapter);
+        if (searchQuery) boardParams.set('search', searchQuery);
+        var volParams = new URLSearchParams();
+        if (currentVolunteerLocation) volParams.set('location', currentVolunteerLocation);
+        if (searchQuery) volParams.set('search', searchQuery);
+
+        Promise.all([
+            fetch(boardFilterUrl + (boardParams.toString() ? '?' + boardParams.toString() : ''), { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(function(r) { return r.text(); }),
+            fetch(volunteerFilterUrl + (volParams.toString() ? '?' + volParams.toString() : ''), { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(function(r) { return r.text(); })
+        ]).then(function(htmls) {
+            boardRow.innerHTML = htmls[0];
+            volunteerRow.innerHTML = htmls[1];
+            if (boardContainer) boardContainer.classList.remove('is-loading');
+            if (volunteerContainer) volunteerContainer.classList.remove('is-loading');
+        }).catch(function() {
+            if (boardContainer) boardContainer.classList.remove('is-loading');
+            if (volunteerContainer) volunteerContainer.classList.remove('is-loading');
+        });
+    }
+
+    var searchDebounce;
+    var searchInput = document.getElementById('team-search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            searchQuery = this.value.trim();
+            clearTimeout(searchDebounce);
+            searchDebounce = setTimeout(fetchBothSections, 280);
+        });
+    }
+
+    var searchToggle = document.getElementById('team-search-toggle');
+    var searchExpand = document.getElementById('team-search-expand');
+    var searchClose = document.getElementById('team-search-close');
+    if (searchToggle && searchExpand) {
+        searchToggle.addEventListener('click', function() {
+            searchExpand.classList.add('is-open');
+            searchExpand.setAttribute('aria-hidden', 'false');
+            searchInput && searchInput.focus();
+        });
+    }
+    if (searchClose && searchExpand) {
+        searchClose.addEventListener('click', function() {
+            searchExpand.classList.remove('is-open');
+            searchExpand.setAttribute('aria-hidden', 'true');
+            if (searchInput) { searchInput.value = ''; searchQuery = ''; fetchBothSections(); }
         });
     }
 })();
