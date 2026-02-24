@@ -1,0 +1,366 @@
+{% extends 'base.html' %}
+{% block title %}Volunteer Application{% endblock %}
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* Volunteer form page: simple and focused (no Join Us card) */
+.vol-apply-root {
+    --vol-bg: var(--bg-warm, #f5f2ed);
+    --vol-card: var(--white, #ffffff);
+    --vol-primary: var(--primary, #0B5345);
+    --vol-primary-light: var(--primary-light, #148f77);
+    --vol-text: var(--text-dark, #2c3e2c);
+    --vol-text-muted: var(--text-muted, #5d6d5d);
+    --vol-border: var(--border-soft, #e8e4df);
+    font-family: "Inter", "DM Sans", "Plus Jakarta Sans", -apple-system, sans-serif;
+    background: var(--vol-bg);
+    color: var(--vol-text);
+    padding: 24px 20px 48px;
+}
+.join-us-back-nav {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--vol-primary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+    padding: 0.5rem 0;
+    transition: color 0.2s, gap 0.2s;
+}
+.join-us-back-nav:hover {
+    color: var(--vol-primary-light);
+    gap: 0.65rem;
+}
+.join-us-back-nav i { font-size: 0.85rem; transition: transform 0.2s; }
+.join-us-back-nav:hover i { transform: translateX(-2px); }
+.vol-form-section {
+    max-width: 720px;
+    margin: 0 auto;
+    background: var(--vol-card);
+    padding: 2.5rem;
+    border-radius: 20px;
+    border: 1px solid var(--vol-border);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+.vol-form-section h2 {
+    border-bottom: 2px solid var(--vol-primary);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--vol-text);
+    font-size: 1.5rem;
+}
+.vol-section-title {
+    font-weight: 700;
+    font-size: 1rem;
+    margin: 1.5rem 0 0.75rem 0;
+    display: block;
+    color: var(--vol-primary);
+}
+.vol-section-title:first-of-type { margin-top: 0; }
+.vol-row { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.vol-col { flex: 1; min-width: 200px; }
+.vol-form-section label {
+    display: block;
+    font-size: 0.9rem;
+    margin-bottom: 0.35rem;
+    color: var(--vol-text-muted);
+    font-weight: 500;
+}
+.vol-form-section input[type="text"],
+.vol-form-section input[type="email"],
+.vol-form-section input[type="url"],
+.vol-form-section input[type="file"],
+.vol-form-section select,
+.vol-form-section textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--vol-border);
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 1rem;
+    background: var(--vol-card);
+    color: var(--vol-text);
+}
+.vol-form-section input::placeholder,
+.vol-form-section textarea::placeholder {
+    color: var(--vol-text-muted);
+    opacity: 0.9;
+}
+.vol-form-section input[type="file"] { padding: 0.5rem; font-size: 0.9rem; }
+.vol-phone-wrap { display: flex; align-items: center; }
+.vol-prefix-box {
+    background: var(--vol-border);
+    border: 1px solid var(--vol-border);
+    border-right: none;
+    padding: 0.75rem 1rem;
+    border-radius: 8px 0 0 8px;
+    font-weight: 600;
+    color: var(--vol-text-muted);
+}
+.vol-phone-input { border-radius: 0 8px 8px 0 !important; }
+.vol-sub-label { font-size: 0.75rem; color: var(--vol-text-muted); margin-top: 0.25rem; }
+.vol-submit-btn {
+    background: var(--vol-primary);
+    color: white !important;
+    border: none;
+    padding: 1rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    border-radius: 10px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 1.5rem;
+    transition: background 0.2s, transform 0.1s;
+}
+.vol-submit-btn:hover {
+    background: var(--vol-primary-light);
+    transform: translateY(-1px);
+}
+.vol-err { color: #dc3545; font-size: 0.875rem; margin-top: 0.25rem; }
+.vol-errors-summary {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    list-style: none;
+}
+.vol-errors-summary ul { margin: 0; padding-left: 0; }
+.vol-errors-summary li { margin: 0.25rem 0; }
+/* Back to Team at bottom */
+.join-us-back-bottom {
+    text-align: center;
+    margin-top: 2rem;
+}
+.join-us-back-bottom a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--vol-primary);
+    font-weight: 600;
+    text-decoration: none;
+    padding: 0.6rem 1.2rem;
+    border: 2px solid var(--vol-primary);
+    border-radius: 10px;
+    transition: all 0.2s;
+}
+.join-us-back-bottom a:hover {
+    background: var(--vol-primary);
+    color: #fff !important;
+}
+@media (max-width: 768px) {
+    .vol-form-section { padding: 1.5rem; }
+    .vol-row { flex-direction: column; }
+    .vol-col { min-width: 100%; }
+}
+/* Dark mode */
+[data-theme="dark"] .vol-apply-root,
+.dark-mode .vol-apply-root {
+    --vol-bg: var(--bg-cream, #1e293b);
+    --vol-card: var(--white, var(--dark_card_bg, #334155));
+    --vol-text: var(--text-dark, #e2e8f0);
+    --vol-text-muted: rgba(255,255,255,0.7);
+    --vol-border: #475569;
+}
+[data-theme="dark"] .vol-form-section input,
+[data-theme="dark"] .vol-form-section select,
+[data-theme="dark"] .vol-form-section textarea,
+.dark-mode .vol-form-section input,
+.dark-mode .vol-form-section select,
+.dark-mode .vol-form-section textarea {
+    background: var(--vol-card);
+    color: var(--vol-text);
+    border-color: var(--vol-border);
+}
+[data-theme="dark"] .vol-errors-summary,
+.dark-mode .vol-errors-summary {
+    background: rgba(220, 53, 69, 0.2);
+    border-color: rgba(220, 53, 69, 0.5);
+    color: #f8d7da;
+}
+</style>
+{% endblock %}
+{% block content %}
+<section class="vol-apply-root" aria-label="Volunteer application">
+    <div class="container">
+        <a href="{% url 'team_list' %}" class="join-us-back-nav" aria-label="Back to Team page">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Team</span>
+        </a>
+
+        <div class="vol-form-section">
+            <h2>Volunteer Application Form</h2>
+            <form method="post" enctype="multipart/form-data" id="volunteerForm" novalidate>
+                {% csrf_token %}
+                {% if form.errors %}
+                <div class="vol-errors-summary" role="alert">
+                    <strong>Please fix the following and try again.</strong>
+                    <ul>
+                        {% for err in form.non_field_errors %}<li>{{ err }}</li>{% endfor %}
+                        {% for field in form %}
+                            {% for error in field.errors %}<li><strong>{{ field.label }}:</strong> {{ error }}</li>{% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                <span class="vol-section-title">Personal Details</span>
+                <div class="vol-row">
+                    <div class="vol-col">
+                        <label for="id_name">Full Name <span aria-hidden="true">*</span></label>
+                        <input type="text" name="name" id="id_name" value="{{ form.name.value|default:'' }}" required placeholder="Your full name" aria-required="true">
+                        {% if form.name.errors %}<div class="vol-err" role="alert">{{ form.name.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="vol-row">
+                    <div class="vol-col">
+                        <label for="id_contact_number">Phone Number <span aria-hidden="true">*</span></label>
+                        <div class="vol-phone-wrap">
+                            <div class="vol-prefix-box" aria-hidden="true">+977</div>
+                            <input type="text" name="contact_number" id="id_contact_number" class="vol-phone-input" placeholder="98XXXXXXXX" required pattern="[0-9]{10}" maxlength="10" value="{{ form.contact_number.value|default:'' }}" aria-describedby="phone-hint" aria-required="true">
+                        </div>
+                        <span class="vol-sub-label" id="phone-hint">10 digits without +977</span>
+                        {% if form.contact_number.errors %}<div class="vol-err" role="alert">{{ form.contact_number.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="vol-col">
+                        <label for="id_email">Email <span aria-hidden="true">*</span></label>
+                        <input type="email" name="email" id="id_email" value="{{ form.email.value|default:'' }}" required placeholder="example@gmail.com" aria-required="true">
+                        {% if form.email.errors %}<div class="vol-err" role="alert">{{ form.email.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+                <span class="vol-section-title">Address Details</span>
+                <div class="vol-row">
+                    <div class="vol-col">
+                        <label for="id_province">Province <span aria-hidden="true">*</span></label>
+                        <select id="id_province" required aria-required="true" aria-describedby="district-hint">
+                            <option value="">Select Province</option>
+                            {% for p in provinces %}
+                            <option value="{{ p.id }}" {% if selected_province_id == p.id %}selected{% endif %}>{{ p.name }} Province</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="vol-col">
+                        <label for="id_district">District <span aria-hidden="true">*</span></label>
+                        <select name="district" id="id_district" required aria-required="true" aria-describedby="district-hint">
+                            <option value="">Select District</option>
+                        </select>
+                        <span class="vol-sub-label" id="district-hint">Select province first, then choose district</span>
+                        {% if form.district.errors %}<div class="vol-err" role="alert">{{ form.district.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="vol-row">
+                    <div class="vol-col">
+                        <label for="id_municipality">Municipality / Rural</label>
+                        <input type="text" name="municipality" id="id_municipality" value="{{ form.municipality.value|default:'' }}" placeholder="Municipality Name">
+                        {% if form.municipality.errors %}<div class="vol-err" role="alert">{{ form.municipality.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div style="min-width: 100px;">
+                        <label for="id_ward">Ward No.</label>
+                        <input type="text" name="ward" id="id_ward" value="{{ form.ward.value|default:'' }}" placeholder="0">
+                    </div>
+                    <div class="vol-col">
+                        <label for="id_area">Area / Tole</label>
+                        <input type="text" name="area" id="id_area" value="{{ form.area.value|default:'' }}" placeholder="Tole/Area Name">
+                    </div>
+                </div>
+                <span class="vol-section-title">Volunteering</span>
+                <div class="vol-row">
+                    <div class="vol-col">
+                        <label for="id_volunteering_interest">In which areas would you like to volunteer?</label>
+                        {{ form.volunteering_interest }}
+                        {% if form.volunteering_interest.errors %}<div class="vol-err" role="alert">{{ form.volunteering_interest.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="vol-row">
+                    <div class="vol-col">
+                        <label for="id_past_experience">Previous Volunteering Experience (if any)</label>
+                        <textarea name="past_experience" id="id_past_experience" rows="3" placeholder="Describe any past volunteer work">{{ form.past_experience.value|default:'' }}</textarea>
+                    </div>
+                </div>
+                <div class="vol-row">
+                    <div class="vol-col">
+                        <label for="id_availability">Availability</label>
+                        <input type="text" name="availability" id="id_availability" value="{{ form.availability.value|default:'' }}" placeholder="e.g. Weekends, 2-4 hours/week">
+                    </div>
+                </div>
+                <span class="vol-section-title">Social media (optional)</span>
+                <p class="vol-sub-label mb-2">These links can be shown on your profile after approval.</p>
+                <div class="vol-row">
+                    <div class="vol-col">
+                        <label for="id_facebook_url">Facebook</label>
+                        <input type="url" name="facebook_url" id="id_facebook_url" value="{{ form.facebook_url.value|default:'' }}" placeholder="https://facebook.com/...">
+                        {% if form.facebook_url.errors %}<div class="vol-err" role="alert">{{ form.facebook_url.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="vol-col">
+                        <label for="id_linkedin_url">LinkedIn</label>
+                        <input type="url" name="linkedin_url" id="id_linkedin_url" value="{{ form.linkedin_url.value|default:'' }}" placeholder="https://linkedin.com/in/...">
+                        {% if form.linkedin_url.errors %}<div class="vol-err" role="alert">{{ form.linkedin_url.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="vol-row">
+                    <div class="vol-col">
+                        <label for="id_twitter_url">Twitter / X</label>
+                        <input type="url" name="twitter_url" id="id_twitter_url" value="{{ form.twitter_url.value|default:'' }}" placeholder="https://twitter.com/... or https://x.com/...">
+                        {% if form.twitter_url.errors %}<div class="vol-err" role="alert">{{ form.twitter_url.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="vol-col">
+                        <label for="id_instagram_url">Instagram</label>
+                        <input type="url" name="instagram_url" id="id_instagram_url" value="{{ form.instagram_url.value|default:'' }}" placeholder="https://instagram.com/...">
+                        {% if form.instagram_url.errors %}<div class="vol-err" role="alert">{{ form.instagram_url.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+                <span class="vol-section-title">Documents</span>
+                <div class="vol-row">
+                    <div class="vol-col">
+                        <label for="id_profile_image">Profile Photo (optional, max 200 KB)</label>
+                        <input type="file" name="profile_image" id="id_profile_image" accept="image/*" aria-describedby="profile-hint">
+                        <span class="vol-sub-label" id="profile-hint">Accepted: JPG, PNG, GIF. Max 200 KB.</span>
+                        {% if form.profile_image.errors %}<div class="vol-err" role="alert">{{ form.profile_image.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="vol-col">
+                        <label for="id_cv_file">CV / Resume (optional)</label>
+                        <input type="file" name="cv_file" id="id_cv_file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" aria-describedby="cv-hint">
+                        <span class="vol-sub-label" id="cv-hint">PDF or DOC/DOCX. Max 5 MB.</span>
+                        {% if form.cv_file.errors %}<div class="vol-err" role="alert">{{ form.cv_file.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+                <button type="submit" class="vol-submit-btn">Submit Application</button>
+            </form>
+        </div>
+
+        <div class="join-us-back-bottom">
+            <a href="{% url 'team_list' %}"><i class="fas fa-arrow-left"></i> Back to Team</a>
+        </div>
+    </div>
+</section>
+<script>
+(function() {
+    var districtsByProvince = {{ districts_json|safe }};
+    var provinceSelect = document.getElementById('id_province');
+    var districtSelect = document.getElementById('id_district');
+    var selectedProvinceId = '{{ selected_province_id|default:"" }}';
+    var selectedDistrictId = '{{ selected_district_id|default:"" }}';
+    function populateDistricts(pid) {
+        districtSelect.innerHTML = '<option value="">Select District</option>';
+        if (pid && districtsByProvince[pid]) {
+            districtsByProvince[pid].forEach(function(d) {
+                var opt = document.createElement('option');
+                opt.value = d.id;
+                opt.textContent = d.name;
+                if (selectedDistrictId && String(d.id) === String(selectedDistrictId)) opt.selected = true;
+                districtSelect.appendChild(opt);
+            });
+        }
+    }
+    if (provinceSelect && districtSelect) {
+        provinceSelect.addEventListener('change', function() { populateDistricts(this.value); });
+        if (selectedProvinceId) {
+            provinceSelect.value = selectedProvinceId;
+            populateDistricts(selectedProvinceId);
+        }
+    }
+})();
+</script>
+{% endblock %}

@@ -1,50 +1,83 @@
 {% extends 'base.html' %}
-{% load crispy_forms_tags %}
+{% load static %}
+<!-- Dynamic data from backend: form, info (from contact.views) -->
 
 {% block title %}Contact Us{% endblock %}
 
 {% block content %}
-<section class="py-5" style="background: var(--bg-warm);">
-    <div class="container">
-        <h1 class="section-title mb-2">Contact Us</h1>
-        <p class="section-subtitle mb-4">Get in touch with our team. We'd love to hear from you.</p>
-        <div class="row">
-            <div class="col-lg-5 mb-4">
-                <div class="card card-elevated mb-4">
-                    <div class="card-body">
-                        <h5><i class="fas fa-map-marker-alt me-2" style="color: #0B5345;"></i>Address</h5>
-                        <p class="mb-4">{% if info %}{{ info.address }}{% else %}New Baneshwor, Kathmandu, Nepal{% endif %}</p>
-                        <h5><i class="fas fa-phone me-2" style="color: #0B5345;"></i>Phone</h5>
-                        <p class="mb-4">{% if info %}{{ info.phone }}{% else %}+977 1-XXXXXXX{% endif %}</p>
-                        <h5><i class="fas fa-envelope me-2" style="color: #0B5345;"></i>Email</h5>
-                        <p class="mb-4">{% if info %}{{ info.email }}{% else %}info@nhafn.org.np{% endif %}</p>
-                        {% if info and info.office_hours %}
-                        <h5><i class="fas fa-clock me-2" style="color: #0B5345;"></i>Office Hours</h5>
-                        <p>{{ info.office_hours }}</p>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="ratio ratio-16x9">
-                    {% if info and info.map_embed %}
-                    {{ info.map_embed|safe }}
-                    {% else %}
-                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3532.464262732685!2d85.3373!3d27.6974!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb19c5e0e0e001%3A0x10e8bf8e3e9b8b8b8!2sNew%20Baneshwor%2C%20Kathmandu!5e0!3m2!1sen!2snp!4v1234567890" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
-                    {% endif %}
-                </div>
-            </div>
-            <div class="col-lg-7">
-                <div class="card card-elevated">
-                    <div class="card-body p-4">
-                        <h5 class="mb-4">Send us a message</h5>
-                        <form method="post">
-                            {% csrf_token %}
-                            {{ form|crispy }}
-                            <button type="submit" class="btn btn-primary">Send Message</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="hero-wrap" style="background-image: url('{% static 'css/images/bg_2.jpg' %}');" data-stellar-background-ratio="0.5">
+  <div class="overlay"></div>
+  <div class="container">
+    <div class="row no-gutters slider-text align-items-center justify-content-center" data-scrollax-parent="true">
+      <div class="col-md-7 ftco-animate text-center" data-scrollax=" properties: { translateY: '70%' }">
+        <p class="breadcrumbs" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }">
+          <!-- Connected to Home page -->
+          <span class="mr-2"><a href="{% url 'home' %}">Home</a></span>
+          <span>Contact</span>
+        </p>
+        <h1 class="mb-3 bread" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }">Contact Us</h1>
+      </div>
     </div>
+  </div>
+</div>
+
+<section class="ftco-section contact-section ftco-degree-bg">
+  <div class="container">
+    <div class="row d-flex mb-5 contact-info">
+      <div class="col-md-12 mb-4">
+        <h2 class="h4">Contact Information</h2>
+      </div>
+      <div class="w-100"></div>
+      <div class="col-md-3">
+        <p><span>Address:</span> {% if info and info.address %}{{ info.address }}{% else %}New Baneshwor, Kathmandu, Nepal{% endif %}</p>
+      </div>
+      <div class="col-md-3">
+        <p><span>Phone:</span> {% if info and info.phone %}<a href="tel:{{ info.phone }}">{{ info.phone }}</a>{% else %}<a href="tel:+9771234567">+977 1-XXXXXXX</a>{% endif %}</p>
+      </div>
+      <div class="col-md-3">
+        <p><span>Email:</span> <a href="mailto:{% if info and info.email %}{{ info.email }}{% else %}info@nhafn.org.np{% endif %}">{% if info and info.email %}{{ info.email }}{% else %}info@nhafn.org.np{% endif %}</a></p>
+      </div>
+      {% if info and info.office_hours %}
+      <div class="col-md-3">
+        <p><span>Office Hours:</span> {{ info.office_hours }}</p>
+      </div>
+      {% endif %}
+    </div>
+    <div class="row block-9">
+      <div class="col-md-6 pr-md-5">
+        <h4 class="mb-4">Do you have any questions?</h4>
+        <form method="post" action="">
+          {% csrf_token %}
+          <div class="form-group">
+            <input type="text" name="name" class="form-control" placeholder="Your Name" required maxlength="200" value="{{ form.name.value|default:'' }}">
+            {% if form.name.errors %}<p class="text-danger small">{{ form.name.errors.0 }}</p>{% endif %}
+          </div>
+          <div class="form-group">
+            <input type="email" name="email" class="form-control" placeholder="Your Email" required value="{{ form.email.value|default:'' }}">
+            {% if form.email.errors %}<p class="text-danger small">{{ form.email.errors.0 }}</p>{% endif %}
+          </div>
+          <div class="form-group">
+            <input type="text" name="subject" class="form-control" placeholder="Subject" maxlength="200" value="{{ form.subject.value|default:'' }}">
+            {% if form.subject.errors %}<p class="text-danger small">{{ form.subject.errors.0 }}</p>{% endif %}
+          </div>
+          <div class="form-group">
+            <textarea name="message" cols="30" rows="7" class="form-control" placeholder="Message" required>{{ form.message.value|default:'' }}</textarea>
+            {% if form.message.errors %}<p class="text-danger small">{{ form.message.errors.0 }}</p>{% endif %}
+          </div>
+          <div class="form-group">
+            <input type="submit" value="Send Message" class="btn btn-primary py-3 px-5">
+          </div>
+        </form>
+      </div>
+
+      <div class="col-md-6" id="map">
+        {% if info and info.map_embed %}
+        <div style="min-height: 400px; overflow: hidden;">{{ info.map_embed|safe }}</div>
+        {% else %}
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3532.464262732685!2d85.3373!3d27.6974!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb19c5e0e0e001%3A0x10e8bf8e3e9b8b8b8!2sNew%20Baneshwor%2C%20Kathmandu!5e0!3m2!1sen!2snp!4v1234567890" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 </section>
 {% endblock %}

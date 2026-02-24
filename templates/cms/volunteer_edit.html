@@ -1,0 +1,17 @@
+{% extends 'cms/base.html' %}
+{% load static crispy_forms_tags %}
+{% block title %}Edit Volunteer Application{% endblock %}
+{% block page_title %}Edit Volunteer Application — {{ volunteer.name }}{% endblock %}
+{% block content %}
+<div class="cms-card">
+    <p class="text-muted mb-3">Update application details. Use the Approval page to approve or reject.</p>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">Save changes</button>
+            <a href="{% url 'cms_members' %}" class="btn btn-outline-secondary">Back to applications</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

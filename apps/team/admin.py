@@ -29,7 +29,7 @@ class MemberAdmin(admin.ModelAdmin):
             'fields': ('location',)
         }),
         ('Contact Information', {
-            'fields': ('email', 'phone', 'facebook_url', 'instagram_url', 'linkedin_url')
+            'fields': ('email', 'phone', 'facebook_url', 'instagram_url', 'linkedin_url', 'twitter_url')
         }),
         ('Internal / Admin only', {
             'fields': ('chapter', 'category', 'education', 'join_year', 'date_of_issue', 'order', 'is_active'),

@@ -1,0 +1,32 @@
+{% extends 'cms/base.html' %}
+{% block page_title %}Blog Authors{% endblock %}
+{% block content %}
+<div class="cms-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">Authors</h5>
+        <a href="{% url 'cms_blog_author_add' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i> Add Author</a>
+    </div>
+    <p class="text-muted small mb-3">Authors can be assigned to blog posts. Set name, role, and avatar.</p>
+    <div class="table-responsive">
+        <table class="table">
+            <thead><tr><th>Avatar</th><th>Name</th><th>Role</th><th>Actions</th></tr></thead>
+            <tbody>
+                {% for a in authors %}
+                <tr>
+                    <td>{% if a.avatar %}<img src="{{ a.avatar.url }}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 50%;">{% else %}-{% endif %}</td>
+                    <td>{{ a.name }}</td>
+                    <td>{{ a.role|default:"-" }}</td>
+                    <td>
+                        <a href="{% url 'cms_blog_author_edit' a.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <form method="post" action="{% url 'cms_blog_author_delete' a.pk %}" class="d-inline" onsubmit="return confirm('Delete this author?');">{% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-danger">Delete</button></form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-muted">No authors. <a href="{% url 'cms_blog_author_add' %}">Add one</a></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <a href="{% url 'cms_blog' %}" class="btn btn-outline-secondary btn-sm mt-2">← Back to Blog</a>
+</div>
+{% endblock %}

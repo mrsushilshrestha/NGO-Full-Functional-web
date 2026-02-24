@@ -1,28 +1,73 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Members{% endblock %}
+
+{% block title %}Team{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-    <h1 class="mb-4">Our Members</h1>
-    <form method="get" class="mb-4">
-        <input type="text" name="role" class="form-control" placeholder="Filter by role..." value="{{ role_filter }}">
-    </form>
-    <div class="row g-4">
-        {% for m in members %}
-        <div class="col-md-4 col-lg-3">
-            <div class="card border-0 shadow-sm text-center">
-                {% if m.photo %}<img src="{{ m.photo.url }}" class="card-img-top rounded-circle mx-auto mt-3" style="width:120px;height:120px;object-fit:cover;">{% endif %}
-                <div class="card-body">
-                    <h5 class="card-title">{{ m.name }}</h5>
-                    <p class="text-muted small mb-1">{{ m.role }}</p>
-                    {% if m.specialization %}<p class="text-muted small">{{ m.specialization }}</p>{% endif %}
-                    {% if m.email %}<a href="mailto:{{ m.email }}" class="btn btn-sm btn-outline-primary mt-2">Contact</a>{% endif %}
-                </div>
-            </div>
-        </div>
-        {% empty %}
-        <div class="col-12"><p class="text-muted">No members found.</p></div>
-        {% endfor %}
+<div class="hero-wrap" style="background-image: url('{% static 'css/images/bg_1.jpg' %}');" data-stellar-background-ratio="0.5">
+  <div class="overlay"></div>
+  <div class="container">
+    <div class="row no-gutters slider-text align-items-center justify-content-center" data-scrollax-parent="true">
+      <div class="col-md-8 ftco-animate text-center" data-scrollax=" properties: { translateY: '70%' }">
+        <p class="breadcrumbs" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }">
+          <span class="mr-2"><a href="{% url 'home' %}">Home</a></span>
+          <span>Team</span>
+        </p>
+        <h1 class="mb-3 bread" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }">Our Team</h1>
+      </div>
     </div>
+  </div>
 </div>
+
+<section class="ftco-section">
+  <div class="container">
+    <div class="row justify-content-center mb-4">
+      <div class="col-lg-8">
+        <form method="get">
+          <div class="input-group">
+            <input type="text" name="role" class="form-control" placeholder="Search by role..." value="{{ role_filter }}">
+            <div class="input-group-append">
+              <button class="btn btn-primary" type="submit">Search</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="row">
+      {% for m in members %}
+      <div class="col-md-4 d-flex ftco-animate">
+        <div class="blog-entry align-self-stretch">
+          <a href="{% url 'team_member_detail' m.pk %}" class="block-20"
+             style="background-image: url('{% if m.photo %}{{ m.photo.url }}{% else %}{% static 'css/images/person_1.jpg' %}{% endif %}');">
+          </a>
+          <div class="text p-4 d-block">
+            <div class="meta mb-3">
+              {% if m.role %}<div><a href="#">{{ m.role }}</a></div>{% endif %}
+              {% if m.specialization %}<div><a href="#">{{ m.specialization }}</a></div>{% endif %}
+            </div>
+            <h3 class="heading mb-3">
+              <a href="{% url 'team_member_detail' m.pk %}">{{ m.name }}</a>
+            </h3>
+            {% if m.district %}
+            <p class="time-loc">
+              <span><i class="icon-map-o"></i> {{ m.district.name }}</span>
+            </p>
+            {% endif %}
+            {% if m.email %}
+            <p class="mb-0">
+              <a href="mailto:{{ m.email }}">Contact <i class="ion-ios-arrow-forward"></i></a>
+            </p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-center text-muted py-5">
+        <p>No team members found.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
 {% endblock %}

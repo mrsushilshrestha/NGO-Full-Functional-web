@@ -1,0 +1,33 @@
+{% extends 'cms/base.html' %}
+{% block page_title %}Blog Tags{% endblock %}
+{% block content %}
+<div class="cms-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">Tags</h5>
+        <a href="{% url 'cms_blog_tag_add' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i> Add Tag</a>
+    </div>
+    <p class="text-muted small mb-3">Tags are topics for filtering posts on the blog listing page.</p>
+    <div class="table-responsive">
+        <table class="table">
+            <thead><tr><th>Name</th><th>Slug</th><th>Order</th><th>Popular</th><th>Actions</th></tr></thead>
+            <tbody>
+                {% for t in tags %}
+                <tr>
+                    <td>{{ t.name }}</td>
+                    <td><code>{{ t.slug }}</code></td>
+                    <td>{{ t.order }}</td>
+                    <td>{% if t.is_popular %}<i class="fas fa-star text-warning"></i>{% else %}-{% endif %}</td>
+                    <td>
+                        <a href="{% url 'cms_blog_tag_edit' t.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <form method="post" action="{% url 'cms_blog_tag_delete' t.pk %}" class="d-inline" onsubmit="return confirm('Delete this tag?');">{% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-danger">Delete</button></form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-muted">No tags. <a href="{% url 'cms_blog_tag_add' %}">Add one</a></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <a href="{% url 'cms_blog' %}" class="btn btn-outline-secondary btn-sm mt-2">← Back to Blog</a>
+</div>
+{% endblock %}

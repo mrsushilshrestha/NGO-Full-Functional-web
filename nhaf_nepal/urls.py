@@ -7,6 +7,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from apps.contact import views as contact_views
+from apps.programs import views as programs_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -15,9 +16,11 @@ urlpatterns = [
     path('about/', include('apps.about.urls')),
     path('gallery/', contact_views.gallery_page, name='gallery'),
     path('programs/', include('apps.programs.urls')),
-    path('team/', include('apps.team.urls')),
+    path('program/event/', programs_views.events_page, name='events_page'),
+    path('team/', include('apps.team.urls',)),
     path('membership/', include('apps.membership.urls')),
     path('impact/', include('apps.impact.urls')),
+    path('blog/', include('apps.blog.urls')),
     path('contact/', include('apps.contact.urls')),
     path('donate/', include('apps.donation.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),

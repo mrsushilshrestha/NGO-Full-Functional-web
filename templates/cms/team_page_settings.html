@@ -251,7 +251,19 @@
             </h2>
             <div id="collapseCards" class="accordion-collapse collapse" data-bs-parent="#teamSettingsAccordion">
               <div class="accordion-body">
-                <p class="text-muted small mb-3">Sizes in px. Hover, shadow, and animation affect cards on the Team page.</p>
+                <p class="text-muted small mb-3">Layout, sizes in px. Hover, shadow, and animation affect cards on the Team page.</p>
+                <div class="row g-3 mb-3">
+                  <div class="col-md-4">
+                    <label class="form-label" for="{{ form.cards_per_row.id_for_label }}">{{ form.cards_per_row.label }}</label>
+                    {{ form.cards_per_row }}
+                    <div class="form-text">Cards per row (Board & Volunteers). Mobile shows 1–2 per row.</div>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label" for="{{ form.cards_per_page.id_for_label }}">{{ form.cards_per_page.label }}</label>
+                    {{ form.cards_per_page }}
+                    <div class="form-text">Volunteer cards per page (pagination).</div>
+                  </div>
+                </div>
                 <div class="row g-3">
                   <div class="col-md-4"><label class="form-label">{{ form.card_radius_px.label }}</label>{{ form.card_radius_px }}</div>
                   <div class="col-md-4"><label class="form-label">{{ form.card_min_height_px.label }}</label>{{ form.card_min_height_px }}</div>
@@ -268,6 +280,50 @@
                 </div>
                 <div class="mt-2">
                   <button type="submit" name="reset" value="cards" class="btn btn-outline-secondary btn-sm">Reset card styling to default</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseJoinUs" aria-expanded="false" aria-controls="collapseJoinUs">
+                <i class="fas fa-user-plus me-2 text-muted"></i> Join Us section (Volunteer page)
+              </button>
+            </h2>
+            <div id="collapseJoinUs" class="accordion-collapse collapse" data-bs-parent="#teamSettingsAccordion">
+              <div class="accordion-body">
+                <p class="text-muted small mb-3">Content for the Join Us card on the volunteer application page and team page. All fields are editable here—no code changes needed.</p>
+                <div class="mb-3">
+                  <label class="form-label" for="{{ form.join_us_title.id_for_label }}">{{ form.join_us_title.label }}</label>
+                  {{ form.join_us_title }}
+                  <div class="form-text">{{ form.join_us_title.help_text }}</div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label" for="{{ form.join_us_subtitle.id_for_label }}">{{ form.join_us_subtitle.label }}</label>
+                  {{ form.join_us_subtitle }}
+                  <div class="form-text">{{ form.join_us_subtitle.help_text }}</div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label" for="{{ form.join_us_description.id_for_label }}">{{ form.join_us_description.label }}</label>
+                  {{ form.join_us_description }}
+                  <div class="form-text">{{ form.join_us_description.help_text }}</div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label" for="{{ form.join_us_image.id_for_label }}">{{ form.join_us_image.label }}</label>
+                  {{ form.join_us_image }}
+                  {% if settings.join_us_image %}
+                  <div class="mt-2">
+                    <img src="{{ settings.join_us_image.url }}" alt="Current Join Us" class="img-thumbnail" style="max-height: 120px;">
+                  </div>
+                  {% endif %}
+                  <div class="form-check mt-2">
+                    {{ form.clear_join_us_image }}
+                    <label class="form-check-label" for="{{ form.clear_join_us_image.id_for_label }}">{{ form.clear_join_us_image.label }}</label>
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <button type="submit" name="reset" value="join_us" class="btn btn-outline-secondary btn-sm">Reset Join Us section to default</button>
                 </div>
               </div>
             </div>

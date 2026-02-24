@@ -2,6 +2,19 @@
 {% block page_title %}Home Content{% endblock %}
 {% block content %}
 <div class="cms-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h5 class="mb-1">Splash Screen</h5>
+            <p class="text-muted small mb-0">Welcome screen shown when users first visit the homepage.</p>
+        </div>
+        <a href="{% url 'cms_home_splash_settings' %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-cog me-1"></i>Splash Settings
+        </a>
+    </div>
+    <p class="mb-0 small">{% if splash_settings.enabled %}<span class="badge bg-success">Enabled</span>{% else %}<span class="badge bg-secondary">Disabled</span>{% endif %}
+    {% if splash_settings.enabled %}— {{ splash_settings.title_text|default:"Welcome" }}{% endif %}</p>
+</div>
+<div class="cms-card">
     <div class="d-flex justify-content-between mb-4">
         <h5>Hero Banners</h5>
         <a href="{% url 'cms_banner_add' %}" class="btn btn-primary btn-sm">Add Banner</a>

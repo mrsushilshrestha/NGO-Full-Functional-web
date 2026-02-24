@@ -1,4 +1,6 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% load crispy_forms_tags %}
 
 {% block title %}Our Team{% endblock %}
@@ -67,7 +69,7 @@
 }
 
 /* Watermark background on Team page */
-.team-page-wrap { position: relative; }
+.team-page-wrap { position: relative; min-height: 100px; }
 /* Dark theme for Team page */
 .team-page-dark .team-hero-title,
 .team-page-dark .team-hero-subtitle { color: #e2e8f0 !important; }
@@ -82,8 +84,80 @@
 .team-page-dark .btn-outline-primary:hover { background: #475569; border-color: #64748b; color: #fff; }
 .team-page-dark .btn-primary { background: #0d9488; border-color: #0d9488; }
 
-/* Location filter tabs – active matches nav (var(--primary)), sliding underline */
-.team-location-tabs-wrap { position: relative; margin-bottom: 0; }
+/* Card grid: consistent gap, no overlap, auto-fill for 1–2 cards */
+.team-cards-row {
+    display: grid;
+    gap: 1rem;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    box-sizing: border-box;
+}
+.team-cards-row > * {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+}
+/* Cards per row from CMS (desktop) – minmax(0,1fr) prevents overlap */
+.team-cpr-2 .team-cards-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.team-cpr-3 .team-cards-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.team-cpr-4 .team-cards-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.team-cpr-5 .team-cards-row { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+/* Adaptive text: smaller when 4–5 cards per row */
+.team-cpr-4 .member-card-name,
+.team-cpr-5 .member-card-name { font-size: calc(var(--team-name-size) * 0.85); }
+.team-cpr-4 .member-card-role,
+.team-cpr-5 .member-card-role { font-size: calc(var(--team-role-size) * 0.9); }
+.team-cpr-4 .member-card-id,
+.team-cpr-5 .member-card-id { font-size: calc(var(--team-id-size) * 0.9); }
+.team-cpr-4 .member-card-content,
+.team-cpr-5 .member-card-content { padding: 10px var(--team-card-padding) 6px; min-height: 120px; }
+.team-cpr-4 .member-card-social .member-social-icon,
+.team-cpr-5 .member-card-social .member-social-icon { width: 28px; height: 28px; min-width: 28px; min-height: 28px; }
+/* Tablet: 2 columns for balance */
+@media (max-width: 991px) {
+    .team-cpr-4 .team-cards-row,
+    .team-cpr-5 .team-cards-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 767px) {
+    .team-cpr-2 .team-cards-row,
+    .team-cpr-3 .team-cards-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .team-cards-row { gap: 0.75rem; }
+}
+/* Mobile: 1 column, full width cards – ensure visibility */
+@media (max-width: 575px) {
+    .team-page-section .team-cards-row { grid-template-columns: 1fr; }
+    .team-cards-row { gap: 1rem; }
+}
+@media (max-width: 767px) {
+    .team-page-section .board-section,
+    .team-page-section .volunteer-section { display: block !important; visibility: visible !important; }
+    .team-page-section #board-cards-container,
+    .team-page-section #volunteer-cards-container { display: block !important; overflow: visible; }
+    .team-page-section .team-cards-row { display: grid !important; visibility: visible !important; }
+    .team-page-section .team-card-col { display: flex !important; visibility: visible !important; min-width: 0; }
+    .team-page-section .member-card-modern { display: block !important; visibility: visible !important; width: 100%; min-width: 0; }
+}
+/* Empty state spans full row */
+.team-card-col--empty { grid-column: 1 / -1; }
+/* Card fills grid cell and scales with container – no overlap */
+.team-card-col { display: flex; flex-direction: column; min-width: 0; }
+.team-card-col > a { display: block; flex: 1; min-width: 0; }
+.team-card-col .member-card-modern {
+    width: 100%;
+    min-height: 200px;
+    aspect-ratio: 4 / 5;
+    max-height: var(--team-card-max-h);
+}
+.container.team-page-wrap { overflow-x: hidden; }
+
+/* Location filter tabs – desktop: wrap; mobile: scrollable horizontal */
+.team-location-tabs-wrap {
+    position: relative;
+    margin-bottom: 0;
+    overflow: hidden;
+}
 .team-location-tabs {
     display: flex;
     flex-wrap: wrap;
@@ -133,8 +207,177 @@
 .volunteer-cards-transition { transition: opacity 0.25s ease; }
 .volunteer-cards-transition.is-loading { opacity: 0.6; pointer-events: none; }
 
-/* Top bar: search icon + Join Us */
-.team-top-actions { min-height: 2.5rem; }
+/* Pagination: rounded container, circular buttons, prev/next arrows */
+.team-pagination-wrap { margin-top: 1.5rem; }
+.team-pagination {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.6rem;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.team-page-dark .team-pagination {
+    background: #334155;
+    border-color: rgba(255,255,255,0.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.team-pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    padding: 0 0.5rem;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-dark, #1e293b);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+    cursor: pointer;
+}
+.team-page-dark .team-pagination-btn { color: #e2e8f0; }
+.team-pagination-btn:hover:not(.disabled):not(.active) {
+    background: rgba(11, 83, 69, 0.1);
+    color: var(--primary);
+}
+.team-page-dark .team-pagination-btn:hover:not(.disabled):not(.active) {
+    background: rgba(255,255,255,0.1);
+    color: var(--primary);
+}
+.team-pagination-btn.active {
+    background: var(--primary);
+    color: #fff !important;
+    cursor: default;
+}
+.team-pagination-btn.disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+.team-pagination-arrow { font-size: 0.75rem; }
+.team-pagination-pages { display: inline-flex; align-items: center; gap: 0.2rem; }
+.team-pagination-ellipsis {
+    padding: 0 0.25rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+.team-page-dark .team-pagination-ellipsis { color: #94a3b8; }
+@media (max-width: 576px) {
+    .team-pagination { padding: 0.35rem 0.5rem; gap: 0.2rem; }
+    .team-pagination-btn { min-width: 2rem; height: 2rem; font-size: 0.85rem; }
+}
+
+/* Top bar: search + Join Us – right-aligned, mobile-friendly */
+.team-top-actions {
+    min-height: 2.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+}
+@media (max-width: 767px) {
+    .team-top-actions {
+        width: 100%;
+        justify-content: flex-end;
+        padding: 0.25rem 0;
+        min-height: 48px;
+        gap: 0.75rem;
+    }
+}
+@media (max-width: 575px) {
+    .team-top-actions { padding: 0.5rem 0; gap: 0.5rem; }
+    .team-top-actions .btn-icon.btn-search-toggle { min-width: 44px; min-height: 44px; }
+    .team-top-actions .btn-primary { min-height: 44px; padding: 0.5rem 1rem; }
+}
+/* Mobile: right-side vertical nav drawer */
+.team-nav-toggle {
+    display: none;
+    position: fixed;
+    bottom: 1.25rem;
+    right: 1rem;
+    z-index: 1000;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    box-shadow: 0 4px 16px rgba(11, 83, 69, 0.4);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.team-nav-toggle:hover { transform: scale(1.05); }
+.team-nav-toggle:active { transform: scale(0.98); }
+.team-nav-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 1040;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.team-nav-backdrop.is-open { opacity: 1; }
+.team-nav-drawer {
+    position: relative;
+}
+.team-nav-close { display: none; }
+@media (max-width: 767px) {
+    .team-nav-toggle { display: flex; }
+    .team-nav-drawer {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: min(280px, 85vw);
+        max-width: 320px;
+        height: 100%;
+        background: var(--bg-warm, #f5f2ed);
+        box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+        z-index: 1050;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        overflow-y: auto;
+    }
+    .team-page-section.team-page-dark .team-nav-drawer { background: #1e293b; }
+    .team-nav-drawer.is-open { transform: translateX(0); }
+    .team-nav-drawer-inner {
+        padding: 1rem 1.25rem 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .team-nav-close {
+        display: flex;
+        align-self: flex-end;
+        width: 40px;
+        height: 40px;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+        cursor: pointer;
+        border-radius: 8px;
+        margin: -0.25rem -0.25rem 0 0;
+    }
+    .team-nav-close:hover { background: rgba(0,0,0,0.06); }
+    .team-nav-drawer .team-top-actions {
+        flex-direction: column;
+        align-items: stretch;
+        margin-bottom: 0;
+        gap: 0.5rem;
+    }
+    .team-nav-drawer .team-top-actions .btn-primary { width: 100%; justify-content: center; }
+}
 .btn-icon.btn-search-toggle {
     width: 2.5rem;
     height: 2.5rem;
@@ -164,11 +407,40 @@
 .team-search-close { margin-left: 0.25rem; }
 .team-location-tabs-sep { margin-bottom: 1rem; }
 
+/* Mobile: scrollable horizontal tabs, touch-friendly */
 @media (max-width: 767px) {
-    .team-location-tabs { gap: 0.25rem 1rem; }
-    .team-location-tab { font-size: 0.9rem; padding: 0.4rem 0 0.6rem; }
+    .team-location-tabs-wrap {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        margin-left: -0.5rem;
+        margin-right: -0.5rem;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    .team-location-tabs {
+        flex-wrap: nowrap;
+        gap: 0;
+        padding-bottom: 0.25rem;
+        min-width: min-content;
+    }
+    .team-location-tab {
+        flex-shrink: 0;
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem 0.65rem;
+        margin-right: 0.25rem;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+    }
+    .team-location-indicator { display: none; }
+}
+@media (max-width: 575px) {
+    .team-location-tab { padding: 0.45rem 0.75rem 0.6rem; font-size: 0.85rem; }
 }
 
+/* Background watermark – responsive, top/center preserved */
 .team-watermark {
     position: absolute;
     inset: 0;
@@ -179,11 +451,20 @@
         {% elif team_settings.watermark_position == 'top-right' %}right top
         {% elif team_settings.watermark_position == 'bottom-left' %}left bottom
         {% elif team_settings.watermark_position == 'bottom-right' %}right bottom
-        {% else %}center{% endif %};
+        {% elif team_settings.watermark_position == 'center' %}center center
+        {% else %}top center{% endif %};
     background-size: {{ team_settings.watermark_size_percent }}%;
     opacity: {{ team_settings.watermark_opacity }};
     filter: grayscale(1);
 }
+@media (max-width: 991px) {
+    .team-watermark { background-size: min({{ team_settings.watermark_size_percent }}%, 80vmin); }
+}
+@media (max-width: 575px) {
+    .team-watermark { background-size: min({{ team_settings.watermark_size_percent }}%, 70vmin); }
+}
+/* Top-anchored: cover header, extend behind content */
+.team-page-wrap { position: relative; min-height: 100px; }
 
 /* Team section – card styling from CMS */
 .member-card-modern {
@@ -240,40 +521,47 @@
     z-index: 2;
     pointer-events: none;
 }
-/* Content block – name, role, ID and social at bottom, aligned together */
+/* Content block – name, role, ID and social at bottom; tight spacing */
 .member-card-content {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
     z-index: 3;
-    padding: 20px var(--team-card-padding) 6px var(--team-card-padding);
+    padding: 12px var(--team-card-padding) 8px var(--team-card-padding);
     margin-bottom: 0;
-    min-height: 185px;
+    min-height: 140px;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
+    gap: 4px;
     color: #ffffff !important;
 }
 .member-card-name {
     font-size: var(--team-name-size);
     font-weight: 700;
-    line-height: 1.3;
-    margin: 0 0 8px 0;
+    line-height: 1.25;
+    margin: 0;
     text-shadow: 0 2px 12px rgba(0,0,0,0.5);
     color: #ffffff !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .member-card-role {
     font-size: var(--team-role-size);
     font-weight: 400;
-    margin: 0 0 12px 0;
+    margin: 0;
     opacity: 0.92;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
     color: #ffffff !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .member-card-id-wrap {
-    margin-bottom: 8px;
+    margin: 2px 0 0 0;
 }
 .member-card-id {
     font-size: var(--team-id-size);
@@ -285,14 +573,14 @@
     display: inline-block;
     border: 1px solid rgba(255, 255, 255, 0.24);
 }
-/* Social icons – aligned with text above, slightly lower for spacing */
+/* Social icons – aligned near bottom, minimal gap above */
 .member-card-social {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 6px;
+    gap: 6px;
+    margin-top: 4px;
     margin-bottom: 0;
-    padding-bottom: 2px;
+    padding-bottom: 0;
     margin-left: auto;
     justify-content: flex-end;
     opacity: 0;
@@ -351,27 +639,144 @@
     .member-card-modern { min-height: calc(var(--team-card-min-h) * 0.95); max-height: calc(var(--team-card-max-h) * 0.95); }
     .member-card-content { min-height: 172px; padding: 18px 20px 4px 20px; margin-bottom: 0; }
 }
+@media (max-width: 991px) {
+    .member-card-modern {
+        min-height: 280px;
+        max-height: 380px;
+    }
+}
 @media (max-width: 768px) {
     .member-card-modern {
-        min-height: calc(var(--team-card-min-h) * 0.9);
-        max-height: calc(var(--team-card-max-h) * 0.9);
+        min-height: 260px;
+        max-height: 360px;
         border-radius: 16px;
     }
     .member-card-content {
-        min-height: 168px;
-        padding: 18px 20px 4px 20px;
-        margin-bottom: 0;
+        min-height: 110px;
+        padding: 10px 12px 6px 12px;
     }
-    .member-card-name { font-size: calc(var(--team-name-size) * 0.9); }
-    .member-card-role { font-size: calc(var(--team-role-size) * 0.92); }
+    .member-card-name { font-size: calc(var(--team-name-size) * 0.88); }
+    .member-card-role { font-size: calc(var(--team-role-size) * 0.9); }
+    .member-card-id { font-size: calc(var(--team-id-size) * 0.9); }
     .member-card-social { opacity: 1; transform: translateY(0); }
     .member-card-placeholder { font-size: 3rem; }
+}
+@media (max-width: 575px) {
+    .member-card-modern { min-height: 240px; max-height: 320px; }
+    .member-card-content { min-height: 100px; padding: 8px 10px 6px 10px; }
+    .member-card-name { font-size: calc(var(--team-name-size) * 0.85); }
+    .member-card-role { font-size: calc(var(--team-role-size) * 0.88); }
+}
+
+/* Join Us section card (CMS content) – on Team page only */
+.team-join-us-card {
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.06);
+    display: flex;
+    max-width: 920px;
+    margin: 0 auto;
+}
+.team-page-dark .team-join-us-card {
+    background: #334155;
+    border-color: rgba(255,255,255,0.1);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+}
+.team-join-us-content {
+    flex: 1.2;
+    padding: 3rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.team-join-us-content .team-join-us-title {
+    font-size: clamp(1.75rem, 4vw, 2.25rem);
+    font-weight: 700;
+    color: var(--text-dark, #1a202c);
+    margin: 0 0 0.75rem 0;
+    line-height: 1.25;
+}
+.team-page-dark .team-join-us-content .team-join-us-title { color: #e2e8f0; }
+.team-join-us-content .team-join-us-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-muted, #718096);
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+}
+.team-page-dark .team-join-us-content .team-join-us-subtitle { color: #94a3b8; }
+.team-join-us-content .team-join-us-desc {
+    font-size: 1rem;
+    color: var(--text-muted, #718096);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+.team-page-dark .team-join-us-content .team-join-us-desc { color: #94a3b8; }
+.team-join-us-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--primary);
+    color: #fff !important;
+    padding: 0.875rem 1.75rem;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    width: fit-content;
+    transition: background 0.2s, transform 0.15s;
+    box-shadow: 0 4px 12px rgba(11, 83, 69, 0.25);
+}
+.team-join-us-cta:hover { background: var(--primary-light); transform: translateY(-2px); color: #fff !important; }
+.team-join-us-image {
+    flex: 0.8;
+    background: var(--border-soft, #edf2f7);
+    min-height: 240px;
+}
+.team-page-dark .team-join-us-image { background: #475569; }
+.team-join-us-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.team-join-us-image-placeholder {
+    width: 100%;
+    height: 100%;
+    min-height: 240px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+}
+.team-page-dark .team-join-us-image-placeholder { color: #64748b; }
+@media (max-width: 768px) {
+    .team-join-us-card { flex-direction: column; }
+    .team-join-us-content { padding: 2rem; text-align: center; order: 2; }
+    .team-join-us-cta { margin: 0 auto; }
+    .team-join-us-image { min-height: 200px; order: 1; }
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<section class="py-5 team-page-section team-page-{{ team_settings.theme_mode|default:'light' }} team-cards-shadow-{{ team_settings.card_shadow|default:'medium' }} team-cards-hover-{{ team_settings.card_hover_effect|default:'lift' }} team-card-anim-{{ team_settings.card_animation|default:'none' }}" style="background: {% if team_settings.theme_mode == 'dark' %}#1e293b{% else %}var(--bg-warm){% endif %};" data-title-animation="{{ team_settings.title_animation|default:'typing' }}" data-typing-enabled="{{ team_settings.typing_enabled|yesno:'1,0' }}" data-typing-speed="{{ team_settings.typing_speed_ms }}">
+<div class="hero-wrap" style="background-image: url('{% static 'css/images/bg_1.jpg' %}');" data-stellar-background-ratio="0.5">
+  <div class="overlay"></div>
+  <div class="container">
+    <div class="row no-gutters slider-text align-items-center justify-content-center" data-scrollax-parent="true">
+      <div class="col-md-8 ftco-animate text-center" data-scrollax=" properties: { translateY: '70%' }">
+        <p class="breadcrumbs" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }">
+          <span class="mr-2"><a href="{% url 'home' %}">Home</a></span>
+          <span>Team</span>
+        </p>
+        <h1 class="mb-3 bread" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }">Our Team</h1>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="py-4 py-md-5 team-page-section team-cpr-{{ team_settings.cards_per_row|default:3 }} team-page-{{ team_settings.theme_mode|default:'light' }} team-cards-shadow-{{ team_settings.card_shadow|default:'medium' }} team-cards-hover-{{ team_settings.card_hover_effect|default:'lift' }} team-card-anim-{{ team_settings.card_animation|default:'none' }}" style="background: {% if team_settings.theme_mode == 'dark' %}#1e293b{% else %}var(--bg-warm){% endif %};" data-title-animation="{{ team_settings.title_animation|default:'typing' }}" data-typing-enabled="{{ team_settings.typing_enabled|yesno:'1,0' }}" data-typing-speed="{{ team_settings.typing_speed_ms }}">
     <div class="container team-page-wrap">
         {% if team_settings.background_watermark %}
         <div class="team-watermark" style="background-image: url('{{ team_settings.background_watermark.url }}');" aria-hidden="true"></div>
@@ -388,8 +793,16 @@
             <span id="team-subtitle"></span><span class="typed-cursor" id="team-cursor" aria-hidden="true"></span>
         </p>
 
-        <!-- Top bar: Search (expandable) + Join Us only -->
-        <div class="d-flex flex-wrap justify-content-end align-items-center gap-2 mb-4 team-top-actions">
+        <!-- Mobile: floating menu button (right side) -->
+        <button type="button" class="team-nav-toggle" id="team-nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="team-nav-drawer">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="team-nav-backdrop" id="team-nav-backdrop" aria-hidden="true"></div>
+        <!-- Nav drawer: Search, Join Us, filters (vertical on mobile, inline on desktop) -->
+        <div class="team-nav-drawer" id="team-nav-drawer" role="dialog" aria-label="Navigation">
+            <div class="team-nav-drawer-inner">
+                <button type="button" class="team-nav-close" id="team-nav-close" aria-label="Close menu"><i class="fas fa-times"></i></button>
+                <div class="d-flex flex-wrap justify-content-end align-items-center gap-2 mb-4 team-top-actions">
             {% if team_settings.show_search %}
             <div class="team-search-wrap position-relative">
                 <button type="button" class="btn btn-icon btn-search-toggle rounded-pill shadow-sm" id="team-search-toggle" aria-label="Search members" title="Search">
@@ -405,7 +818,6 @@
                 <i class="fas fa-user-plus me-2"></i>Join Us
             </a>
         </div>
-
         <!-- Board Members – location tabs + AJAX cards -->
         <div class="mb-5 board-section" style="margin-bottom: var(--team-section-spacing);">
             <h2 class="h4 mb-2">Board Members</h2>
@@ -433,9 +845,9 @@
                 <hr class="team-location-tabs-sep">
             </div>
             <div id="board-cards-container" class="volunteer-cards-transition">
-                <div class="row g-4" id="board-cards-row">
+                <div class="team-cards-row" id="board-cards-row">
                     {% for member in board_members %}
-                    <div class="col-12 col-md-4 board-card-col">
+                    <div class="team-card-col board-card-col">
                         <a href="{% url 'member_detail' member.pk %}" class="text-decoration-none">
                             <div class="member-card-modern">
                                 {% if member.photo %}
@@ -466,7 +878,7 @@
                         </a>
                     </div>
                     {% empty %}
-                    <div class="col-12 text-center text-muted py-5">
+                    <div class="team-card-col team-card-col--empty text-center text-muted py-5">
                         <i class="fas fa-user-tie fa-3x mb-3 opacity-50"></i>
                         <p class="mb-0">No board members.</p>
                     </div>
@@ -492,19 +904,19 @@
                 margin-right: {% if team_settings.volunteer_line_full_width %}0{% else %}auto{% endif %};
             ">
             <div class="team-location-tabs-wrap">
-                <nav class="team-location-tabs volunteer-location-tabs" role="tablist" aria-label="Filter volunteers by location">
-                    <button type="button" class="team-location-tab {% if not location_filter %}active{% endif %}" data-location="" aria-selected="{% if not location_filter %}true{% else %}false{% endif %}">All Volunteers</button>
-                    {% for loc_key, loc_label in location_choices %}
-                    <button type="button" class="team-location-tab {% if location_filter == loc_key %}active{% endif %}" data-location="{{ loc_key }}" aria-selected="{% if location_filter == loc_key %}true{% else %}false{% endif %}">{{ loc_label }}</button>
+                <nav class="team-location-tabs volunteer-district-tabs" role="tablist" aria-label="Filter volunteers by district">
+                    <button type="button" class="team-location-tab {% if not district_filter %}active{% endif %}" data-district="" aria-selected="{% if not district_filter %}true{% else %}false{% endif %}">All Volunteers</button>
+                    {% for dist_id, dist_name in district_choices %}
+                    <button type="button" class="team-location-tab {% if district_filter == dist_id|stringformat:'d' %}active{% endif %}" data-district="{{ dist_id }}" aria-selected="{% if district_filter == dist_id|stringformat:'d' %}true{% else %}false{% endif %}">{{ dist_name }}</button>
                     {% endfor %}
                     <div class="team-location-indicator" aria-hidden="true"></div>
                 </nav>
                 <hr class="team-location-tabs-sep">
             </div>
             <div id="volunteer-cards-container" class="volunteer-cards-transition">
-                <div class="row g-4" id="volunteer-cards-row">
+                <div class="team-cards-row" id="volunteer-cards-row">
                 {% for member in volunteer_page_obj %}
-                <div class="col-12 col-md-4">
+                <div class="team-card-col volunteer-card-col">
                     <a href="{% url 'member_detail' member.pk %}" class="text-decoration-none">
                         <div class="member-card-modern">
                             {% if member.photo %}
@@ -548,7 +960,7 @@
                     </a>
                 </div>
                 {% empty %}
-                <div class="col-12 text-center text-muted py-5">
+                <div class="team-card-col team-card-col--empty text-center text-muted py-5">
                     <i class="fas fa-users fa-3x mb-3 opacity-50"></i>
                     <p>No volunteers found.</p>
                 </div>
@@ -557,93 +969,33 @@
             </div>
         </div>
 
-        {% if volunteer_page_obj.paginator.num_pages > 1 %}
-        <nav id="volunteer-pagination-nav" aria-label="Volunteers pagination" class="mt-4">
-            <ul class="pagination justify-content-center">
-                {% if volunteer_page_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}page={{ volunteer_page_obj.previous_page_number }}" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                    </a>
-                </li>
-                {% else %}
-                <li class="page-item disabled">
-                    <span class="page-link" aria-hidden="true">&laquo;</span>
-                </li>
-                {% endif %}
-
-                {% for p in volunteer_pagination_range %}
-                    {% if p %}
-                        <li class="page-item {% if p == volunteer_page_obj.number %}active{% endif %}">
-                            <a class="page-link" href="?{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}page={{ p }}">{{ p }}</a>
-                        </li>
-                    {% else %}
-                        <li class="page-item disabled"><span class="page-link">…</span></li>
-                    {% endif %}
-                {% endfor %}
-
-                {% if volunteer_page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}page={{ volunteer_page_obj.next_page_number }}" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                    </a>
-                </li>
-                {% else %}
-                <li class="page-item disabled">
-                    <span class="page-link" aria-hidden="true">&raquo;</span>
-                </li>
-                {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
+        <div id="volunteer-pagination-wrap" class="d-flex justify-content-center">
+            {% include 'team/partials/volunteer_pagination.html' %}
+        </div>
 
         <hr class="my-5" id="join">
-        <!-- Join Us Section with Volunteer / Member toggle -->
+        <!-- Join Us Section (CMS: team_settings.join_us_*) – card UI on Team page -->
         <div class="row mt-5 pt-5">
-            <div class="col-lg-10 mx-auto">
-                <div class="p-4 p-md-5 rounded-4" style="background: linear-gradient(135deg, rgba(11,83,69,0.08), rgba(193,127,89,0.08));">
-                    <div class="mb-4">
-                        <h2 class="section-title mb-1">Join Us</h2>
-                        <p class="section-subtitle mb-0">Apply as a volunteer to support our mission.</p>
+            <div class="col-12">
+                <div class="team-join-us-card">
+                    <div class="team-join-us-content">
+                        <h2 class="team-join-us-title">{{ team_settings.join_us_title }}</h2>
+                        <p class="team-join-us-subtitle">{{ team_settings.join_us_subtitle }}</p>
+                        {% if team_settings.join_us_description %}
+                        <p class="team-join-us-desc">{{ team_settings.join_us_description|linebreaksbr }}</p>
+                        {% endif %}
+                        <a href="{% url 'application_center' %}" class="team-join-us-cta">
+                            <i class="fas fa-user-plus me-2"></i>Apply as Volunteer
+                        </a>
                     </div>
-
-                    <div class="row g-4">
-                        <div class="col-lg-6">
-                            <div id="join-volunteer" class="join-panel">
-                                <h5 class="mb-3">Volunteer Application</h5>
-                                <p class="text-muted small mb-3">Share your time and skills. Profile image max 200 KB.</p>
-                                <form method="post" action="{% url 'volunteer_form' %}" enctype="multipart/form-data" class="bg-white rounded-3 p-3 p-md-4 shadow-sm">
-                                    {% csrf_token %}
-                                    {{ volunteer_join_form|crispy }}
-                                    <div class="d-flex justify-content-between align-items-center mt-3">
-                                        <button type="submit" class="btn btn-primary">Submit Volunteer Application</button>
-                                        <small class="text-muted d-none d-md-inline">You’ll be redirected after submitting.</small>
-                                    </div>
-                                </form>
-                            </div>
-
+                    <div class="team-join-us-image">
+                        {% if team_settings.join_us_image %}
+                        <img src="{{ team_settings.join_us_image.url }}" alt="">
+                        {% else %}
+                        <div class="team-join-us-image-placeholder">
+                            <i class="fas fa-users fa-4x opacity-50"></i>
                         </div>
-                        <div class="col-lg-6 d-none d-lg-block">
-                            <div class="h-100 d-flex align-items-center">
-                                <div class="w-100 ps-lg-4">
-                                    <div class="stat-card alt mb-3">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h4 class="mb-1">Make an impact</h4>
-                                                <p class="mb-0 small">Your time and membership help us reach more communities with health programs, education, and support.</p>
-                                            </div>
-                                            <i class="fas fa-hand-holding-heart fa-2x stat-icon"></i>
-                                        </div>
-                                    </div>
-                                    <ul class="list-unstyled small mb-0">
-                                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Transparent, CMS-managed membership fees</li>
-                                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Secure payment via eSewa, Khalti, or Bank</li>
-                                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Volunteer opportunities tailored to your skills</li>
-                                        <li><i class="fas fa-check-circle text-success me-2"></i>Responsive design that works on any device</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -716,9 +1068,11 @@
     // Board = chapter tabs; Volunteers = location tabs; sliding indicator per section
     var boardFilterUrl = "{% url 'team_board_filter' %}";
     var volunteerFilterUrl = "{% url 'team_volunteer_filter' %}";
+    var volunteerPageUrl = "{% url 'team_volunteer_page' %}";
     var currentBoardChapter = "{{ chapter_filter|escapejs }}";
-    var currentVolunteerLocation = "{{ location_filter|escapejs }}";
+    var currentVolunteerDistrict = "{{ district_filter|escapejs }}";
     var searchQuery = '';
+    var currentVolunteerPage = {{ volunteer_page_obj.number|default:1 }};
 
     function setIndicatorPosition(indicator, tab) {
         if (!indicator || !tab) return;
@@ -767,13 +1121,13 @@
     }
 
     function setupVolunteerTabs() {
-        var nav = document.querySelector('.volunteer-location-tabs');
+        var nav = document.querySelector('.volunteer-district-tabs');
         if (!nav) return;
         var tabs = nav.querySelectorAll('.team-location-tab');
         var indicator = nav.querySelector('.team-location-indicator');
         var row = document.getElementById('volunteer-cards-row');
         var container = document.getElementById('volunteer-cards-container');
-        var paginationNav = document.getElementById('volunteer-pagination-nav');
+        var paginationWrap = document.getElementById('volunteer-pagination-wrap');
 
         function setActive(activeTab) {
             tabs.forEach(function(t) { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
@@ -786,12 +1140,18 @@
             tab.addEventListener('click', function() {
                 if (tab.classList.contains('active')) return;
                 setActive(tab);
-                currentVolunteerLocation = tab.getAttribute('data-location') || '';
+                currentVolunteerDistrict = tab.getAttribute('data-district') || '';
+                currentVolunteerPage = 1;
                 if (container) container.classList.add('is-loading');
-                if (paginationNav) paginationNav.style.display = 'none';
                 var params = new URLSearchParams();
-                if (currentVolunteerLocation) params.set('location', currentVolunteerLocation);
+                if (currentVolunteerDistrict) params.set('district', currentVolunteerDistrict);
                 if (searchQuery) params.set('search', searchQuery);
+                if (!currentVolunteerDistrict && !searchQuery) {
+                    if (paginationWrap) paginationWrap.style.display = '';
+                    loadVolunteerPage(1);
+                    return;
+                }
+                if (paginationWrap) paginationWrap.style.display = 'none';
                 var url = volunteerFilterUrl + (params.toString() ? '?' + params.toString() : '');
                 fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(function(r) { return r.text(); })
                     .then(function(html) { row.innerHTML = html; if (container) container.classList.remove('is-loading'); })
@@ -804,6 +1164,40 @@
         });
     }
 
+    // AJAX pagination: only volunteer section updates, no full page reload
+    function loadVolunteerPage(pageNum) {
+        var row = document.getElementById('volunteer-cards-row');
+        var container = document.getElementById('volunteer-cards-container');
+        var wrap = document.getElementById('volunteer-pagination-wrap');
+        if (!row || !wrap) return;
+        var params = new URLSearchParams();
+        params.set('page', String(pageNum));
+        if (currentVolunteerDistrict) params.set('district', currentVolunteerDistrict);
+        if (searchQuery) params.set('search', searchQuery);
+        var url = volunteerPageUrl + '?' + params.toString();
+        if (container) container.classList.add('is-loading');
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                row.innerHTML = data.cards_html || '';
+                wrap.innerHTML = data.pagination_html || '';
+                currentVolunteerPage = pageNum;
+                if (container) container.classList.remove('is-loading');
+            })
+            .catch(function() { if (container) container.classList.remove('is-loading'); });
+    }
+
+    var paginationWrapEl = document.getElementById('volunteer-pagination-wrap');
+    if (paginationWrapEl) {
+        paginationWrapEl.addEventListener('click', function(e) {
+            var link = e.target.closest('a[data-page]');
+            if (!link || link.classList.contains('disabled')) return;
+            e.preventDefault();
+            var page = link.getAttribute('data-page');
+            if (page) loadVolunteerPage(parseInt(page, 10));
+        });
+    }
+
     setupBoardTabs();
     setupVolunteerTabs();
 
@@ -812,17 +1206,17 @@
         var volunteerRow = document.getElementById('volunteer-cards-row');
         var boardContainer = document.getElementById('board-cards-container');
         var volunteerContainer = document.getElementById('volunteer-cards-container');
-        var paginationNav = document.getElementById('volunteer-pagination-nav');
+        var paginationWrap = document.getElementById('volunteer-pagination-wrap');
         if (!boardRow || !volunteerRow) return;
         if (boardContainer) boardContainer.classList.add('is-loading');
         if (volunteerContainer) volunteerContainer.classList.add('is-loading');
-        if (paginationNav) paginationNav.style.display = 'none';
+        if (paginationWrap) paginationWrap.style.display = 'none';
 
         var boardParams = new URLSearchParams();
         if (currentBoardChapter) boardParams.set('chapter', currentBoardChapter);
         if (searchQuery) boardParams.set('search', searchQuery);
         var volParams = new URLSearchParams();
-        if (currentVolunteerLocation) volParams.set('location', currentVolunteerLocation);
+        if (currentVolunteerDistrict) volParams.set('district', currentVolunteerDistrict);
         if (searchQuery) volParams.set('search', searchQuery);
 
         Promise.all([
@@ -866,6 +1260,26 @@
             if (searchInput) { searchInput.value = ''; searchQuery = ''; fetchBothSections(); }
         });
     }
+
+    var navToggle = document.getElementById('team-nav-toggle');
+    var navDrawer = document.getElementById('team-nav-drawer');
+    var navBackdrop = document.getElementById('team-nav-backdrop');
+    var navClose = document.getElementById('team-nav-close');
+    function openNavDrawer() {
+        if (navDrawer) navDrawer.classList.add('is-open');
+        if (navBackdrop) { navBackdrop.style.display = 'block'; navBackdrop.classList.add('is-open'); navBackdrop.setAttribute('aria-hidden', 'false'); }
+        if (navToggle) navToggle.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeNavDrawer() {
+        if (navDrawer) navDrawer.classList.remove('is-open');
+        if (navBackdrop) { navBackdrop.style.display = 'none'; navBackdrop.classList.remove('is-open'); navBackdrop.setAttribute('aria-hidden', 'true'); }
+        if (navToggle) navToggle.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+    }
+    if (navToggle && navDrawer) navToggle.addEventListener('click', openNavDrawer);
+    if (navBackdrop) navBackdrop.addEventListener('click', closeNavDrawer);
+    if (navClose) navClose.addEventListener('click', closeNavDrawer);
 })();
 </script>
 {% endblock %}

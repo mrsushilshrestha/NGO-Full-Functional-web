@@ -1,6 +1,23 @@
 from django.db import models
 
 
+class ImpactDistrict(models.Model):
+    """Districts/regions where the NGO has impact - shown on the Nepal map (SVG id)."""
+    district_id = models.CharField(
+        max_length=20,
+        unique=True,
+        help_text='Must match SVG path id (e.g. NPBA, NPKA, NPLU). See map regions: Karnali, Mahakali, Seti, Dhawalagiri, Gandaki, Bagmati, Janakpur, Sagarmatha, Bhojpur, Mechi, Narayani, Lumbini, Rapti, Bheri.'
+    )
+    display_name = models.CharField(max_length=100, blank=True, help_text='Optional override for legend/tooltip')
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'district_id']
+
+    def __str__(self):
+        return self.display_name or self.district_id
+
+
 class ImpactStat(models.Model):
     """Impact statistics with animated counters"""
     label = models.CharField(max_length=200)

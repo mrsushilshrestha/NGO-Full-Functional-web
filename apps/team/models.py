@@ -16,6 +16,34 @@ class Chapter(models.Model):
         return self.name
 
 
+class Province(models.Model):
+    """Nepal provinces - for district grouping. Managed in CMS."""
+    name = models.CharField(max_length=100)
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order', 'name']
+
+    def __str__(self):
+        return self.name
+
+
+class District(models.Model):
+    """Nepal districts - database-driven dropdown. Managed in CMS."""
+    province = models.ForeignKey(Province, on_delete=models.CASCADE, related_name='districts')
+    name = models.CharField(max_length=100)
+    code = models.CharField(max_length=50, unique=True, help_text='Unique code (e.g. kathmandu)')
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['province', 'order', 'name']
+
+    def __str__(self):
+        return f'{self.name} ({self.province.name})'
+
+
 class Location(models.Model):
     """Location for volunteers (filter tabs on team page). Managed in CMS."""
     name = models.CharField(max_length=200)
@@ -54,6 +82,16 @@ class Member(models.Model):
     chapter = models.ForeignKey(Chapter, on_delete=models.SET_NULL, null=True, blank=True, help_text='Internal/admin: chapter assignment')
     category = models.CharField(max_length=100, blank=True, help_text='Internal/admin: category for organization')
     location = models.CharField(max_length=50, blank=True, choices=LOCATION_CHOICES, help_text='Public location for filtering (e.g. Kathmandu, Nepalgunj)')
+    district = models.ForeignKey('District', on_delete=models.SET_NULL, null=True, blank=True, related_name='members', help_text='District for filtering volunteers')
+    exclude_from_public = models.BooleanField(default=False, help_text='Hide from public site (e.g. members from paid membership with bank info)')
+    volunteer_application = models.OneToOneField(
+        'membership.VolunteerApplication',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='member_record',
+        help_text='Set when this Member was created from an approved volunteer application; ensures one Member per application.',
+    )
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=50, blank=True)
     education = models.CharField(max_length=255, blank=True)
@@ -63,6 +101,7 @@ class Member(models.Model):
     facebook_url = models.URLField(blank=True, help_text='Facebook profile URL')
     instagram_url = models.URLField(blank=True, help_text='Instagram profile URL')
     linkedin_url = models.URLField(blank=True, help_text='LinkedIn profile URL')
+    twitter_url = models.URLField(blank=True, help_text='Twitter/X profile URL')
     is_active = models.BooleanField(default=True)
     order = models.PositiveIntegerField(default=0)
 
@@ -267,6 +306,18 @@ class TeamPageSettings(models.Model):
     watermark_size_percent = models.PositiveIntegerField(default=55, help_text='Watermark size as % (10–120).')
 
     # Member card styling (core knobs)
+    CARDS_PER_ROW_CHOICES = [(2, '2'), (3, '3'), (4, '4'), (5, '5')]
+    CARDS_PER_PAGE_CHOICES = [(6, '6'), (8, '8'), (12, '12'), (18, '18'), (24, '24')]
+    cards_per_row = models.PositiveIntegerField(
+        default=3,
+        choices=CARDS_PER_ROW_CHOICES,
+        help_text='Number of member cards per row (desktop/tablet). Mobile will show 1–2 per row.',
+    )
+    cards_per_page = models.PositiveIntegerField(
+        default=12,
+        choices=CARDS_PER_PAGE_CHOICES,
+        help_text='Number of volunteer cards per page (pagination).',
+    )
     card_radius_px = models.PositiveIntegerField(default=18)
     card_min_height_px = models.PositiveIntegerField(default=420)
     card_max_height_px = models.PositiveIntegerField(default=540)
@@ -282,6 +333,29 @@ class TeamPageSettings(models.Model):
 
     # Team page theme (light/dark)
     theme_mode = models.CharField(max_length=10, choices=THEME_MODE_CHOICES, default='light')
+
+    # Join Us section (volunteer form / team page) – editable from CMS
+    join_us_title = models.CharField(
+        max_length=200,
+        default='Join Our Community',
+        help_text='Main title for the Join Us section.',
+    )
+    join_us_subtitle = models.CharField(
+        max_length=300,
+        default='Collaborate with the best talent in the industry. Your journey starts right here.',
+        help_text='Subtitle or tagline below the title.',
+    )
+    join_us_description = models.TextField(
+        blank=True,
+        default='',
+        help_text='Optional longer description. Shown below subtitle on the Join Us card.',
+    )
+    join_us_image = models.ImageField(
+        upload_to='team/join_us/',
+        blank=True,
+        null=True,
+        help_text='Main image for the Join Us card. Recommended size: 600×400px or similar.',
+    )
 
     class Meta:
         verbose_name = 'Team page settings'
@@ -324,6 +398,8 @@ class TeamPageSettings(models.Model):
             'watermark_opacity': 0.08,
             'watermark_position': 'center',
             'watermark_size_percent': 55,
+            'cards_per_row': 3,
+            'cards_per_page': 12,
             'card_radius_px': 18,
             'card_min_height_px': 420,
             'card_max_height_px': 540,
@@ -337,6 +413,10 @@ class TeamPageSettings(models.Model):
             'card_animation': 'none',
             'section_spacing_px': 24,
             'theme_mode': 'light',
+            'join_us_title': 'Join Our Community',
+            'join_us_subtitle': 'Collaborate with the best talent in the industry. Your journey starts right here.',
+            'join_us_description': '',
+            'join_us_image': None,
         }
 
 

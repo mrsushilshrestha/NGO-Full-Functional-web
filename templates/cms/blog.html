@@ -1,0 +1,59 @@
+{% extends 'cms/base.html' %}
+{% load static %}
+{% block page_title %}Blog{% endblock %}
+{% block content %}
+<div class="cms-card">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <h5 class="mb-0">Blog Posts</h5>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'cms_blog_settings' %}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-cog me-1"></i> Settings</a>
+            <a href="{% url 'cms_blog_post_add' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i> Add Post</a>
+            <a href="{% url 'cms_blog_authors' %}" class="btn btn-outline-secondary btn-sm">Authors</a>
+            <a href="{% url 'cms_blog_categories' %}" class="btn btn-outline-secondary btn-sm">Categories</a>
+            <a href="{% url 'cms_blog_tags' %}" class="btn btn-outline-secondary btn-sm">Tags</a>
+        </div>
+    </div>
+    <form method="get" class="mb-3">
+        <div class="input-group" style="max-width: 320px;">
+            <input type="text" name="q" class="form-control form-control-sm" placeholder="Search posts..." value="{{ search_q|default:'' }}">
+            <button type="submit" class="btn btn-outline-secondary btn-sm">Search</button>
+        </div>
+    </form>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Title</th>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Featured</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in posts %}
+                <tr>
+                    <td>{% if p.featured_image %}<img src="{{ p.featured_image.url }}" style="width: 60px; height: 45px; object-fit: cover;" alt="">{% else %}<span class="text-muted">-</span>{% endif %}</td>
+                    <td>{{ p.title|truncatewords:8 }}</td>
+                    <td>{{ p.date|date:"M d, Y" }}</td>
+                    <td><span class="badge bg-info">{% if p.category %}{{ p.category.name }}{% else %}-{% endif %}</span></td>
+                    <td><span class="badge {% if p.status == 'published' %}bg-success{% else %}bg-warning text-dark{% endif %}">{{ p.status }}</span></td>
+                    <td>{% if p.featured %}<i class="fas fa-star text-warning"></i>{% else %}-{% endif %}</td>
+                    <td>
+                        <a href="{% url 'cms_blog_post_edit' p.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        {% if p.status == 'published' %}
+                        <a href="{% url 'blog_detail' p.slug %}" target="_blank" class="btn btn-sm btn-outline-secondary">View</a>
+                        {% endif %}
+                        <form method="post" action="{% url 'cms_blog_post_delete' p.pk %}" class="d-inline" onsubmit="return confirm('Permanently delete this post?');">{% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-danger">Delete</button></form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-muted">No posts. <a href="{% url 'cms_blog_post_add' %}">Add your first post</a></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

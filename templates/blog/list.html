@@ -1,0 +1,344 @@
+{% extends 'base.html' %}
+{% load static %}
+<!-- Blog listing | swipe cards, auto-suggest search, author/tag filters, AJAX -->
+
+{% block title %}{{ blog_settings.seo_title|default:blog_settings.hero_title|default:"Blog" }}{% endblock %}
+{% block extra_meta %}
+{% if blog_settings.seo_description %}<meta name="description" content="{{ blog_settings.seo_description }}">{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+.blog-editorial {
+  font-family: {{ blog_settings.post_body_font_family|default:"'Inter', system-ui, sans-serif" }};
+  --blog-primary: {{ blog_settings.primary_color|default:"#0B5345" }};
+  --blog-secondary: {{ blog_settings.secondary_color|default:"#148f77" }};
+  --blog-link: {{ blog_settings.link_color|default:"#0B5345" }};
+  --blog-button: {{ blog_settings.button_color|default:"#0B5345" }};
+  --blog-card-bg: {{ blog_settings.card_bg_color|default:"#fdfdfd" }};
+  --blog-card-border: {{ blog_settings.card_border_color|default:"rgba(0,0,0,0.06)" }};
+  --blog-title-color: {{ blog_settings.post_title_color|default:"#111827" }};
+  --blog-text-color: {{ blog_settings.post_content_color|default:"#4b5563" }};
+}
+.blog-editorial .blog-serif {
+  font-family: {{ blog_settings.post_title_font_family|default:"'Playfair Display', Georgia, serif" }};
+}
+.blog-editorial .blog-card {
+  background-color: var(--blog-card-bg);
+  border: 1px solid var(--blog-card-border);
+  box-shadow: {% if blog_settings.card_shadow_style == 'none' %}none{% elif blog_settings.card_shadow_style == 'medium' %}0 4px 14px rgba(0,0,0,0.12){% else %}0 2px 8px rgba(0,0,0,0.06){% endif %};
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.blog-editorial .blog-card:hover {
+  transform: translateY(-2px);
+  box-shadow: {% if blog_settings.card_shadow_style == 'none' %}none{% elif blog_settings.card_shadow_style == 'medium' %}0 8px 24px rgba(0,0,0,0.18){% else %}0 6px 18px rgba(0,0,0,0.10){% endif %};
+  border-color: rgba(0,0,0,0.10);
+}
+.blog-editorial .blog-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
+.blog-editorial .blog-card-link:hover { color: inherit; }
+.blog-editorial .blog-featured-link { text-decoration: none; color: inherit; display: block; }
+.blog-editorial .blog-featured-link:hover { color: inherit; }
+.blog-editorial .blog-featured-overlay { background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 50%); }
+.blog-editorial .blog-tag-pill { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; cursor: pointer; margin: 0.2rem; }
+.blog-editorial .blog-tag-pill.active { background: var(--blog-primary); color: white; }
+.blog-editorial .blog-tag-pill:not(.active) { background: #e5e7eb; color: #374151; }
+.blog-editorial .blog-tag-pill:hover { opacity: 0.9; text-decoration: none; color: inherit; }
+.blog-editorial .blog-search-wrap { position: relative; max-width: 480px; margin: 0 auto 1.5rem; }
+.blog-editorial .blog-search-suggest { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #ddd; border-top: none; border-radius: 0 0 8px 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); max-height: 320px; overflow-y: auto; z-index: 100; }
+.blog-editorial .blog-search-suggest-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #eee; transition: background 0.15s; }
+.blog-editorial .blog-search-suggest-item:hover { background: #f8f9fa; }
+.blog-editorial .blog-search-suggest-item:last-child { border-bottom: none; }
+.blog-editorial .blog-suggest-thumb { width: 48px; height: 36px; flex-shrink: 0; background-size: cover; background-position: center; border-radius: 4px; background-color: #e9ecef; }
+.blog-editorial .blog-suggest-meta { font-size: 0.75rem; color: #6c757d; margin-top: 2px; }
+.blog-editorial .blog-swipe-area { touch-action: pan-y; overflow: hidden; position: relative; }
+/* Swipe effect: by default titles are visible; when revealed we just accent the title color */
+.blog-editorial .blog-swipe-title { transition: color 0.3s ease; color: var(--blog-title-color); }
+.blog-editorial .blog-swipe-title.revealed { color: var(--blog-primary); }
+.blog-editorial .blog-filter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 1.5rem; justify-content: center; }
+.blog-editorial .blog-filter-select { min-width: 160px; }
+.blog-editorial .blog-loading { text-align: center; padding: 2rem; color: #6c757d; }
+.blog-editorial .blog-empty-state { text-align: center; padding: 3rem 1rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero-wrap blog-editorial" style="background-image: url('{% if blog_settings.banner_image %}{{ blog_settings.banner_image.url }}{% else %}{% static 'css/images/bg_5.jpg' %}{% endif %}');" data-stellar-background-ratio="0.5">
+  <div class="overlay"></div>
+  <div class="container">
+    <div class="row no-gutters slider-text align-items-center justify-content-center" data-scrollax-parent="true">
+      <div class="col-md-7 ftco-animate text-center" data-scrollax=" properties: { translateY: '70%' }">
+        <p class="breadcrumbs" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }">
+          <span class="mr-2"><a href="{% url 'home' %}">Home</a></span>
+          <span>Blog</span>
+        </p>
+        {% if blog_settings.show_title %}
+        <h1 class="mb-3 bread blog-serif" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }" style="font-size: 2.5rem;">
+          {{ blog_settings.hero_title|default:"Blog" }}
+        </h1>
+        {% endif %}
+        {% if blog_settings.hero_subtitle %}
+        <p class="lead text-white-80" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }" style="opacity: 0.95;">
+          {{ blog_settings.hero_subtitle }}
+        </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="ftco-section blog-editorial">
+  <div class="container">
+    <!-- Smart Search Bar -->
+    <div class="blog-search-wrap">
+      <form method="get" action="{% url 'blog_list' %}" id="blogSearchForm" class="d-flex">
+        <input type="hidden" name="tag" id="hiddenTag" value="{{ active_tag|default:'' }}">
+        <input type="hidden" name="author" id="hiddenAuthor" value="{{ active_author|default:'' }}">
+        <div class="input-group input-group-lg shadow-sm flex-grow-1">
+          <input type="text" name="q" id="blogSearchInput" class="form-control form-control-lg" placeholder="Search for posts..." value="{{ search_q|default:'' }}" autocomplete="off" aria-label="Search for posts">
+          <button type="submit" class="btn btn-primary px-4"><i class="fas fa-search"></i></button>
+        </div>
+      </form>
+      {% if blog_settings.enable_auto_search %}
+      <div id="blogSearchSuggest" class="blog-search-suggest" style="display:none;"></div>
+      {% endif %}
+    </div>
+
+    <!-- Filter Controls -->
+    <div class="blog-filter-bar">
+      {% if authors %}
+      <div class="blog-filter-select">
+        <select id="blogAuthorFilter" class="form-select form-select-sm">
+          <option value="">All Authors</option>
+          {% for a in authors %}
+          <option value="{{ a.pk }}" {% if active_author == a.pk|stringformat:"s" %}selected{% endif %}>{{ a.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endif %}
+      {% if tags %}
+      <div class="blog-filter-select">
+        <select id="blogTagFilter" class="form-select form-select-sm">
+          <option value="">All Tags</option>
+          {% for tag in tags %}
+          <option value="{{ tag.slug }}" {% if active_tag == tag.slug %}selected{% endif %}>{{ tag.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endif %}
+    </div>
+
+    {% if featured %}
+    <a href="{{ featured.get_absolute_url }}" class="blog-featured-link mb-5 d-block">
+      <div class="blog-card rounded overflow-hidden shadow-sm bg-white">
+        <div class="position-relative" style="height: 380px;">
+          <div class="w-100 h-100" style="{% if featured.featured_image %}background-image: url('{{ featured.featured_image.url }}');{% else %}background: linear-gradient(135deg, #0B5345, #148f77);{% endif %} background-size: cover; background-position: center;"></div>
+          <div class="position-absolute bottom-0 left-0 right-0 p-4 blog-featured-overlay">
+            {% if featured.category %}<span class="blog-tag-pill active mb-2">{{ featured.category.name }}</span>{% endif %}
+            <h2 class="blog-serif text-white mb-2" style="font-size: 1.75rem;">{{ featured.title }}</h2>
+            <p class="text-white-80 mb-2" style="opacity: 0.95;">{{ featured.excerpt|truncatewords:25 }}</p>
+            <small class="text-white-80">{{ featured.date|date:"F d, Y" }} · {{ featured.get_author_display }}</small>
+          </div>
+        </div>
+      </div>
+    </a>
+    {% endif %}
+
+    <!-- Blog Cards Grid -->
+    <div id="blogCardsContainer" class="row">
+      {% for post in posts %}
+      <div class="col-12 col-md-6 col-lg-4 mb-4 ftco-animate">
+        <a href="{{ post.get_absolute_url }}" class="blog-card-link">
+          <div class="blog-card card h-100 border-0 shadow-sm rounded overflow-hidden">
+            <div class="blog-swipe-area position-relative" style="height: 200px;" {% if blog_settings.enable_swipe_effect %}data-swipe="1"{% endif %}>
+              <div class="w-100 h-100" style="{% if post.featured_image %}background-image: url('{{ post.featured_image.url }}');{% else %}background: linear-gradient(135deg, #0B5345, #148f77);{% endif %} background-size: cover; background-position: center;"></div>
+            </div>
+            <div class="card-body">
+              {% if post.category %}<span class="blog-tag-pill active mb-2">{{ post.category.name }}</span>{% endif %}
+              <small class="d-block text-muted mb-2">{{ post.date|date:"M d, Y" }}</small>
+              <h3 class="h5 blog-serif mb-2 text-dark {% if blog_settings.enable_swipe_effect %}blog-swipe-title{% endif %}" {% if blog_settings.enable_swipe_effect %}data-reveal-title{% endif %}>{{ post.title|truncatewords:12 }}</h3>
+              <p class="text-muted small mb-2" data-excerpt>{{ post.excerpt|truncatewords:15 }}</p>
+              <span class="small font-weight-bold text-primary">Read more →</span>
+            </div>
+          </div>
+        </a>
+      </div>
+      {% empty %}
+      <div class="col-12 blog-empty-state">
+        <p class="text-muted">{% if search_q %}No posts match your search.{% else %}No posts yet. Check back soon.{% endif %}</p>
+        {% if search_q %}<a href="{% url 'blog_list' %}" class="btn btn-outline-primary">Clear filters</a>{% else %}<a href="{% url 'home' %}" class="btn btn-primary">Back to Home</a>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    <div id="blogPagination" class="mt-5">
+      {% if posts.has_other_pages %}
+      <nav class="d-flex justify-content-center">
+        <ul class="pagination">
+          {% if posts.has_previous %}
+          <li class="page-item"><a class="page-link" href="?page={{ posts.previous_page_number }}{% if search_q %}&q={{ search_q }}{% endif %}{% if active_tag %}&tag={{ active_tag }}{% endif %}{% if active_author %}&author={{ active_author }}{% endif %}">← Prev</a></li>
+          {% endif %}
+          <li class="page-item disabled"><span class="page-link">Page {{ posts.number }} of {{ posts.paginator.num_pages }}</span></li>
+          {% if posts.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ posts.next_page_number }}{% if search_q %}&q={{ search_q }}{% endif %}{% if active_tag %}&tag={{ active_tag }}{% endif %}{% if active_author %}&author={{ active_author }}{% endif %}">Next →</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<script>
+(function() {
+  var searchUrl = '{% url "blog_search_suggest" %}';
+  var apiUrl = '{% url "blog_api" %}';
+  var mediaUrl = '{{ MEDIA_URL|default:"/media/" }}';
+  var csrf = '{{ csrf_token }}';
+  var enableSwipe = {{ blog_settings.enable_swipe_effect|yesno:"true,false" }};
+  var enableAutoSearch = {{ blog_settings.enable_auto_search|yesno:"true,false" }};
+  var perPage = {{ blog_settings.posts_per_page }};
+
+  function debounce(fn, ms) {
+    var t;
+    return function() { clearTimeout(t); t = setTimeout(fn, ms); };
+  }
+
+  // Swipe to reveal title
+  if (enableSwipe) {
+    document.querySelectorAll('[data-swipe="1"]').forEach(function(area) {
+      var card = area.closest('.blog-card');
+      var titleEl = card ? card.querySelector('[data-reveal-title]') : null;
+      if (!titleEl) return;
+      var startY = 0, currentY = 0;
+      function reveal() { titleEl.classList.add('revealed'); }
+      function hide() { titleEl.classList.remove('revealed'); }
+      function onStart(e) {
+        startY = e.touches ? e.touches[0].clientY : e.clientY;
+      }
+      function onMove(e) {
+        e.preventDefault();
+        currentY = e.touches ? e.touches[0].clientY : e.clientY;
+        if (Math.abs(currentY - startY) > 30) reveal();
+      }
+      function onEnd() { }
+      area.addEventListener('touchstart', onStart, { passive: true });
+      area.addEventListener('touchmove', onMove, { passive: false });
+      area.addEventListener('touchend', onEnd);
+      area.addEventListener('mousedown', function(e) { startY = e.clientY; });
+      area.addEventListener('mousemove', function(e) { if (e.buttons) { currentY = e.clientY; if (Math.abs(currentY - startY) > 20) reveal(); } });
+      area.addEventListener('mouseup', onEnd);
+      area.addEventListener('mouseleave', onEnd);
+    });
+  }
+
+  // Search input: live filtering + optional auto-suggest
+  var input = document.getElementById('blogSearchInput');
+  var suggest = document.getElementById('blogSearchSuggest');
+  if (input) {
+    var onSearchChange = debounce(function() {
+      // Live filter cards
+      applyFilters();
+
+      // Auto-suggest dropdown (optional)
+      if (!enableAutoSearch || !suggest) return;
+      var q = input.value.trim();
+      if (q.length < 2) { suggest.style.display = 'none'; return; }
+      fetch(searchUrl + '?q=' + encodeURIComponent(q))
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (d.results && d.results.length) {
+            suggest.innerHTML = d.results.map(function(p) {
+              var thumb = p.thumbnail ? '<div class="blog-suggest-thumb" style="background-image:url(\'' + p.thumbnail + '\')"></div>' : '<div class="blog-suggest-thumb"></div>';
+              var meta = [p.category, p.author].filter(Boolean).join(' · ');
+              return '<a href="' + p.url + '" class="blog-search-suggest-item">' + thumb + '<div><strong>' + p.title + '</strong><div class="blog-suggest-meta">' + meta + '</div></div></a>';
+            }).join('');
+          } else {
+            suggest.innerHTML = '<div class="p-3 text-muted text-center">No results found</div>';
+          }
+          suggest.style.display = 'block';
+        })
+        .catch(function() { suggest.style.display = 'none'; });
+    }, 300);
+    input.addEventListener('input', onSearchChange);
+    if (suggest) {
+      input.addEventListener('blur', function() { setTimeout(function() { suggest.style.display = 'none'; }, 200); });
+    }
+  }
+
+  // Filter: Author dropdown
+  var authorSel = document.getElementById('blogAuthorFilter');
+  var tagSel = document.getElementById('blogTagFilter');
+  var hiddenTag = document.getElementById('hiddenTag');
+  var hiddenAuthor = document.getElementById('hiddenAuthor');
+  if (authorSel) {
+    authorSel.addEventListener('change', function() {
+      if (hiddenAuthor) hiddenAuthor.value = this.value;
+      applyFilters();
+    });
+  }
+  if (tagSel) {
+    tagSel.addEventListener('change', function() {
+      if (hiddenTag) hiddenTag.value = this.value;
+      applyFilters();
+    });
+  }
+
+  function applyFilters() {
+    var tag = hiddenTag ? hiddenTag.value : '';
+    var author = hiddenAuthor ? hiddenAuthor.value : '';
+    var q = document.getElementById('blogSearchInput').value.trim();
+    var params = new URLSearchParams();
+    if (tag) params.append('tags[]', tag);
+    if (author) params.set('author', author);
+    if (q) params.set('q', q);
+    params.set('per_page', perPage);
+    fetch(apiUrl + '?' + params.toString())
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        var container = document.getElementById('blogCardsContainer');
+        var pagination = document.getElementById('blogPagination');
+        if (!container) return;
+        if (d.posts && d.posts.length) {
+          container.innerHTML = d.posts.map(function(p) {
+            var img = p.thumbnail ? 'background-image:url(\'' + p.thumbnail + '\')' : 'background: linear-gradient(135deg, #0B5345, #148f77)';
+            var swipeAttr = enableSwipe ? ' data-swipe="1"' : '';
+            var titleClass = enableSwipe ? ' blog-swipe-title' : '';
+            var revealAttr = enableSwipe ? ' data-reveal-title' : '';
+            return '<div class="col-12 col-md-6 col-lg-4 mb-4"><a href="' + p.url + '" class="blog-card-link"><div class="blog-card card h-100 border-0 shadow-sm rounded overflow-hidden"><div class="blog-swipe-area position-relative" style="height:200px"' + swipeAttr + '><div class="w-100 h-100" style="' + img + ';background-size:cover;background-position:center"></div></div><div class="card-body">' +
+              (p.category ? '<span class="blog-tag-pill active mb-2">' + p.category + '</span>' : '') +
+              '<small class="d-block text-muted mb-2">' + p.date + '</small><h3 class="h5 blog-serif mb-2 text-dark' + titleClass + '"' + revealAttr + '>' + p.title + '</h3><p class="text-muted small mb-2">' + (p.excerpt || '') + '</p><span class="small font-weight-bold text-primary">Read more →</span></div></div></a></div>';
+          }).join('');
+          if (pagination) pagination.innerHTML = '<nav class="d-flex justify-content-center"><ul class="pagination"><li class="page-item disabled"><span class="page-link">' + (d.posts.length ? 'Showing ' + d.posts.length + ' posts' + (d.has_next ? ' (page 1)' : '') : '') + '</span></li></ul></nav>';
+          if (enableSwipe) {
+            document.querySelectorAll('[data-swipe="1"]').forEach(function(area) {
+              var card = area.closest('.blog-card');
+              var titleEl = card ? card.querySelector('[data-reveal-title]') : null;
+              if (!titleEl) return;
+              var startY = 0, currentY = 0;
+              area.addEventListener('touchstart', function(e) { startY = e.touches[0].clientY; }, { passive: true });
+              area.addEventListener('touchmove', function(e) { e.preventDefault(); currentY = e.touches[0].clientY; if (Math.abs(currentY - startY) > 30) titleEl.classList.add('revealed'); }, { passive: false });
+              area.addEventListener('mousedown', function(e) { startY = e.clientY; });
+              area.addEventListener('mousemove', function(e) { if (e.buttons && Math.abs(e.clientY - startY) > 20) titleEl.classList.add('revealed'); });
+            });
+          }
+        } else {
+          container.innerHTML = '<div class="col-12 blog-empty-state"><p class="text-muted">No posts match your filters.</p><a href="{% url "blog_list" %}" class="btn btn-outline-primary">Clear filters</a></div>';
+          if (pagination) pagination.innerHTML = '';
+        }
+      })
+      .catch(function() {
+        var container = document.getElementById('blogCardsContainer');
+        if (container) container.innerHTML = '<div class="col-12 blog-loading">Unable to load. <a href="{% url "blog_list" %}">Refresh</a></div>';
+      });
+  }
+
+  // Only use AJAX filter when user changes filter (not on initial load with no filters)
+  var hasFilters = {{ active_tag|yesno:"true,false" }} || {{ active_author|yesno:"true,false" }};
+  if (hasFilters) {
+    // Optional: apply on load if we had filters (could do server render instead)
+  }
+})();
+</script>
+{% endblock %}

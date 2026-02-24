@@ -1,5 +1,5 @@
 {% for member in volunteers %}
-<div class="col-12 col-md-4 volunteer-card-col" data-search="{{ member.name|lower }} {{ member.role|lower }} {{ member.member_id|lower }}">
+<div class="team-card-col volunteer-card-col" data-search="{{ member.name|lower }} {{ member.role|lower }} {{ member.member_id|lower }}">
     <a href="{% url 'member_detail' member.pk %}" class="text-decoration-none">
         <div class="member-card-modern">
             {% if member.photo %}
@@ -16,7 +16,9 @@
                 {% if member.member_id %}
                 <div class="member-card-id-wrap"><span class="member-card-id">{{ member.member_id }}</span></div>
                 {% endif %}
-                {% if member.location %}
+                {% if member.district %}
+                <div class="member-card-location small text-white-50 mt-1">{{ member.district.name }}{% if member.district.province %} · {{ member.district.province.name }}{% endif %}</div>
+                {% elif member.location %}
                 <div class="member-card-location small text-white-50 mt-1">{{ member.location_display }}</div>
                 {% endif %}
                 <div class="member-card-social">
@@ -29,6 +31,9 @@
                     {% if member.linkedin_url %}
                     <a href="{{ member.linkedin_url }}" target="_blank" rel="noopener" class="member-social-icon" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
                     {% endif %}
+                    {% if member.twitter_url %}
+                    <a href="{{ member.twitter_url }}" target="_blank" rel="noopener" class="member-social-icon" title="Twitter/X"><i class="fab fa-x-twitter"></i></a>
+                    {% endif %}
                     {% if member.email %}
                     <a href="mailto:{{ member.email }}" class="member-social-icon" title="Email"><i class="fas fa-envelope"></i></a>
                     {% endif %}
@@ -38,8 +43,8 @@
     </a>
 </div>
 {% empty %}
-<div class="col-12 text-center text-muted py-5 volunteer-empty-state">
+<div class="team-card-col team-card-col--empty text-center text-muted py-5 volunteer-empty-state">
     <i class="fas fa-users fa-3x mb-3 opacity-50"></i>
-    <p class="mb-0">No volunteers in this location.</p>
+    <p class="mb-0">No volunteers in this district.</p>
 </div>
 {% endfor %}

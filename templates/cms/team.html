@@ -35,6 +35,23 @@
         </div>
       </a>
     </div>
+    <!-- MODIFICATION: Approval tab - admin-only, for pending Volunteer/Membership applications -->
+    <div class="col-sm-6 col-lg-3">
+      <a href="{% url 'cms_members' %}" class="text-decoration-none">
+        <div class="cms-card h-100 cms-team-action-card border-warning border-2">
+          <div class="d-flex align-items-center gap-3">
+            <div class="rounded-3 bg-warning bg-opacity-10 p-3">
+              <i class="fas fa-user-check text-warning fa-lg"></i>
+            </div>
+            <div class="flex-grow-1">
+              <h6 class="mb-0">Approval</h6>
+              <p class="text-muted small mb-0">Approve/reject applications</p>
+            </div>
+            <i class="fas fa-chevron-right text-muted"></i>
+          </div>
+        </div>
+      </a>
+    </div>
     <div class="col-sm-6 col-lg-3">
       <a href="{% url 'cms_team_page_settings' %}" class="text-decoration-none">
         <div class="cms-card h-100 cms-team-action-card">

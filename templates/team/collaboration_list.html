@@ -1,4 +1,6 @@
 {% extends 'base.html' %}
+{% load static %}
+
 
 {% block title %}Collaboration / Partner Wings{% endblock %}
 
@@ -125,6 +127,22 @@
 {% endblock %}
 
 {% block content %}
+
+<div class="hero-wrap" style="background-image: url('{% static 'css/images/bg_1.jpg' %}');" data-stellar-background-ratio="0.5">
+  <div class="overlay"></div>
+  <div class="container">
+    <div class="row no-gutters slider-text align-items-center justify-content-center" data-scrollax-parent="true">
+      <div class="col-md-8 ftco-animate text-center" data-scrollax=" properties: { translateY: '70%' }">
+        <p class="breadcrumbs" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }">
+          <span class="mr-2"><a href="{% url 'home' %}">Home</a></span>
+          <span>Team</span>
+        </p>
+        <h1 class="mb-3 bread" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }">Our Team</h1>
+      </div>
+    </div>
+  </div>
+</div>
+
 <section class="py-5" style="background: var(--bg-warm);">
     <div class="container">
         <!-- Header Section -->

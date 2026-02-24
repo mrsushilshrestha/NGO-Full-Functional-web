@@ -9,8 +9,17 @@ class MembershipFeeAdmin(admin.ModelAdmin):
 
 @admin.register(VolunteerApplication)
 class VolunteerApplicationAdmin(admin.ModelAdmin):
-    list_display = ['name', 'email', 'location', 'status', 'submitted_at']
-    list_filter = ['status']
+    list_display = ['name', 'email', 'district', 'status', 'submitted_at']
+    list_filter = ['status', 'district']
+    search_fields = ['name', 'email', 'contact_number']
+    readonly_fields = ['submitted_at']
+    fieldsets = (
+        (None, {'fields': ('name', 'contact_number', 'email', 'profile_image', 'cv_file', 'status')}),
+        ('Location', {'fields': ('district', 'location', 'municipality', 'ward', 'area')}),
+        ('Volunteering', {'fields': ('volunteering_interest', 'past_experience', 'availability')}),
+        ('Social media', {'fields': ('facebook_url', 'linkedin_url', 'twitter_url', 'instagram_url'), 'description': 'Shown on team profile when approved.'}),
+        ('Meta', {'fields': ('submitted_at',)}),
+    )
 
 
 @admin.register(MembershipApplication)
