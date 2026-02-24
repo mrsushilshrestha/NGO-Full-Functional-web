@@ -1,0 +1,18 @@
+{% extends 'cms/base.html' %}
+{% load crispy_forms_tags %}
+{% block page_title %}Edit SMS Template: {{ obj.get_template_type_display }}{% endblock %}
+{% block content %}
+<div class="cms-card">
+    <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <div class="mt-3">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a href="{% url back_url %}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+<div class="cms-card mt-3">
+    <p class="small text-muted mb-0"><strong>Placeholders:</strong> <code>{name}</code> — applicant name, <code>{application_type}</code> — Volunteer/Membership, <code>{date}</code> — submission date</p>
+</div>
+{% endblock %}

@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% load static %}
+<!-- Blog detail | backend: post, related -->
+
+{% block title %}{{ post.title }}{% endblock %}
+{% block extra_meta %}<meta name="description" content="{{ post.excerpt|truncatewords:30 }}">{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+.blog-editorial {
+  font-family: {{ blog_settings.post_body_font_family|default:"'Inter', system-ui, sans-serif" }};
+}
+.blog-editorial .blog-serif {
+  font-family: {{ blog_settings.post_title_font_family|default:"'Playfair Display', Georgia, serif" }};
+}
+.blog-editorial .blog-max { max-width: 56rem; margin-left: auto; margin-right: auto; }
+.blog-editorial .blog-sticky-title {
+  position: sticky;
+  top: 80px;
+  z-index: 5;
+  background: #ffffff;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+  margin-bottom: 1rem;
+}
+@media (max-width: 767.98px) {
+  .blog-editorial .blog-sticky-title { top: 70px; }
+}
+.blog-editorial .blog-figcaption { font-style: italic; border-left: 3px solid var(--primary, #0B5345); padding-left: 1rem; margin-top: 0.5rem; color: #6b7280; }
+.blog-editorial .blog-quote-card { background: #f9fafb; border-radius: 12px; padding: 2rem; text-align: center; margin: 2rem 0; }
+.blog-editorial .blog-quote-card blockquote { font-family: 'Playfair Display', Georgia, serif; font-size: 1.35rem; font-weight: 600; margin: 0; color: #1f2937; }
+.blog-editorial .blog-quote-card .attribution { margin-top: 1rem; font-size: 0.9rem; color: #6b7280; }
+.blog-editorial .blog-list-accent { list-style: none; padding-left: 0; }
+.blog-editorial .blog-list-accent li { padding-left: 1.5rem; margin-bottom: 0.5rem; position: relative; }
+.blog-editorial .blog-list-accent li::before { content: "•"; position: absolute; left: 0; color: var(--primary, #0B5345); font-weight: bold; font-size: 1.2em; }
+.blog-editorial .blog-author-card { display: flex; align-items: center; gap: 1rem; padding: 1.5rem; background: #f9fafb; border-radius: 12px; }
+.blog-editorial .blog-author-avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; }
+.blog-editorial .blog-tag-pill { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; background: #e5e7eb; color: #374151; margin-right: 0.5rem; margin-bottom: 0.5rem; }
+.blog-editorial .blog-tag-pill:hover { background: var(--primary, #0B5345); color: white; text-decoration: none; }
+.blog-editorial .blog-related-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.blog-editorial .blog-related-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.1); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero-wrap blog-editorial" style="background-image: url('{% static 'css/images/bg_5.jpg' %}');" data-stellar-background-ratio="0.5">
+  <div class="overlay"></div>
+  <div class="container">
+    <div class="row no-gutters slider-text align-items-center justify-content-center" data-scrollax-parent="true">
+      <div class="col-md-7 ftco-animate text-center" data-scrollax=" properties: { translateY: '70%' }">
+        <p class="breadcrumbs" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }">
+          <span class="mr-2"><a href="{% url 'home' %}">Home</a></span>
+          <span class="mr-2"><a href="{% url 'blog_list' %}">Blog</a></span>
+          <span>{{ post.title|truncatewords:5 }}</span>
+        </p>
+        <h1 class="mb-3 bread blog-serif" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }" style="font-size: 2rem;">
+          {{ post.title }}
+        </h1>
+        <p class="text-white-80" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }" style="opacity: 0.95;">
+          {{ post.date|date:"F d, Y" }} · {{ post.get_author_display }}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="ftco-section blog-editorial">
+  <div class="container blog-max">
+    <!-- Sticky in-article title -->
+    <div class="blog-sticky-title">
+      <h2 class="h5 mb-0 blog-serif">{{ post.title }}</h2>
+    </div>
+    {% if post.long_excerpt %}
+    <p class="lead blog-serif mb-4" style="font-size: 1.2rem; line-height: 1.7;">{{ post.long_excerpt }}</p>
+    {% endif %}
+
+    {% if post.featured_image %}
+    <figure class="mb-5">
+      <img src="{{ post.featured_image.url }}" alt="{{ post.title }}" class="img-fluid rounded w-100 shadow-sm">
+      {% if post.image_caption %}
+      <figcaption class="blog-figcaption">{{ post.image_caption }}</figcaption>
+      {% endif %}
+    </figure>
+    {% endif %}
+
+    <div class="blog-content mb-5">
+      {% for block in post.content_blocks.all %}
+        {% if block.block_type == 'paragraph' %}
+        <p class="mb-4">{{ block.content|linebreaksbr }}</p>
+        {% elif block.block_type == 'heading' %}
+        <h3 class="blog-serif h4 mb-3 mt-4">{{ block.content }}</h3>
+        {% elif block.block_type == 'quote' %}
+        <div class="blog-quote-card">
+          <blockquote>{{ block.content }}</blockquote>
+          {% if block.attribution %}<p class="attribution mb-0">— {{ block.attribution }}</p>{% endif %}
+        </div>
+        {% elif block.block_type == 'list' %}
+        <ul class="blog-list-accent mb-4">
+          {% for item in block.get_list_items %}
+          <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <!-- Author & Actions -->
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-4 mb-5 pb-4 border-bottom">
+      <div class="blog-author-card">
+        {% with avatar=post.get_author_avatar %}
+        <img src="{% if avatar %}{{ avatar.url }}{% else %}{% static 'css/images/person_1.jpg' %}{% endif %}" alt="{{ post.get_author_display }}" class="blog-author-avatar">
+        {% endwith %}
+        <div>
+          <strong class="d-block">{{ post.get_author_display }}</strong>
+          {% if post.get_author_role %}<span class="text-muted small">{{ post.get_author_role }}</span>{% endif %}
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <button type="button" id="blogShareBtn" class="btn btn-outline-secondary btn-sm"><i class="fas fa-share-alt me-1"></i> Share</button>
+        <a href="{% url 'blog_list' %}" class="btn btn-outline-secondary btn-sm">← Back to All Posts</a>
+      </div>
+    </div>
+
+    {% if post.tags.exists %}
+    <div class="mb-5">
+      {% for tag in post.tags.all %}
+      <a href="{% url 'blog_list' %}?tag={{ tag.slug }}" class="blog-tag-pill">{{ tag.name }}</a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if related %}
+    <h4 class="blog-serif h5 mb-4">Related Posts</h4>
+    <div class="row">
+      {% for r in related %}
+      <div class="col-md-6 col-lg-4 mb-3">
+        <a href="{{ r.get_absolute_url }}" class="text-decoration-none text-dark">
+          <div class="blog-related-card card border-0 shadow-sm rounded overflow-hidden h-100">
+            <div style="height: 180px; {% if r.featured_image %}background-image: url('{{ r.featured_image.url }}');{% else %}background: linear-gradient(135deg, #0B5345, #148f77);{% endif %} background-size: cover; background-position: center;"></div>
+            <div class="card-body">
+              <small class="text-muted">{{ r.date|date:"M d, Y" }}</small>
+              <h5 class="blog-serif mt-1">{{ r.title|truncatewords:8 }}</h5>
+            </div>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<script>
+document.getElementById('blogShareBtn')?.addEventListener('click', function() {
+  var url = window.location.href;
+  var title = document.querySelector('h1.bread')?.textContent || document.title;
+  if (navigator.share) {
+    navigator.share({ title: title, url: url }).catch(function() { copyFallback(url); });
+  } else {
+    copyFallback(url);
+  }
+});
+function copyFallback(url) {
+  navigator.clipboard.writeText(url).then(function() {
+    var btn = document.getElementById('blogShareBtn');
+    if (btn) { btn.innerHTML = '<i class="fas fa-check me-1"></i> Copied!'; setTimeout(function(){ btn.innerHTML = '<i class="fas fa-share-alt me-1"></i> Share'; }, 2000); }
+  });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Nepal Map</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; background: #f4f7f6; }
+        
+        #map-container {
+            width: 90%;
+            max-width: 900px;
+            margin-top: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Target the paths inside your SVG */
+        svg path {
+            fill: #cccccc; /* Default Inactive Color */
+            stroke: #ffffff;
+            stroke-width: 0.5;
+            transition: fill 0.2s ease;
+            cursor: pointer;
+        }
+
+        /* Hover Effect */
+        svg path:hover {
+            fill: #fab1a0 !important;
+        }
+
+        /* Active State (Toggle this with JS) */
+        svg path.active {
+            fill: #ff7675 !important;
+        }
+
+        #tooltip {
+            position: absolute;
+            background: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            display: none;
+            pointer-events: none;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Interactive Nepal Map</h2>
+    <p>Click on a district to activate it.</p>
+
+    <div id="tooltip"></div>
+    <div id="map-container">
+        </div>
+
+    <script>
+        const container = document.getElementById('map-container');
+        const tooltip = document.getElementById('tooltip');
+
+        // 1. Fetch the np.svg file
+        fetch('Nepal_district.svg')
+            .then(response => response.text())
+            .then(svgData => {
+                // 2. Inject SVG into the container
+                container.innerHTML = svgData;
+                
+                // 3. Initialize Interactivity
+                setupMapInteractivity();
+            })
+            .catch(err => console.error("Error loading SVG:", err));
+
+        function setupMapInteractivity() {
+            const districts = document.querySelectorAll('svg path');
+
+            districts.forEach(district => {
+                // Determine the name (usually stored in 'id', 'name', or 'data-name')
+                const districtName = district.getAttribute('name') || district.getAttribute('id') || "Unknown District";
+
+                // Mouse Move: Tooltip logic
+                district.addEventListener('mousemove', (e) => {
+                    tooltip.style.display = 'block';
+                    tooltip.innerText = districtName;
+                    tooltip.style.left = (e.pageX + 10) + 'px';
+                    tooltip.style.top = (e.pageY - 30) + 'px';
+                });
+
+                // Mouse Leave: Hide Tooltip
+                district.addEventListener('mouseleave', () => {
+                    tooltip.style.display = 'none';
+                });
+
+                // Click: Toggle Active State
+                district.addEventListener('click', () => {
+                    district.classList.toggle('active');
+                    console.log("Clicked:", districtName);
+                });
+            });
+        }
+    </script>
+</body>
+</html>

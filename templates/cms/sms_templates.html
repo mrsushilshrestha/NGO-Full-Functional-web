@@ -1,0 +1,30 @@
+{% extends 'cms/base.html' %}
+{% block page_title %}SMS Message Templates{% endblock %}
+{% block content %}
+<!-- MODIFICATION: List of editable SMS templates for application workflow -->
+<div class="cms-card mb-4">
+    <p class="text-muted mb-0">Edit the SMS messages sent at different stages. Use placeholders: <code>{name}</code>, <code>{application_type}</code>, <code>{date}</code></p>
+</div>
+<div class="cms-card">
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead><tr><th>Template</th><th>Message Preview</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+                {% for t in templates %}
+                <tr>
+                    <td>{{ t.get_template_type_display }}</td>
+                    <td><span class="text-muted small">{{ t.message|truncatewords:15 }}</span></td>
+                    <td><span class="badge {% if t.is_active %}bg-success{% else %}bg-secondary{% endif %}">{{ t.is_active|yesno:"Active,Inactive" }}</span></td>
+                    <td><a href="{% url 'cms_sms_template_edit' t.pk %}" class="btn btn-sm btn-outline-primary">Edit</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-muted">No templates. Run migrations to create defaults.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="mt-3">
+        <a href="{% url 'cms_sms_settings' %}" class="btn btn-outline-secondary">Back to SMS Settings</a>
+    </div>
+</div>
+{% endblock %}

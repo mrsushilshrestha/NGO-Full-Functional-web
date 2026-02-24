@@ -1,0 +1,85 @@
+{% extends 'cms/base.html' %}
+{% load static %}
+{% block page_title %}Volunteer — {{ volunteer.name }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0">Volunteer application: {{ volunteer.name }}</h5>
+    <div>
+        <a href="{% url 'cms_volunteer_edit' volunteer.pk %}" class="btn btn-outline-primary btn-sm">Edit application</a>
+        <a href="{% url 'cms_members' %}" class="btn btn-outline-secondary btn-sm">Back to list</a>
+    </div>
+</div>
+
+{% if messages %}
+<div class="mb-3">
+    {% for m in messages %}<div class="alert alert-{{ m.tags }} py-2">{{ m }}</div>{% endfor %}
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="cms-card mb-4">
+            <h6 class="text-muted text-uppercase small mb-3">Status</h6>
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <span class="badge {% if volunteer.status == 'pending' %}bg-warning text-dark{% elif volunteer.status == 'approved' %}bg-success{% else %}bg-secondary{% endif %} fs-6">{{ volunteer.status|title }}</span>
+                <form method="post" action="{% url 'cms_volunteer_set_status' volunteer.pk %}" class="d-inline-flex align-items-center gap-2 flex-wrap">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="cms_volunteer_detail">
+                    <label class="mb-0 small">Set status:</label>
+                    <select name="status" class="form-select form-select-sm" style="width: auto;">
+                        <option value="pending" {% if volunteer.status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="approved" {% if volunteer.status == 'approved' %}selected{% endif %}>Approved</option>
+                        <option value="rejected" {% if volunteer.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-primary">Update</button>
+                </form>
+            </div>
+            <p class="small text-muted mt-2 mb-0">You can switch between Pending, Approved, and Rejected at any time. No need to delete or re-submit.</p>
+        </div>
+
+        <div class="cms-card mb-4">
+            <h6 class="text-muted text-uppercase small mb-3">Personal details</h6>
+            <table class="table table-sm table-borderless mb-0">
+                <tr><th class="text-muted" style="width: 140px;">Name</th><td>{{ volunteer.name }}</td></tr>
+                <tr><th class="text-muted">Email</th><td><a href="mailto:{{ volunteer.email }}">{{ volunteer.email }}</a></td></tr>
+                <tr><th class="text-muted">Phone</th><td>{{ volunteer.contact_number }}</td></tr>
+                <tr><th class="text-muted">District</th><td>{{ volunteer.district.name|default:"—" }}{% if volunteer.district %} ({{ volunteer.district.province.name }}){% endif %}</td></tr>
+                <tr><th class="text-muted">Municipality</th><td>{{ volunteer.municipality|default:"—" }}</td></tr>
+                <tr><th class="text-muted">Ward</th><td>{{ volunteer.ward|default:"—" }}</td></tr>
+                <tr><th class="text-muted">Area / Tole</th><td>{{ volunteer.area|default:"—" }}</td></tr>
+                <tr><th class="text-muted">Submitted</th><td>{{ volunteer.submitted_at|date:"M d, Y H:i" }}</td></tr>
+            </table>
+        </div>
+
+        <div class="cms-card mb-4">
+            <h6 class="text-muted text-uppercase small mb-3">Volunteering</h6>
+            <p><strong>Interest:</strong> {{ volunteer.volunteering_interest|default:"—" }}</p>
+            {% if volunteer.past_experience %}
+            <p><strong>Past experience:</strong><br><span class="text-break">{{ volunteer.past_experience }}</span></p>
+            {% endif %}
+            {% if volunteer.availability %}
+            <p><strong>Availability:</strong> {{ volunteer.availability }}</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="cms-card mb-4">
+            <h6 class="text-muted text-uppercase small mb-3">Profile photo</h6>
+            {% if volunteer.profile_image %}
+            <img src="{{ volunteer.profile_image.url }}" alt="{{ volunteer.name }}" class="img-fluid rounded border" style="max-height: 200px; object-fit: contain;">
+            {% else %}
+            <p class="text-muted small mb-0">No photo uploaded.</p>
+            {% endif %}
+        </div>
+        <div class="cms-card mb-4">
+            <h6 class="text-muted text-uppercase small mb-3">CV / Resume</h6>
+            {% if volunteer.cv_file %}
+            <p class="small mb-2">Uploaded file: <strong>{{ volunteer.cv_file.name|default:"CV" }}</strong></p>
+            <a href="{{ volunteer.cv_file.url }}" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm"><i class="fas fa-file-alt me-1"></i>Open / Download CV</a>
+            {% else %}
+            <p class="text-muted small mb-0">No CV uploaded.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -141,6 +141,68 @@ class GalleryImage(models.Model):
         return self.title or str(self.id)
 
 
+class SplashScreenSettings(models.Model):
+    """Configurable splash screen for homepage first visit"""
+    ANIMATION_CHOICES = [
+        ('fade', 'Fade'),
+        ('zoom', 'Zoom'),
+        ('slide', 'Slide from bottom'),
+        ('slide_up', 'Slide up'),
+        ('slide_left', 'Slide from right'),
+        ('none', 'None'),
+    ]
+    LOADER_CHOICES = [
+        ('none', 'None'),
+        ('spinner', 'Spinner'),
+        ('progress_bar', 'Progress bar'),
+        ('dots', 'Dots'),
+    ]
+    # Main controls
+    enabled = models.BooleanField(default=False, help_text='Enable splash screen on homepage')
+    show_only_first_visit = models.BooleanField(
+        default=True,
+        help_text='Show only on first visit per session (recommended). Uncheck to show every visit.'
+    )
+    click_to_skip = models.BooleanField(default=True, help_text='Allow clicking anywhere to skip')
+    z_index = models.PositiveIntegerField(default=99999, help_text='Layer priority (higher = on top)')
+    # Content
+    background_image = models.ImageField(upload_to='splash/', blank=True, null=True)
+    background_color = models.CharField(max_length=20, default='#0B5345', help_text='Used when no background image')
+    logo = models.ImageField(upload_to='splash/', blank=True, null=True)
+    title_text = models.CharField(max_length=200, blank=True, default='Welcome')
+    subtitle_text = models.TextField(blank=True, default='Loading your experience...')
+    loading_text = models.CharField(max_length=100, blank=True)
+    # Overlay / transparency
+    overlay_color = models.CharField(max_length=20, default='#000000')
+    overlay_opacity = models.DecimalField(
+        max_digits=3, decimal_places=2, default=0.4,
+        help_text='0=transparent, 1=solid overlay for text readability'
+    )
+    overlay_blur_px = models.PositiveSmallIntegerField(
+        default=0, blank=True,
+        help_text='Background blur (0=off, 1-20 for blur)'
+    )
+    # Animation
+    animation_enabled = models.BooleanField(default=True)
+    animation_type = models.CharField(max_length=20, choices=ANIMATION_CHOICES, default='fade')
+    animation_duration_ms = models.PositiveIntegerField(default=600)
+    auto_close_seconds = models.PositiveSmallIntegerField(
+        default=0,
+        help_text='Auto-close after N seconds (0=manual/skip only)'
+    )
+    loader_type = models.CharField(max_length=20, choices=LOADER_CHOICES, default='spinner')
+    sound_enabled = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = 'Splash Screen Settings'
+        verbose_name_plural = 'Splash Screen Settings'
+
+    @classmethod
+    def get(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+
 class SiteIdentity(models.Model):
     """Site identity - logo, favicon, title, tagline"""
     site_title = models.CharField(max_length=200, default='NHAF Nepal')

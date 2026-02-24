@@ -1,118 +1,242 @@
 {% extends 'base.html' %}
+{% load static %}
+<!-- Dynamic data from backend: org, founders, chapters, achievements (from about.views) -->
 
 {% block title %}About Us{% endblock %}
 
 {% block content %}
-<section class="py-5" style="background: var(--bg-warm);">
-    <div class="container">
-        <span class="badge rounded-pill px-3 py-2 mb-3" style="background: rgba(11,83,69,0.12); color: #0B5345;">Who We Are</span>
-        <h1 class="section-title mb-4">About NHAF Nepal</h1>
+<div class="hero-wrap" style="background-image: url('{% static 'css/images/bg_7.jpg' %}');" data-stellar-background-ratio="0.5">
+  <div class="overlay"></div>
+  <div class="container">
+    <div class="row no-gutters slider-text align-items-center justify-content-center" data-scrollax-parent="true">
+      <div class="col-md-7 ftco-animate text-center" data-scrollax=" properties: { translateY: '70%' }">
+        <p class="breadcrumbs" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }">
+          <!-- Connected to Home page -->
+          <span class="mr-2"><a href="{% url 'home' %}">Home</a></span>
+          <span>About</span>
+        </p>
+        <h1 class="mb-3 bread" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }">About Us</h1>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="ftco-section">
+  <div class="container">
+    <div class="row d-flex">
+      <div class="col-md-6 d-flex ftco-animate">
+        <div class="img img-about align-self-stretch" style="background-image: url('{% static 'css/images/bg_3.jpg' %}'); width: 100%;"></div>
+      </div>
+      <div class="col-md-6 pl-md-5 ftco-animate">
         {% if org %}
-        <div class="row">
-            {% if org.mission %}
-            <div class="col-md-6 mb-4">
-                <div class="card card-elevated h-100">
-                    <div class="card-body">
-                        <h5 class="card-title" style="color: #0B5345;"><i class="fas fa-bullseye me-2"></i>Mission</h5>
-                        <div class="card-text">{{ org.mission|safe }}</div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-            {% if org.vision %}
-            <div class="col-md-6 mb-4">
-                <div class="card card-elevated h-100">
-                    <div class="card-body">
-                        <h5 class="card-title" style="color: #0B5345;"><i class="fas fa-eye me-2"></i>Vision</h5>
-                        <div class="card-text">{{ org.vision|safe }}</div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-        </div>
-        {% if org.objectives %}
-        <div class="mb-4">
-            <h5 style="color: #0B5345;"><i class="fas fa-tasks me-2"></i>Objectives</h5>
-            <div>{{ org.objectives|safe }}</div>
-        </div>
+        <h2 class="mb-4">About NHAF Nepal</h2>
+        {% if org.mission %}
+        <p><strong>Mission:</strong> {{ org.mission|striptags|truncatewords:50 }}{% if org.mission|striptags|wordcount > 50 %}...{% endif %}</p>
+        {% endif %}
+        {% if org.vision %}
+        <p><strong>Vision:</strong> {{ org.vision|striptags|truncatewords:50 }}{% if org.vision|striptags|wordcount > 50 %}...{% endif %}</p>
         {% endif %}
         {% if org.history %}
-        <div class="mb-4">
-            <h5 style="color: #0B5345;"><i class="fas fa-history me-2"></i>History</h5>
-            <div>{{ org.history|safe }}</div>
-        </div>
+        <p>{{ org.history|safe|truncatewords_html:80 }}</p>
+        {% else %}
+        <p>National Health Association Force Nepal (NHAF Nepal) is a registered health NGO dedicated to improving healthcare access in remote and underserved areas. We conduct free health camps, medical outreach programs, and community wellness initiatives across Nepal.</p>
         {% endif %}
         {% else %}
-        <div class="card card-elevated p-4">
-            <p class="lead text-muted mb-0">National Health Association Force Nepal is a registered health NGO dedicated to improving healthcare access across Nepal. We conduct free health camps, medical outreach programs, and community wellness initiatives in remote and underserved areas. Our mission, vision, and detailed objectives are available in the CMS.</p>
-        </div>
+        <h2 class="mb-4">Welcome to NHAF Nepal</h2>
+        <p>National Health Association Force Nepal (NHAF Nepal) is a registered health NGO dedicated to improving healthcare access in Nepal. We conduct free health camps, medical outreach programs, and community wellness initiatives in remote and underserved areas.</p>
+        <p>Our mission, vision, and detailed objectives are available in the CMS.</p>
         {% endif %}
+      </div>
     </div>
+  </div>
 </section>
 
-{% if founders %}
-<section class="py-5" style="background: white;">
-    <div class="container">
-        <h2 class="mb-4">Our Founders</h2>
-        <div class="row g-4">
-            {% for f in founders %}
-            <div class="col-md-4">
-                <div class="card card-elevated text-center h-100">
-                    {% if f.photo %}<img src="{{ f.photo.url }}" class="card-img-top rounded-circle mx-auto mt-3" style="width: 120px; height: 120px; object-fit: cover;" alt="{{ f.name }}">{% else %}<div class="rounded-circle mx-auto mt-3 img-placeholder d-flex align-items-center justify-content-center" style="width: 120px; height: 120px;"><i class="fas fa-user fa-3x text-white"></i></div>{% endif %}
-                    <div class="card-body">
-                        <h5>{{ f.name }}</h5>
-                        <p class="text-muted small">{{ f.title }}</p>
-                        <div class="small">{{ f.bio|safe|truncatewords_html:30 }}</div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
+<section class="ftco-counter ftco-intro ftco-intro-2" id="section-counter">
+  <div class="container">
+    <div class="row no-gutters">
+      <div class="col-md-5 d-flex justify-content-center counter-wrap ftco-animate">
+        <div class="block-18 color-1 align-items-stretch">
+          <div class="text">
+            <span>Served Over</span>
+            <strong class="number" data-number="1432805">0</strong>
+            <span>People in communities across Nepal</span>
+          </div>
         </div>
+      </div>
+      <div class="col-md d-flex justify-content-center counter-wrap ftco-animate">
+        <div class="block-18 color-2 align-items-stretch">
+          <div class="text">
+            <h3 class="mb-4">Donate Money</h3>
+            <p>{% if org and org.mission %}{{ org.mission|striptags|truncatewords:15 }}{% else %}Support our mission to improve healthcare access across Nepal.{% endif %}</p>
+            <p><a href="{% url 'donate' %}" class="btn btn-white px-3 py-2 mt-2">Donate Now</a></p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md d-flex justify-content-center counter-wrap ftco-animate">
+        <div class="block-18 color-3 align-items-stretch">
+          <div class="text">
+            <h3 class="mb-4">Be a Volunteer</h3>
+            <p>{% if org and org.vision %}{{ org.vision|striptags|truncatewords:15 }}{% else %}Join our team and make a difference in underserved communities.{% endif %}</p>
+            <p><a href="{% url 'team_list' %}?tab=volunteer" class="btn btn-white px-3 py-2 mt-2">Be A Volunteer</a></p>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
+</section>
+
+{% if org and org.objectives %}
+<section class="ftco-section bg-light">
+  <div class="container">
+    <div class="row justify-content-center mb-5 pb-3">
+      <div class="col-md-7 heading-section ftco-animate text-center">
+        <h2 class="mb-4">Our Objectives</h2>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12 ftco-animate">
+        <div class="text">{{ org.objectives|safe }}</div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if founders %}
+<section class="ftco-section bg-light">
+  <div class="container">
+    <div class="row justify-content-center mb-5 pb-3">
+      <div class="col-md-7 heading-section ftco-animate text-center">
+        <h2 class="mb-4">Our Founders</h2>
+      </div>
+    </div>
+    <div class="row">
+      {% for f in founders %}
+      <div class="col-lg-4 d-flex mb-sm-4 ftco-animate">
+        <div class="staff">
+          <div class="d-flex mb-4">
+            <div class="img" style="background-image: url('{% if f.photo %}{{ f.photo.url }}{% else %}{% static 'css/images/person_1.jpg' %}{% endif %}');"></div>
+            <div class="info ml-4">
+              <h3><a href="#">{{ f.name }}</a></h3>
+              <span class="position">{{ f.title|default:"Founder" }}</span>
+              <div class="text">
+                <p>{{ f.bio|striptags|truncatewords:20 }}{% if f.bio|striptags|wordcount > 20 %}...{% endif %}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% else %}
+<section class="ftco-section bg-light">
+  <div class="container">
+    <div class="row justify-content-center mb-5 pb-3">
+      <div class="col-md-7 heading-section ftco-animate text-center">
+        <h2 class="mb-4">Our Team</h2>
+        <p>Meet our dedicated team working to improve healthcare access across Nepal.</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-4 d-flex mb-sm-4 ftco-animate">
+        <div class="staff">
+          <div class="d-flex mb-4">
+            <div class="img" style="background-image: url('{% static 'css/images/person_1.jpg' %}');"></div>
+            <div class="info ml-4">
+              <h3><a href="{% url 'team_list' %}">Our Team</a></h3>
+              <span class="position">Board & Volunteers</span>
+              <div class="text">
+                <p><a href="{% url 'team_list' %}">Meet our team</a></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 d-flex mb-sm-4 ftco-animate">
+        <div class="staff">
+          <div class="d-flex mb-4">
+            <div class="img" style="background-image: url('{% static 'css/images/person_2.jpg' %}');"></div>
+            <div class="info ml-4">
+              <h3><a href="{% url 'donate' %}">Support Us</a></h3>
+              <span class="position">Donate</span>
+              <div class="text">
+                <p><a href="{% url 'donate' %}">Donate Now</a></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 d-flex mb-sm-4 ftco-animate">
+        <div class="staff">
+          <div class="d-flex mb-4">
+            <div class="img" style="background-image: url('{% static 'css/images/person_3.jpg' %}');"></div>
+            <div class="info ml-4">
+              <h3><a href="{% url 'team_list' %}?tab=volunteer">Volunteer</a></h3>
+              <span class="position">Join Us</span>
+              <div class="text">
+                <p><a href="{% url 'team_list' %}?tab=volunteer">Be A Volunteer</a></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 {% endif %}
 
 {% if chapters %}
-<section class="py-5">
-    <div class="container">
+<section class="ftco-section">
+  <div class="container">
+    <div class="row justify-content-center mb-5 pb-3">
+      <div class="col-md-7 heading-section ftco-animate text-center">
         <h2 class="mb-4">Our Chapters</h2>
-        <div class="row g-4">
-            {% for ch in chapters %}
-            <div class="col-md-4">
-                <div class="card card-elevated h-100">
-                    <div class="card-body">
-                        <h5><i class="fas fa-map-marker-alt me-2" style="color: #0B5345;"></i>{{ ch.name }}</h5>
-                        {% if ch.address %}<p class="mb-1 small">{{ ch.address }}</p>{% endif %}
-                        {% if ch.phone %}<p class="mb-1 small"><i class="fas fa-phone me-1"></i>{{ ch.phone }}</p>{% endif %}
-                        {% if ch.email %}<p class="mb-0 small"><i class="fas fa-envelope me-1"></i>{{ ch.email }}</p>{% endif %}
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
+      </div>
     </div>
+    <div class="row">
+      {% for ch in chapters %}
+      <div class="col-md-4 ftco-animate">
+        <div class="media block-6 d-flex services p-3 py-4 d-block">
+          <div class="icon d-flex mb-3"><span class="flaticon-donation-1"></span></div>
+          <div class="media-body pl-4">
+            <h3 class="heading">{{ ch.name }}</h3>
+            {% if ch.address %}<p class="mb-1">{{ ch.address }}</p>{% endif %}
+            {% if ch.phone %}<p class="mb-1"><a href="tel:{{ ch.phone }}">{{ ch.phone }}</a></p>{% endif %}
+            {% if ch.email %}<p class="mb-0"><a href="mailto:{{ ch.email }}">{{ ch.email }}</a></p>{% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
 </section>
 {% endif %}
 
 {% if achievements %}
-<section class="py-5" style="background: var(--bg-warm);">
-    <div class="container">
+<section class="ftco-section bg-light">
+  <div class="container">
+    <div class="row justify-content-center mb-5 pb-3">
+      <div class="col-md-7 heading-section ftco-animate text-center">
         <h2 class="mb-4">Key Achievements</h2>
-        <div class="row g-4">
-            {% for a in achievements %}
-            <div class="col-md-4">
-                <div class="card card-elevated h-100">
-                    <div class="card-body">
-                        {% if a.icon %}<i class="fas {{ a.icon }} fa-2x mb-2" style="color: #0B5345;"></i>{% endif %}
-                        <h5>{{ a.title }}</h5>
-                        {% if a.year %}<span class="badge bg-primary">{{ a.year }}</span>{% endif %}
-                        <p class="mt-2 mb-0">{{ a.description|safe|truncatewords_html:20 }}</p>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
+      </div>
     </div>
+    <div class="row">
+      {% for a in achievements %}
+      <div class="col-md-4 ftco-animate">
+        <div class="media block-6 d-flex services p-3 py-4 d-block">
+          {% if a.icon %}<div class="icon d-flex mb-3"><span class="flaticon-charity"></span></div>{% endif %}
+          <div class="media-body pl-4">
+            <h3 class="heading">{{ a.title }}</h3>
+            {% if a.year %}<span class="badge bg-primary">{{ a.year }}</span>{% endif %}
+            <p class="mt-2">{{ a.description|striptags|truncatewords:20 }}</p>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
 </section>
 {% endif %}
 {% endblock %}

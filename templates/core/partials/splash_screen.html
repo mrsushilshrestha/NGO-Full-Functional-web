@@ -1,0 +1,146 @@
+{% load static %}
+<div id="splash-screen" class="splash-screen splash-loading" role="dialog" aria-modal="true" aria-label="Loading" style="
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: {{ splash_settings.background_color }};
+    {% if splash_settings.background_image %}background-image: url('{{ splash_settings.background_image.url }}'); background-size: cover; background-position: center;{% endif %}
+">
+    <div class="splash-overlay" style="
+        position: absolute;
+        inset: 0;
+        background: {{ splash_settings.overlay_color }};
+        opacity: {{ splash_settings.overlay_opacity }};
+        pointer-events: none;
+    "></div>
+    <div class="splash-content">
+        {% if splash_settings.logo %}
+        <div class="splash-logo">
+            <img src="{{ splash_settings.logo.url }}" alt="" loading="eager">
+        </div>
+        {% endif %}
+        {% if splash_settings.title_text %}
+        <h1 class="splash-title">{{ splash_settings.title_text }}</h1>
+        {% endif %}
+        {% if splash_settings.subtitle_text %}
+        <p class="splash-subtitle">{{ splash_settings.subtitle_text }}</p>
+        {% endif %}
+        {% if splash_settings.loading_text %}
+        <p class="splash-loading-text">{{ splash_settings.loading_text }}</p>
+        {% endif %}
+        <div class="splash-loader-wrap">
+            {% if splash_settings.loader_type == 'spinner' %}
+            <div class="splash-spinner"></div>
+            {% elif splash_settings.loader_type == 'progress_bar' %}
+            <div class="splash-progress"><div class="splash-progress-bar"></div></div>
+            {% elif splash_settings.loader_type == 'dots' %}
+            <div class="splash-dots"><span></span><span></span><span></span></div>
+            {% endif %}
+        </div>
+        {% if splash_settings.click_to_skip %}
+        <p class="splash-skip">Click to skip</p>
+        {% endif %}
+    </div>
+</div>
+<style>
+.splash-screen { transition: opacity 0.5s ease; }
+.splash-screen.splash-exit { opacity: 0; pointer-events: none; }
+.splash-content {
+    position: relative; z-index: 1; text-align: center; color: #fff;
+    padding: 2rem; max-width: 90vw;
+}
+.splash-logo { margin-bottom: 1.5rem; }
+.splash-logo img {
+    max-width: min(180px, 45vw); max-height: 100px;
+    object-fit: contain; display: block; margin: 0 auto;
+}
+.splash-title {
+    font-size: clamp(1.25rem, 4vw, 2rem); font-weight: 600;
+    margin: 0 0 0.5rem; letter-spacing: -0.02em;
+    text-shadow: 0 2px 16px rgba(0,0,0,0.4);
+}
+.splash-subtitle {
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem); opacity: 0.9;
+    margin: 0 0 1rem; text-shadow: 0 1px 8px rgba(0,0,0,0.3);
+}
+.splash-loading-text { font-size: 0.85rem; opacity: 0.85; margin: 0 0 1rem; }
+.splash-skip { font-size: 0.8rem; opacity: 0.7; margin-top: 1.5rem; }
+.splash-spinner {
+    width: 36px; height: 36px;
+    border: 2px solid rgba(255,255,255,0.25);
+    border-top-color: #fff; border-radius: 50%;
+    animation: splash-spin 0.7s linear infinite;
+    margin: 0 auto;
+}
+.splash-progress {
+    width: 140px; height: 3px; background: rgba(255,255,255,0.25);
+    border-radius: 2px; margin: 0 auto; overflow: hidden;
+}
+.splash-progress-bar {
+    height: 100%; background: #fff; border-radius: 2px;
+    animation: splash-progress 1.2s ease-in-out infinite;
+}
+.splash-dots { display: flex; gap: 6px; justify-content: center; }
+.splash-dots span {
+    width: 8px; height: 8px; background: rgba(255,255,255,0.8);
+    border-radius: 50%; animation: splash-bounce 1.2s ease-in-out infinite both;
+}
+.splash-dots span:nth-child(2) { animation-delay: 0.15s; }
+.splash-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes splash-spin { to { transform: rotate(360deg); } }
+@keyframes splash-progress { 0% { width: 0%; } 50% { width: 60%; } 100% { width: 0%; } }
+@keyframes splash-bounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.6; }
+    40% { transform: scale(1); opacity: 1; }
+}
+body.splash-active .splash-page-content { visibility: hidden; }
+@media (max-width: 575px) {
+    .splash-content { padding: 1.5rem 1rem; }
+    .splash-logo img { max-height: 80px; }
+}
+</style>
+<script>
+(function() {
+    var splash = document.getElementById('splash-screen');
+    if (!splash) return;
+    var settings = {
+        showOnlyFirstVisit: {{ splash_settings.show_only_first_visit|yesno:'true,false' }},
+        clickToSkip: {{ splash_settings.click_to_skip|yesno:'true,false' }},
+        autoCloseSeconds: {{ splash_settings.auto_close_seconds|default:0 }},
+        animationDuration: {{ splash_settings.animation_duration_ms|default:500 }},
+    };
+    var storageKey = 'splash_seen';
+    function hide() {
+        splash.classList.add('splash-exit');
+        document.body.classList.remove('splash-active');
+        if (settings.showOnlyFirstVisit) {
+            try { sessionStorage.setItem(storageKey, '1'); } catch (e) {}
+        }
+        setTimeout(function() {
+            splash.style.display = 'none';
+            splash.setAttribute('aria-hidden', 'true');
+        }, settings.animationDuration);
+    }
+    function shouldShow() {
+        if (!settings.showOnlyFirstVisit) return true;
+        try { return !sessionStorage.getItem(storageKey); } catch (e) { return true; }
+    }
+    if (!shouldShow()) {
+        splash.style.display = 'none';
+        return;
+    }
+    document.body.classList.add('splash-active');
+    if (settings.clickToSkip) {
+        splash.style.cursor = 'pointer';
+        splash.addEventListener('click', function() { hide(); });
+    }
+    if (settings.autoCloseSeconds > 0) {
+        setTimeout(hide, settings.autoCloseSeconds * 1000);
+    } else if (!settings.clickToSkip) {
+        setTimeout(hide, 8000);
+    }
+})();
+</script>

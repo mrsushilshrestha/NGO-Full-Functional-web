@@ -7,14 +7,17 @@ from .decorators import cms_required
 from .forms import (
     HeroBannerForm, HomeContentForm, AnnouncementPopupForm, GalleryImageForm,
     OrganizationInfoForm, FounderForm, ChapterLocationForm, AchievementForm,
-    ImpactStatForm, ContactInfoForm, DonationTierForm, BankDetailForm, IconConfigForm,
+    ImpactStatForm, ImpactDistrictForm, ContactInfoForm, DonationTierForm, BankDetailForm, IconConfigForm,
     NavItemForm, SiteThemeForm, SiteIdentityForm, MemberForm, ProgramForm,
     QuickResponseForm, ChatSettingsForm, CollaborationForm,
     TeamPageSettingsForm, TeamChapterForm, LocationForm,
+    SplashScreenSettingsForm,
+    SMSSettingsForm, SMSMessageTemplateForm,
+    EmailSettingsForm, EmailMessageTemplateForm,
 )
 
 # Core models
-from apps.core.models import HeroBanner, HomeContent, AnnouncementPopup, GalleryImage, NavItem, SiteTheme, SiteIdentity
+from apps.core.models import HeroBanner, HomeContent, AnnouncementPopup, GalleryImage, NavItem, SiteTheme, SiteIdentity, SplashScreenSettings
 # About models
 from apps.about.models import OrganizationInfo, Founder, ChapterLocation, Achievement
 # Programs
@@ -22,15 +25,16 @@ from apps.programs.models import Program, Category
 # Team
 from apps.team.models import Member, Chapter, Location, Collaboration, TeamPageSettings
 # Impact
-from apps.impact.models import ImpactStat
+from apps.impact.models import ImpactStat, ImpactDistrict
 # Contact
 from apps.contact.models import ContactInfo, ContactMessage, ChatMessage, QuickResponse, ChatSettings
 # Donation
 from apps.donation.models import DonationTier, Donation, BankDetail
 # Membership
 from apps.membership.models import MembershipFee, VolunteerApplication, MembershipApplication
+from apps.membership.forms import VolunteerApplicationForm
 # CMS
-from apps.cms.models import CMSNotification, IconConfig
+from apps.cms.models import CMSNotification, IconConfig, SMSSettings, SMSMessageTemplate, EmailSettings, EmailMessageTemplate
 
 
 def cms_login(request):
@@ -107,11 +111,43 @@ def cms_home(request):
     contents = HomeContent.objects.all()
     announcements = AnnouncementPopup.objects.all()
     gallery = GalleryImage.objects.all()
+    splash = SplashScreenSettings.get()
     return render(request, 'cms/home.html', {
         'banners': banners,
         'contents': contents,
         'announcements': announcements,
         'gallery': gallery,
+        'splash_settings': splash,
+    })
+
+
+@cms_required
+def cms_home_splash_settings(request):
+    """Splash screen settings under Home Page Settings."""
+    settings_obj = SplashScreenSettings.get()
+    if request.method == 'POST':
+        form = SplashScreenSettingsForm(request.POST, request.FILES, instance=settings_obj)
+        if form.is_valid():
+            if form.cleaned_data.get('clear_background_image'):
+                settings_obj.background_image = None
+                settings_obj.save(update_fields=['background_image'])
+            if form.cleaned_data.get('clear_logo'):
+                settings_obj.logo = None
+                settings_obj.save(update_fields=['logo'])
+            form.save()
+            if form.cleaned_data.get('clear_background_image'):
+                settings_obj.background_image = None
+                settings_obj.save(update_fields=['background_image'])
+            if form.cleaned_data.get('clear_logo'):
+                settings_obj.logo = None
+                settings_obj.save(update_fields=['logo'])
+            messages.success(request, 'Splash screen settings saved!')
+            return redirect('cms_home_splash_settings')
+    else:
+        form = SplashScreenSettingsForm(instance=settings_obj)
+    return render(request, 'cms/splash_settings.html', {
+        'form': form,
+        'settings': settings_obj,
     })
 
 
@@ -168,9 +204,10 @@ def cms_team_page_settings(request):
         if reset:
             if reset == 'all':
                 for key, value in defaults.items():
-                    if key != 'background_watermark' and hasattr(settings_obj, key):
+                    if key not in ('background_watermark', 'join_us_image') and hasattr(settings_obj, key):
                         setattr(settings_obj, key, value)
                 settings_obj.background_watermark = None
+                settings_obj.join_us_image = None
                 settings_obj.save()
                 messages.success(request, 'All settings restored to default.')
             elif reset == 'heading':
@@ -198,13 +235,20 @@ def cms_team_page_settings(request):
                 settings_obj.save()
                 messages.success(request, 'Background/watermark cleared and restored to default.')
             elif reset == 'cards':
-                for key in ('card_radius_px', 'card_min_height_px', 'card_max_height_px', 'card_padding_px',
+                for key in ('cards_per_row', 'cards_per_page', 'card_radius_px', 'card_min_height_px', 'card_max_height_px', 'card_padding_px',
                             'social_icon_size_px', 'name_font_size_px', 'role_font_size_px', 'id_font_size_px',
                             'card_hover_effect', 'card_shadow', 'card_animation', 'section_spacing_px'):
                     if key in defaults:
                         setattr(settings_obj, key, defaults[key])
                 settings_obj.save()
                 messages.success(request, 'Card styling restored to default.')
+            elif reset == 'join_us':
+                for key in ('join_us_title', 'join_us_subtitle', 'join_us_description'):
+                    if key in defaults:
+                        setattr(settings_obj, key, defaults[key])
+                settings_obj.join_us_image = None
+                settings_obj.save()
+                messages.success(request, 'Join Us section restored to default.')
             return redirect('cms_team_page_settings')
 
         form = TeamPageSettingsForm(request.POST, request.FILES, instance=settings_obj)
@@ -212,11 +256,17 @@ def cms_team_page_settings(request):
             if form.cleaned_data.get('clear_watermark'):
                 settings_obj.background_watermark = None
                 settings_obj.save(update_fields=['background_watermark'])
+            if form.cleaned_data.get('clear_join_us_image'):
+                settings_obj.join_us_image = None
+                settings_obj.save(update_fields=['join_us_image'])
             form.save()
             if form.cleaned_data.get('clear_watermark'):
                 # Already cleared above; form.save() might have re-set it from FILES, so clear again
                 settings_obj.background_watermark = None
                 settings_obj.save(update_fields=['background_watermark'])
+            if form.cleaned_data.get('clear_join_us_image'):
+                settings_obj.join_us_image = None
+                settings_obj.save(update_fields=['join_us_image'])
             messages.success(request, 'Team page settings saved!')
             return redirect('cms_team_page_settings')
     else:
@@ -231,7 +281,8 @@ def cms_team_page_settings(request):
 @require_GET
 def cms_impact(request):
     stats = ImpactStat.objects.all()
-    return render(request, 'cms/impact.html', {'stats': stats})
+    impact_districts = ImpactDistrict.objects.all()
+    return render(request, 'cms/impact.html', {'stats': stats, 'impact_districts': impact_districts})
 
 
 @cms_required
@@ -254,8 +305,8 @@ def cms_donation(request):
 @require_GET
 def cms_members(request):
     """Member/volunteer approval center."""
-    volunteers = VolunteerApplication.objects.all()[:50]
-    members = MembershipApplication.objects.all()[:50]
+    volunteers = VolunteerApplication.objects.select_related('district').order_by('-submitted_at')[:100]
+    members = MembershipApplication.objects.all().order_by('-submitted_at')[:50]
     return render(request, 'cms/members.html', {'volunteers': volunteers, 'members': members})
 
 
@@ -282,6 +333,51 @@ def cms_member_action(request, model_type, pk, action):
             link='/admin-login/members/',
         )
     return redirect('cms_members')
+
+
+@cms_required
+@require_GET
+def cms_volunteer_detail(request, pk):
+    """Full applicant profile: details, profile image, CV preview/link."""
+    obj = get_object_or_404(VolunteerApplication.objects.select_related('district__province'), pk=pk)
+    return render(request, 'cms/volunteer_detail.html', {'volunteer': obj})
+
+
+@cms_required
+@require_POST
+def cms_volunteer_set_status(request, pk):
+    """Set volunteer application status to Pending, Approved, or Rejected (toggle-style)."""
+    obj = get_object_or_404(VolunteerApplication, pk=pk)
+    status = (request.POST.get('status') or '').strip().lower()
+    if status not in ('pending', 'approved', 'rejected'):
+        messages.error(request, 'Invalid status.')
+        return redirect('cms_volunteer_detail', pk=pk)
+    obj.status = status
+    obj.save()
+    messages.success(request, f'Status set to {status.title()}.')
+    next_target = request.POST.get('next') or request.GET.get('next')
+    if next_target == 'cms_members':
+        return redirect('cms_members')
+    return redirect('cms_volunteer_detail', pk=pk)
+
+
+@cms_required
+def cms_volunteer_edit(request, pk):
+    """View and edit a volunteer application before approval."""
+    obj = get_object_or_404(VolunteerApplication, pk=pk)
+    if request.method == 'POST':
+        form = VolunteerApplicationForm(request.POST, request.FILES, instance=obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Volunteer application for {obj.name} has been updated.')
+            return redirect('cms_volunteer_detail', pk=pk)
+    else:
+        form = VolunteerApplicationForm(instance=obj)
+    return render(request, 'cms/volunteer_edit.html', {
+        'form': form,
+        'volunteer': obj,
+        'back_url': 'cms_members',
+    })
 
 
 # Edit views
@@ -419,6 +515,29 @@ def cms_impact_edit(request, pk=None):
     else:
         form = ImpactStatForm(instance=obj)
     return render(request, 'cms/edit_form.html', {'form': form, 'title': 'Edit Stat' if obj else 'Add Stat', 'back_url': 'cms_impact'})
+
+
+@cms_required
+def cms_impact_district_edit(request, pk=None):
+    obj = get_object_or_404(ImpactDistrict, pk=pk) if pk else None
+    if request.method == 'POST':
+        form = ImpactDistrictForm(request.POST, instance=obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Impact district saved!')
+            return redirect('cms_impact')
+    else:
+        form = ImpactDistrictForm(instance=obj)
+    return render(request, 'cms/edit_form.html', {'form': form, 'title': 'Edit Impact District' if obj else 'Add Impact District', 'back_url': 'cms_impact'})
+
+
+@cms_required
+@require_POST
+def cms_impact_district_delete(request, pk):
+    obj = get_object_or_404(ImpactDistrict, pk=pk)
+    obj.delete()
+    messages.success(request, 'Impact district removed.')
+    return redirect('cms_impact')
 
 
 @cms_required
@@ -839,6 +958,195 @@ def cms_location_delete(request, pk):
     return redirect('cms_location_management')
 
 
+# Blog Management (full CMS control - no Django admin required)
+@cms_required
+@require_GET
+def cms_blog(request):
+    from apps.blog.models import BlogPost, BlogPageSettings
+    posts = BlogPost.objects.all().select_related('category', 'author').prefetch_related('tags').order_by('-date')
+    q = request.GET.get('q', '').strip()
+    if q:
+        posts = posts.filter(Q(title__icontains=q) | Q(slug__icontains=q) | Q(excerpt__icontains=q))
+    settings = BlogPageSettings.get()
+    return render(request, 'cms/blog.html', {
+        'posts': posts,
+        'search_q': q,
+        'blog_settings': settings,
+    })
+
+
+@cms_required
+def cms_blog_post_edit(request, pk=None):
+    from apps.blog.models import BlogPost
+    from apps.blog.forms import BlogPostForm, BlogContentBlockFormSet
+    obj = get_object_or_404(BlogPost, pk=pk) if pk else None
+    if request.method == 'POST':
+        form = BlogPostForm(request.POST, request.FILES, instance=obj)
+        if form.is_valid():
+            post = form.save()
+            if obj:
+                formset = BlogContentBlockFormSet(request.POST, instance=post)
+                if formset.is_valid():
+                    formset.save()
+            messages.success(request, 'Post saved!')
+            return redirect('cms_blog')
+    else:
+        form = BlogPostForm(instance=obj)
+        formset = BlogContentBlockFormSet(instance=obj) if obj else None
+    return render(request, 'cms/blog_post_edit.html', {
+        'form': form,
+        'formset': formset,
+        'post': obj,
+        'title': 'Edit Post' if obj else 'Add Post',
+    })
+
+
+@cms_required
+@require_POST
+def cms_blog_post_delete(request, pk):
+    from apps.blog.models import BlogPost
+    obj = get_object_or_404(BlogPost, pk=pk)
+    obj.delete()
+    messages.success(request, 'Post deleted.')
+    return redirect('cms_blog')
+
+
+@cms_required
+def cms_blog_settings(request):
+    from apps.blog.models import BlogPageSettings
+    from apps.blog.forms import BlogPageSettingsForm
+    settings_obj = BlogPageSettings.get()
+    if request.method == 'POST':
+        form = BlogPageSettingsForm(request.POST, request.FILES, instance=settings_obj)
+        if form.is_valid():
+            if form.cleaned_data.get('clear_banner'):
+                settings_obj.banner_image = None
+                settings_obj.save(update_fields=['banner_image'])
+            form.save()
+            if form.cleaned_data.get('clear_banner'):
+                settings_obj.banner_image = None
+                settings_obj.save(update_fields=['banner_image'])
+            messages.success(request, 'Blog settings saved!')
+            return redirect('cms_blog_settings')
+    else:
+        form = BlogPageSettingsForm(instance=settings_obj)
+    return render(request, 'cms/blog_settings.html', {'form': form, 'settings': settings_obj})
+
+
+@cms_required
+@require_GET
+def cms_blog_authors(request):
+    from apps.blog.models import BlogAuthor
+    authors = BlogAuthor.objects.all()
+    return render(request, 'cms/blog_authors.html', {'authors': authors})
+
+
+@cms_required
+def cms_blog_author_edit(request, pk=None):
+    from apps.blog.models import BlogAuthor
+    from apps.blog.forms import BlogAuthorForm
+    obj = get_object_or_404(BlogAuthor, pk=pk) if pk else None
+    if request.method == 'POST':
+        form = BlogAuthorForm(request.POST, request.FILES, instance=obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Author saved!')
+            return redirect('cms_blog_authors')
+    else:
+        form = BlogAuthorForm(instance=obj)
+    return render(request, 'cms/edit_form.html', {
+        'form': form,
+        'title': 'Edit Author' if obj else 'Add Author',
+        'back_url': 'cms_blog_authors',
+    })
+
+
+@cms_required
+@require_POST
+def cms_blog_author_delete(request, pk):
+    from apps.blog.models import BlogAuthor
+    obj = get_object_or_404(BlogAuthor, pk=pk)
+    obj.delete()
+    messages.success(request, 'Author deleted.')
+    return redirect('cms_blog_authors')
+
+
+@cms_required
+@require_GET
+def cms_blog_categories(request):
+    from apps.blog.models import BlogCategory
+    categories = BlogCategory.objects.all()
+    return render(request, 'cms/blog_categories.html', {'categories': categories})
+
+
+@cms_required
+def cms_blog_category_edit(request, pk=None):
+    from apps.blog.models import BlogCategory
+    from apps.blog.forms import BlogCategoryForm
+    obj = get_object_or_404(BlogCategory, pk=pk) if pk else None
+    if request.method == 'POST':
+        form = BlogCategoryForm(request.POST, instance=obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Category saved!')
+            return redirect('cms_blog_categories')
+    else:
+        form = BlogCategoryForm(instance=obj)
+    return render(request, 'cms/edit_form.html', {
+        'form': form,
+        'title': 'Edit Category' if obj else 'Add Category',
+        'back_url': 'cms_blog_categories',
+    })
+
+
+@cms_required
+@require_POST
+def cms_blog_category_delete(request, pk):
+    from apps.blog.models import BlogCategory
+    obj = get_object_or_404(BlogCategory, pk=pk)
+    obj.delete()
+    messages.success(request, 'Category deleted.')
+    return redirect('cms_blog_categories')
+
+
+@cms_required
+@require_GET
+def cms_blog_tags(request):
+    from apps.blog.models import BlogTag
+    tags = BlogTag.objects.all()
+    return render(request, 'cms/blog_tags.html', {'tags': tags})
+
+
+@cms_required
+def cms_blog_tag_edit(request, pk=None):
+    from apps.blog.models import BlogTag
+    from apps.blog.forms import BlogTagForm
+    obj = get_object_or_404(BlogTag, pk=pk) if pk else None
+    if request.method == 'POST':
+        form = BlogTagForm(request.POST, instance=obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Tag saved!')
+            return redirect('cms_blog_tags')
+    else:
+        form = BlogTagForm(instance=obj)
+    return render(request, 'cms/edit_form.html', {
+        'form': form,
+        'title': 'Edit Tag' if obj else 'Add Tag',
+        'back_url': 'cms_blog_tags',
+    })
+
+
+@cms_required
+@require_POST
+def cms_blog_tag_delete(request, pk):
+    from apps.blog.models import BlogTag
+    obj = get_object_or_404(BlogTag, pk=pk)
+    obj.delete()
+    messages.success(request, 'Tag deleted.')
+    return redirect('cms_blog_tags')
+
+
 # Program Management
 @cms_required
 @require_GET
@@ -1063,3 +1371,103 @@ def cms_chat_settings(request):
     else:
         form = ChatSettingsForm(instance=settings)
     return render(request, 'cms/chat_settings.html', {'form': form, 'settings': settings})
+
+
+# --- SMS Settings & Message Templates (application notifications) ---
+@cms_required
+def cms_sms_settings(request):
+    """CMS page for configuring SMS gateway. Admin-only, user-friendly with guide."""
+    settings_obj = SMSSettings.get()
+    if request.method == 'POST':
+        form = SMSSettingsForm(request.POST, instance=settings_obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'SMS settings saved!')
+            return redirect('cms_sms_settings')
+    else:
+        form = SMSSettingsForm(instance=settings_obj)
+    return render(request, 'cms/sms_settings.html', {
+        'form': form,
+        'settings': settings_obj,
+    })
+
+
+@cms_required
+@require_GET
+def cms_sms_templates(request):
+    """List SMS message templates for application workflow."""
+    templates = SMSMessageTemplate.objects.all()
+    return render(request, 'cms/sms_templates.html', {'templates': templates})
+
+
+@cms_required
+def cms_sms_template_edit(request, pk):
+    """Edit a single SMS message template."""
+    obj = get_object_or_404(SMSMessageTemplate, pk=pk)
+    if request.method == 'POST':
+        form = SMSMessageTemplateForm(request.POST, instance=obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Message template saved!')
+            return redirect('cms_sms_templates')
+    else:
+        form = SMSMessageTemplateForm(instance=obj)
+    return render(request, 'cms/sms_template_edit.html', {
+        'form': form,
+        'obj': obj,
+        'back_url': 'cms_sms_templates',
+    })
+
+
+# --- Email Settings & Templates ---
+@cms_required
+def cms_email_settings(request):
+    """CMS page for configuring email notifications."""
+    settings_obj = EmailSettings.get()
+    if request.method == 'POST':
+        form = EmailSettingsForm(request.POST, instance=settings_obj)
+        if form.is_valid():
+            # Don't overwrite SMTP password if left blank (keep existing)
+            if not (form.cleaned_data.get('smtp_password') or '').strip() and getattr(settings_obj, 'smtp_password', None):
+                obj = form.save(commit=False)
+                obj.smtp_password = settings_obj.smtp_password
+                obj.save()
+            else:
+                form.save()
+            messages.success(request, 'Email settings saved!')
+            return redirect('cms_email_settings')
+    else:
+        form = EmailSettingsForm(instance=settings_obj)
+    return render(request, 'cms/email_settings.html', {'form': form, 'settings': settings_obj})
+
+
+@cms_required
+@require_GET
+def cms_email_templates(request):
+    """List email message templates."""
+    templates = EmailMessageTemplate.objects.all()
+    return render(request, 'cms/email_templates.html', {'templates': templates})
+
+
+@cms_required
+def cms_email_template_edit(request, pk):
+    """Edit email template."""
+    obj = get_object_or_404(EmailMessageTemplate, pk=pk)
+    if request.method == 'POST':
+        form = EmailMessageTemplateForm(request.POST, instance=obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Email template saved!')
+            return redirect('cms_email_templates')
+    else:
+        form = EmailMessageTemplateForm(instance=obj)
+    return render(request, 'cms/email_template_edit.html', {
+        'form': form, 'obj': obj, 'back_url': 'cms_email_templates',
+    })
+
+
+@cms_required
+@require_GET
+def cms_notifications_hub(request):
+    """Unified Notifications hub - SMS + Email settings links."""
+    return render(request, 'cms/notifications_hub.html')

@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.db.models import Q
 from .models import Program
 
@@ -28,5 +28,14 @@ def programs_list(request):
 
 
 def program_detail(request, slug):
-    program = Program.objects.get(slug=slug)
+    program = get_object_or_404(Program, slug=slug)
     return render(request, 'programs/detail.html', {'program': program})
+
+
+def events_page(request):
+    """
+    Events page using the Welfare 'event.html' design,
+    populated from Program objects (both upcoming and past).
+    """
+    programs = Program.objects.all().order_by('-event_date')
+    return render(request, 'programs/event.html', {'programs': programs})

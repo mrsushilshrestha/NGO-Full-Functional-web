@@ -1,0 +1,38 @@
+{% extends 'cms/base.html' %}
+{% load crispy_forms_tags %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="cms-card">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form|crispy }}
+        {% if formset %}
+        <hr class="my-4">
+        <h6 class="mb-3">Content Sections</h6>
+        <p class="text-muted small">Add paragraphs, headings, quotes, and bulleted lists. For lists, put each item on a new line.</p>
+        {{ formset.management_form }}
+        <div id="formset-container">
+            {% for f in formset %}
+            <div class="border rounded p-3 mb-2 formset-row">
+                {% for field in f.hidden_fields %}{{ field }}{% endfor %}
+                <div class="row g-2 mb-2">
+                    <div class="col-md-2"><label class="form-label small">Type</label>{{ f.block_type }}</div>
+                    <div class="col-md-1"><label class="form-label small">Order</label>{{ f.order }}</div>
+                    <div class="col-md-2 d-flex align-items-end"><div class="form-check"><label class="form-check-label small">{{ f.DELETE }} Delete</label></div></div>
+                </div>
+                <div class="mb-2"><label class="form-label small">Content</label>{{ f.content }}</div>
+                <div><label class="form-label small">Attribution (for quotes)</label>{{ f.attribution }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a href="{% url 'cms_blog' %}" class="btn btn-outline-secondary">Cancel</a>
+            {% if post and post.status == 'published' %}
+            <a href="{% url 'blog_detail' post.slug %}" target="_blank" class="btn btn-outline-info">Preview</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+{% endblock %}

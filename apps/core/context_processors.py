@@ -51,4 +51,16 @@ def site_settings(request):
         result['chat_settings'] = None
         result['admin_chat_online'] = False
 
+    try:
+        from apps.contact.models import ContactInfo
+        result['contact_info'] = ContactInfo.objects.first()
+    except Exception:
+        result['contact_info'] = None
+
+    try:
+        from apps.programs.models import Program
+        result['recent_programs'] = Program.objects.all()[:2]
+    except Exception:
+        result['recent_programs'] = []
+
     return result

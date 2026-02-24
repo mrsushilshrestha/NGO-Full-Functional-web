@@ -18,81 +18,75 @@ def membership_index(request):
 
 
 def volunteer_form(request):
+    """Volunteer form - same as application_center (volunteer only)."""
+    return application_center(request)
+
+
+def application_center(request):
+    """
+    Volunteer application only. Uses design from commented code.
+    No General Member form displayed. Join Us content from TeamPageSettings (CMS).
+    """
+    from apps.team.models import Province, District, TeamPageSettings
+    team_settings = TeamPageSettings.get()
+    form = VolunteerApplicationForm()
+    provinces = Province.objects.filter(is_active=True).order_by('order')
+    districts_by_province = {}
+    for p in provinces:
+        districts_by_province[p.id] = list(
+            District.objects.filter(province=p, is_active=True).order_by('name').values('id', 'name')
+        )
+    import json
+    districts_json = json.dumps(districts_by_province)
+
+    selected_district_id = None
+    selected_province_id = None
     if request.method == 'POST':
         form = VolunteerApplicationForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, 'Thank you! Your volunteer application has been submitted.')
-            return redirect('team_list')
+            return redirect('application_status', app_type='volunteer', status='pending')
+        # Repopulate province/district from POST so dropdowns restore on validation error
+        district_id_raw = request.POST.get('district')
+        if district_id_raw:
+            try:
+                d = District.objects.get(pk=int(district_id_raw))
+                selected_district_id = d.id
+                selected_province_id = d.province_id
+            except (District.DoesNotExist, ValueError, TypeError):
+                pass
     else:
         form = VolunteerApplicationForm()
-    return render(request, 'membership/volunteer_form.html', {'form': form})
+
+    return render(request, 'membership/volunteer_apply.html', {
+        'form': form,
+        'provinces': provinces,
+        'districts_json': districts_json,
+        'selected_district_id': selected_district_id,
+        'selected_province_id': selected_province_id,
+        'team_settings': team_settings,
+    })
+
+
+def application_status(request, app_type, status):
+    """MODIFICATION: Show application status message (Pending/Approved/Rejected)."""
+    status_messages = {
+        'pending': 'Your application is under review.',
+        'approved': 'Congratulations! Your application has been approved.',
+        'rejected': 'Sorry, your application was not approved.',
+    }
+    msg = status_messages.get(status, 'Your application is under review.')
+    return render(request, 'membership/application_status.html', {
+        'status': status,
+        'message': msg,
+        'app_type': app_type,
+    })
 
 
 def membership_form(request):
-    fees = MembershipFee.objects.all()
-    if request.method == 'POST':
-        form = MembershipApplicationForm(request.POST)
-        if form.is_valid():
-            app = form.save(commit=False)
-            fee = fees.filter(member_type=app.member_type).first()
-            amount = fee.amount if fee else 0
-            app.amount_paid = amount
-
-            if app.payment_method == 'bank':
-                app.save()
-                bank_details = BankDetail.objects.all()
-                messages.success(request, 'Application submitted. Please complete bank transfer.')
-                return render(request, 'membership/bank_transfer.html', {
-                    'app': app,
-                    'bank_details': bank_details,
-                })
-
-            if app.payment_method == 'esewa':
-                app.save()
-                base_url = _get_base_url(request)
-                transaction_uuid = f'memb-{app.id}-{uuid.uuid4().hex[:8]}'
-                app.payment_reference = transaction_uuid
-                app.save()
-                form_data = get_esewa_form_data(
-                    amount=amount,
-                    success_url=f'{base_url}{reverse("membership_esewa_success", kwargs={"tid": transaction_uuid})}',
-                    failure_url=f'{base_url}{reverse("membership_esewa_failure", kwargs={"tid": transaction_uuid})}',
-                    transaction_uuid=transaction_uuid,
-                )
-                return render(request, 'donation/esewa_form.html', {
-                    'form_data': form_data,
-                    'esewa_url': settings.ESEWA_PAYMENT_URL,
-                })
-
-            if app.payment_method == 'khalti':
-                if not settings.KHALTI_SECRET_KEY:
-                    messages.error(request, 'Khalti is not configured. Use eSewa or Bank Transfer.')
-                    return redirect('membership_form')
-                app.save()
-                base_url = _get_base_url(request)
-                amount_paisa = int(float(amount) * 100)
-                purchase_order_id = f'memb-{app.id}'
-                payment_url, pidx = initiate_khalti_payment(
-                    amount_paisa=amount_paisa,
-                    return_url=f'{base_url}{reverse("membership_khalti_return")}',
-                    purchase_order_id=purchase_order_id,
-                    purchase_order_name=f'NHAF Membership - {app.get_member_type_display()}',
-                    customer_info={'name': app.name, 'email': app.email, 'phone': app.phone},
-                )
-                if payment_url and pidx:
-                    app.payment_reference = pidx
-                    app.save()
-                    return redirect(payment_url)
-                messages.error(request, f'Khalti error: {pidx}')
-                return redirect('membership_form')
-
-            app.save()
-            messages.success(request, 'Thank you! Your membership application has been submitted.')
-            return redirect('team_list')
-    else:
-        form = MembershipApplicationForm()
-    return render(request, 'membership/membership_form.html', {'form': form, 'fees': fees})
+    """Legacy: redirect to unified application center."""
+    return redirect('application_center')
 
 
 def membership_esewa_success(request, tid):
@@ -106,18 +100,18 @@ def membership_esewa_success(request, tid):
 
 def membership_esewa_failure(request, tid):
     messages.warning(request, 'Payment was not completed.')
-    return redirect('membership_form')
+    return redirect('application_center')
 
 
 def membership_khalti_return(request):
     pidx = request.GET.get('pidx')
     if not pidx:
         messages.warning(request, 'Invalid payment response.')
-        return redirect('membership_form')
+        return redirect('application_center')
     app = MembershipApplication.objects.filter(payment_reference=pidx).first()
     if not app:
         messages.warning(request, 'Application not found.')
-        return redirect('membership_form')
+        return redirect('application_center')
     status, data = verify_khalti_payment(pidx)
     if status == 'Completed':
         app.status = 'approved'

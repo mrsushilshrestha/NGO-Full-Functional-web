@@ -1,0 +1,31 @@
+{% if volunteer_page_obj.paginator.num_pages > 1 %}
+<nav id="volunteer-pagination-nav" class="team-pagination-wrap" aria-label="Volunteers pagination">
+    <div class="team-pagination">
+        {% if volunteer_page_obj.has_previous %}
+        <a href="?{% if base_query %}{{ base_query }}&{% endif %}page={{ volunteer_page_obj.previous_page_number }}" class="team-pagination-btn team-pagination-arrow" data-page="{{ volunteer_page_obj.previous_page_number }}" aria-label="Previous page">
+            <i class="fas fa-chevron-left"></i>
+        </a>
+        {% else %}
+        <span class="team-pagination-btn team-pagination-arrow disabled" aria-disabled="true"><i class="fas fa-chevron-left"></i></span>
+        {% endif %}
+
+        <div class="team-pagination-pages">
+            {% for p in volunteer_pagination_range %}
+                {% if p %}
+                <a href="?{% if base_query %}{{ base_query }}&{% endif %}page={{ p }}" class="team-pagination-btn team-pagination-num {% if p == volunteer_page_obj.number %}active{% endif %}" data-page="{{ p }}" aria-label="Page {{ p }}" {% if p == volunteer_page_obj.number %}aria-current="page"{% endif %}>{{ p }}</a>
+                {% else %}
+                <span class="team-pagination-ellipsis" aria-hidden="true">…</span>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        {% if volunteer_page_obj.has_next %}
+        <a href="?{% if base_query %}{{ base_query }}&{% endif %}page={{ volunteer_page_obj.next_page_number }}" class="team-pagination-btn team-pagination-arrow" data-page="{{ volunteer_page_obj.next_page_number }}" aria-label="Next page">
+            <i class="fas fa-chevron-right"></i>
+        </a>
+        {% else %}
+        <span class="team-pagination-btn team-pagination-arrow disabled" aria-disabled="true"><i class="fas fa-chevron-right"></i></span>
+        {% endif %}
+    </div>
+</nav>
+{% endif %}

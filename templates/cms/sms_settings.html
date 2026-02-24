@@ -1,0 +1,51 @@
+{% extends 'cms/base.html' %}
+{% load crispy_forms_tags %}
+{% block page_title %}SMS Notifications Settings{% endblock %}
+{% block content %}
+<!-- MODIFICATION: CMS SMS configuration with user-friendly guide for non-technical staff -->
+<div class="cms-card mb-4">
+    <h5 class="mb-3"><i class="fas fa-info-circle text-primary me-2"></i>How SMS Notifications Work</h5>
+    <div class="bg-light rounded p-3 small">
+        <p class="mb-2"><strong>When are SMS sent?</strong></p>
+        <ul class="mb-2">
+            <li><strong>Form Submission:</strong> When someone submits a Volunteer or Membership application</li>
+            <li><strong>Approved:</strong> When an admin approves an application</li>
+            <li><strong>Rejected:</strong> When an admin rejects an application</li>
+        </ul>
+        <p class="mb-2"><strong>What you need:</strong></p>
+        <ul class="mb-2">
+            <li>A valid SMS gateway provider (Twilio, Africa's Talking, or your local provider)</li>
+            <li>API Key and optionally API Secret from your provider</li>
+            <li>Sender ID (if required by your provider)</li>
+        </ul>
+        <p class="mb-0"><strong>To edit the message content</strong> (without coding), go to <a href="{% url 'cms_sms_templates' %}">SMS Message Templates</a>.</p>
+    </div>
+</div>
+
+<div class="cms-card">
+    <h5 class="mb-4">SMS Gateway Configuration</h5>
+    <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">Save SMS Settings</button>
+            <a href="{% url 'cms_sms_templates' %}" class="btn btn-outline-secondary">Edit Message Templates</a>
+        </div>
+    </form>
+</div>
+
+<div class="cms-card mt-4">
+    <h6 class="mb-2">Field Reference</h6>
+    <table class="table table-sm table-bordered small">
+        <thead><tr><th>Field</th><th>Purpose</th></tr></thead>
+        <tbody>
+            <tr><td>Enable SMS</td><td>Turn on/off all SMS notifications</td></tr>
+            <tr><td>Sender Email</td><td>For email-to-SMS gateways (e.g. notifications@xyz.org)</td></tr>
+            <tr><td>Sender ID</td><td>Text shown as sender on recipient's phone (e.g. NHAF)</td></tr>
+            <tr><td>API Key</td><td>Your provider's API key from their dashboard</td></tr>
+            <tr><td>API Secret</td><td>Required by some providers for authentication</td></tr>
+            <tr><td>Endpoint URL</td><td>Custom API URL if your provider uses a specific endpoint</td></tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}

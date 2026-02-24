@@ -1,5 +1,5 @@
 {% for member in board_members %}
-<div class="col-12 col-md-4 board-card-col" data-search="{{ member.name|lower }} {{ member.role|lower }} {{ member.member_id|lower }}">
+<div class="team-card-col board-card-col" data-search="{{ member.name|lower }} {{ member.role|lower }} {{ member.member_id|lower }}">
     <a href="{% url 'member_detail' member.pk %}" class="text-decoration-none">
         <div class="member-card-modern">
             {% if member.photo %}
@@ -38,7 +38,7 @@
     </a>
 </div>
 {% empty %}
-<div class="col-12 text-center text-muted py-5 board-empty-state">
+<div class="team-card-col team-card-col--empty text-center text-muted py-5 board-empty-state">
     <i class="fas fa-user-tie fa-3x mb-3 opacity-50"></i>
     <p class="mb-0">No board members in this location.</p>
 </div>

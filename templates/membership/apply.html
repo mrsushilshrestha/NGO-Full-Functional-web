@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Join Us - Volunteer or Member{% endblock %}
+{% block content %}
+<!-- MODIFICATION: Unified application form with Volunteer/Membership toggle. Same DB models. -->
+<section class="py-5" style="background: linear-gradient(135deg, rgba(11,83,69,0.06), rgba(193,127,89,0.06));">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="text-center mb-4">
+                    <h1 class="mb-2">Join Us</h1>
+                    <p class="text-muted">Choose how you'd like to contribute — as a Volunteer or Member</p>
+                </div>
+
+                <!-- Toggle / Tab Slider -->
+                <div class="form-tabs-wrapper mb-4">
+                    <div class="btn-group btn-group-lg w-100 shadow-sm rounded-pill overflow-hidden" role="tablist">
+                        <button type="button" class="btn {% if active_tab == 'volunteer' %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-0 flex-fill application-tab"
+                                data-tab="volunteer" id="tab-volunteer" aria-selected="{% if active_tab == 'volunteer' %}true{% else %}false{% endif %}" aria-controls="form-volunteer">
+                            <i class="fas fa-hand-holding-heart me-2"></i>Volunteer
+                        </button>
+                        <button type="button" class="btn {% if active_tab == 'membership' %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-0 flex-fill application-tab"
+                                data-tab="membership" id="tab-membership" aria-selected="{% if active_tab == 'membership' %}true{% else %}false{% endif %}" aria-controls="form-membership">
+                            <i class="fas fa-user-tag me-2"></i>Member
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Form Panels -->
+                <div class="bg-white rounded-4 shadow-sm p-4 p-md-5" style="border: 1px solid rgba(0,0,0,0.06);">
+                    <!-- Volunteer Form -->
+                    <div id="form-volunteer" class="form-panel {% if active_tab != 'volunteer' %}d-none{% endif %}" role="tabpanel" aria-labelledby="tab-volunteer">
+                        <h4 class="mb-3">Volunteer Application</h4>
+                        <p class="text-muted small mb-4">Share your time and skills. Profile image max 200 KB.</p>
+                        <form method="post" action="{% url 'application_center' %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <input type="hidden" name="form_type" value="volunteer">
+                            {{ volunteer_form|crispy }}
+                            <button type="submit" class="btn btn-primary btn-lg w-100 mt-3">Submit Volunteer Application</button>
+                        </form>
+                    </div>
+
+                    <!-- Membership Form -->
+                    <div id="form-membership" class="form-panel {% if active_tab != 'membership' %}d-none{% endif %}" role="tabpanel" aria-labelledby="tab-membership">
+                        <h4 class="mb-3">Membership Application</h4>
+                        {% if fees %}
+                        <div class="alert alert-info py-2 px-3 small mb-4">
+                            <strong>Fees:</strong>
+                            {% for fee in fees %}{{ fee.get_member_type_display }}: NPR {{ fee.amount }}{% if not forloop.last %} · {% endif %}{% endfor %}
+                            — Payment: eSewa, Khalti, or Bank Transfer
+                        </div>
+                        {% endif %}
+                        <form method="post" action="{% url 'application_center' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="form_type" value="membership">
+                            {{ membership_form|crispy }}
+                            <button type="submit" class="btn btn-primary btn-lg w-100 mt-3">Submit Membership Application</button>
+                        </form>
+                    </div>
+                </div>
+
+                <p class="text-center mt-3 mb-0">
+                    <a href="{% url 'team_list' %}" class="text-muted small"><i class="fas fa-arrow-left me-1"></i>Back to Team</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+(function() {
+    // MODIFICATION: Accessible tab switching for Volunteer/Membership forms
+    var tabs = document.querySelectorAll('.application-tab');
+    var panels = document.querySelectorAll('.form-panel');
+    tabs.forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            var targetTab = this.getAttribute('data-tab');
+            tabs.forEach(function(t) {
+                t.classList.remove('btn-primary');
+                t.classList.add('btn-outline-secondary');
+                t.setAttribute('aria-selected', 'false');
+            });
+            this.classList.remove('btn-outline-secondary');
+            this.classList.add('btn-primary');
+            this.setAttribute('aria-selected', 'true');
+            panels.forEach(function(p) {
+                if (p.id === 'form-' + targetTab) {
+                    p.classList.remove('d-none');
+                } else {
+                    p.classList.add('d-none');
+                }
+            });
+        });
+    });
+})();
+</script>
+{% endblock %}

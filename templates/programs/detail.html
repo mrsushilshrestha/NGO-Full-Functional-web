@@ -1,27 +1,72 @@
 {% extends 'base.html' %}
+{% load static %}
+<!-- Dynamic data from backend: program (from programs.views.program_detail) -->
 
 {% block title %}{{ program.title }}{% endblock %}
 
 {% block content %}
-<section class="py-5" style="background: var(--bg-warm);">
-    <div class="container">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'programs_list' %}">Programs</a></li>
-                <li class="breadcrumb-item active">{{ program.title }}</li>
-            </ol>
-        </nav>
-        <div class="row">
-            <div class="col-lg-8">
-                {% if program.image %}<img src="{{ program.image.url }}" class="img-fluid rounded-3 mb-4 shadow-sm" alt="{{ program.title }}" style="max-height: 400px; width: 100%; object-fit: cover;">{% else %}<div class="img-placeholder rounded-3 mb-4" style="height: 350px;"><div><i class="fas fa-calendar-check fa-4x mb-2"></i><p class="mb-0">{{ program.title }}</p><p class="small opacity-90">{{ program.event_date|date:"F d, Y" }}</p></div></div>{% endif %}
-                <h1>{{ program.title }}</h1>
-                <p class="text-muted">
-                    <span class="badge bg-{% if program.category == 'upcoming' %}success{% else %}secondary{% endif %}">{{ program.get_category_display }}</span>
-                    {{ program.event_date|date:"F d, Y" }}
-                </p>
-                <div class="content">{{ program.description|safe }}</div>
-            </div>
-        </div>
+<div class="hero-wrap" style="background-image: url('{% if program.image %}{{ program.image.url }}{% else %}{% static 'css/images/bg_1.jpg' %}{% endif %}');" data-stellar-background-ratio="0.5">
+  <div class="overlay"></div>
+  <div class="container">
+    <div class="row no-gutters slider-text align-items-center justify-content-center" data-scrollax-parent="true">
+      <div class="col-md-7 ftco-animate text-center" data-scrollax=" properties: { translateY: '70%' }">
+        <p class="breadcrumbs" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }">
+          <!-- Connected to Home page -->
+          <span class="mr-2"><a href="{% url 'home' %}">Home</a></span>
+          <!-- Connected to Events nav (Programs list) -->
+          <span class="mr-2"><a href="{% url 'programs_list' %}">Events</a></span>
+          <span>{{ program.title }}</span>
+        </p>
+        <h1 class="mb-3 bread" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }">{{ program.title }}</h1>
+      </div>
     </div>
+  </div>
+</div>
+
+<section class="ftco-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 ftco-animate">
+        {% if program.image %}
+        <div class="block-20 mb-4" style="background-image: url('{{ program.image.url }}'); background-size: cover; background-position: center; height: 420px; border-radius: 4px;"></div>
+        {% else %}
+        <div class="block-20 mb-4" style="background-image: url('{% static 'css/images/event-1.jpg' %}'); background-size: cover; background-position: center; height: 420px; border-radius: 4px;"></div>
+        {% endif %}
+
+        <div class="meta mb-3">
+          <!-- Dynamic data from backend -->
+          <span class="badge {% if program.category == 'upcoming' %}badge-success{% else %}badge-secondary{% endif %}">{{ program.get_category_display }}</span>
+          <span class="mr-2"><i class="icon-calendar"></i> {{ program.event_date|date:"F d, Y" }}</span>
+        </div>
+
+        <h2 class="mb-4">{{ program.title }}</h2>
+        <div class="content">
+          <!-- Dynamic data from backend: program.description -->
+          {{ program.description|safe }}
+        </div>
+
+        <!-- Connected to Events nav (Programs list) -->
+        <p class="mt-4">
+          <a href="{% url 'programs_list' %}" class="btn btn-primary py-3 px-5">Back to Events <i class="ion-ios-arrow-forward"></i></a>
+        </p>
+      </div>
+
+      <div class="col-lg-4 sidebar ftco-animate">
+        <div class="sidebar-box ftco-animate">
+          <h3 class="heading mb-4">Event Info</h3>
+          <ul class="list-unstyled">
+            <li><strong>Date:</strong> {{ program.event_date|date:"F d, Y" }}</li>
+            <li><strong>Category:</strong> {{ program.get_category_display }}</li>
+          </ul>
+
+          <!-- Connected to Donate page -->
+          <p><a href="{% url 'donate' %}" class="btn btn-primary w-100 py-3">Donate to Support</a></p>
+
+          <!-- Connected to Events nav -->
+          <p><a href="{% url 'programs_list' %}" class="btn btn-outline-primary w-100 py-3">View All Events</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 {% endblock %}

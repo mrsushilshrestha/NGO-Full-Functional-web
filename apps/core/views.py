@@ -2,7 +2,7 @@ import json
 from django.shortcuts import render
 from django.utils import timezone
 from django.db.models import Q, Case, When, Value, IntegerField
-from .models import HeroBanner, HomeContent, AnnouncementPopup, GalleryImage
+from .models import HeroBanner, HomeContent, AnnouncementPopup, GalleryImage, SplashScreenSettings
 from apps.programs.models import Program
 from apps.team.models import Collaboration
 
@@ -35,6 +35,7 @@ def home(request):
          'image': a.image.url if a.image else '', 'link_url': a.link_url or '', 'link_text': a.link_text or 'Learn More'}
         for a in announcements
     ])
+    splash_settings = SplashScreenSettings.get()
     return render(request, 'core/home.html', {
         'banners': banners,
         'contents': contents,
@@ -43,4 +44,5 @@ def home(request):
         'gallery': gallery,
         'programs': programs,
         'collaborations': collaborations,
+        'splash_settings': splash_settings,
     })

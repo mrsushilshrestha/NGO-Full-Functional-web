@@ -1,72 +1,107 @@
 {% extends 'base.html' %}
-{% load crispy_forms_tags %}
+{% load static %}
+<!-- Dynamic data from backend: form, tiers (from donation.views.donate) -->
 
 {% block title %}Donate{% endblock %}
 
 {% block content %}
-<section class="py-5" style="background: var(--bg-warm);">
-    <div class="container">
-        <h1 class="section-title text-center mb-2">Donate to NHAF Nepal</h1>
-        <p class="section-subtitle text-center mb-5">Your contribution helps us run health camps, reach remote communities, and save lives. Every rupee counts.</p>
-
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="card card-elevated">
-                    <div class="card-body p-5">
-                        <form method="post">
-                            {% csrf_token %}
-                            <div class="mb-4">
-                                <label class="form-label">Amount (NPR)</label>
-                                <div class="row g-2 mb-2">
-                                    {% for tier in tiers %}
-                                    <div class="col-4">
-                                        <button type="button" class="btn btn-outline-primary w-100 tier-btn" data-amount="{{ tier.amount }}">
-                                            NPR {{ tier.amount|floatformat:0 }}
-                                        </button>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                                <input type="number" name="amount" id="id_amount" class="form-control form-control-lg" placeholder="Or enter custom amount" min="1" step="1" required value="{{ form.amount.value|default:'' }}">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Your Name (optional)</label>
-                                <input type="text" name="donor_name" class="form-control" placeholder="Anonymous" value="{{ form.donor_name.value|default:'' }}">
-                            </div>
-                            <div class="mb-4">
-                                <label class="form-label">Email (optional)</label>
-                                <input type="email" name="donor_email" class="form-control" value="{{ form.donor_email.value|default:'' }}">
-                            </div>
-                            <div class="mb-4">
-                                <label class="form-label">Payment Method</label>
-                                <div class="d-flex gap-3 flex-wrap">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="payment_method" value="esewa" id="esewa" {% if form.payment_method.value == 'esewa' or not form.payment_method.value %}checked{% endif %}>
-                                        <label class="form-check-label" for="esewa"><i class="fab fa-cc-visa me-1"></i> eSewa</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="payment_method" value="khalti" id="khalti" {% if form.payment_method.value == 'khalti' %}checked{% endif %}>
-                                        <label class="form-check-label" for="khalti">Khalti</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="payment_method" value="bank" id="bank" {% if form.payment_method.value == 'bank' %}checked{% endif %}>
-                                        <label class="form-check-label" for="bank">Bank Transfer</label>
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-lg w-100">Proceed to Donate</button>
-                        </form>
-                    </div>
-                </div>
-                <p class="text-center text-muted small mt-3">Secure payment. All donations are tax-deductible.</p>
-            </div>
-        </div>
+<div class="hero-wrap" style="background-image: url('{% static 'css/images/bg_6.jpg' %}');" data-stellar-background-ratio="0.5">
+  <div class="overlay"></div>
+  <div class="container">
+    <div class="row no-gutters slider-text align-items-center justify-content-center" data-scrollax-parent="true">
+      <div class="col-md-7 ftco-animate text-center" data-scrollax=" properties: { translateY: '70%' }">
+        <p class="breadcrumbs" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }">
+          <!-- Connected to Home page -->
+          <span class="mr-2"><a href="{% url 'home' %}">Home</a></span>
+          <span>Donate</span>
+        </p>
+        <h1 class="mb-3 bread" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }">Donations</h1>
+      </div>
     </div>
+  </div>
+</div>
+
+<section class="ftco-section bg-light">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8 ftco-animate">
+        <div class="p-4 bg-white" style="border-radius: 4px;">
+          <h3 class="mb-4 text-center">Donate to {{ site_identity.site_title|default:"NHAF Nepal" }}</h3>
+
+          <!-- Dynamic data from backend: DonationForm -->
+          <form method="post" action="">
+            {% csrf_token %}
+
+            <div class="form-group">
+              <label for="id_amount">Amount (NPR)</label>
+              {% if tiers %}
+              <div class="row">
+                <!-- Dynamic data from backend: tiers -->
+                {% for tier in tiers %}
+                <div class="col-4 mb-2">
+                  <button type="button" class="btn btn-outline-primary btn-block tier-btn" data-amount="{{ tier.amount|floatformat:0 }}">
+                    NPR {{ tier.amount|floatformat:0 }}
+                  </button>
+                </div>
+                {% endfor %}
+              </div>
+              {% endif %}
+              <input type="number" name="amount" id="id_amount" class="form-control" placeholder="Or enter custom amount" min="1" step="1" required value="{{ form.amount.value|default:'' }}">
+              {% if form.amount.errors %}<small class="text-danger">{{ form.amount.errors.0 }}</small>{% endif %}
+            </div>
+
+            <div class="form-group">
+              <label for="id_donor_name">Your Name (optional)</label>
+              <input type="text" name="donor_name" id="id_donor_name" class="form-control" placeholder="Anonymous" value="{{ form.donor_name.value|default:'' }}">
+              {% if form.donor_name.errors %}<small class="text-danger">{{ form.donor_name.errors.0 }}</small>{% endif %}
+            </div>
+
+            <div class="form-group">
+              <label for="id_donor_email">Email (optional)</label>
+              <input type="email" name="donor_email" id="id_donor_email" class="form-control" value="{{ form.donor_email.value|default:'' }}">
+              {% if form.donor_email.errors %}<small class="text-danger">{{ form.donor_email.errors.0 }}</small>{% endif %}
+            </div>
+
+            <div class="form-group">
+              <label>Payment Method</label>
+              <div class="d-flex flex-wrap" style="gap: 1rem;">
+                <label class="d-flex align-items-center mb-0">
+                  <input type="radio" name="payment_method" value="esewa" class="mr-2" {% if form.payment_method.value == 'esewa' or not form.payment_method.value %}checked{% endif %}>
+                  eSewa
+                </label>
+                <label class="d-flex align-items-center mb-0">
+                  <input type="radio" name="payment_method" value="khalti" class="mr-2" {% if form.payment_method.value == 'khalti' %}checked{% endif %}>
+                  Khalti
+                </label>
+                <label class="d-flex align-items-center mb-0">
+                  <input type="radio" name="payment_method" value="bank" class="mr-2" {% if form.payment_method.value == 'bank' %}checked{% endif %}>
+                  Bank Transfer
+                </label>
+              </div>
+              {% if form.payment_method.errors %}<small class="text-danger d-block mt-1">{{ form.payment_method.errors.0 }}</small>{% endif %}
+            </div>
+
+            <!-- Connected to backend donate flow -->
+            <div class="form-group mb-0">
+              <button type="submit" class="btn btn-primary btn-block py-3">Proceed to Donate</button>
+            </div>
+          </form>
+        </div>
+        <p class="text-center text-muted small mt-3 mb-0">Secure payment. Thank you for supporting our mission.</p>
+      </div>
+    </div>
+  </div>
 </section>
+
 <script>
-document.querySelectorAll('.tier-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.getElementById('id_amount').value = btn.dataset.amount;
+  (function () {
+    var amountInput = document.getElementById('id_amount');
+    if (!amountInput) return;
+    document.querySelectorAll('.tier-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        amountInput.value = btn.getAttribute('data-amount');
+      });
     });
-});
+  })();
 </script>
 {% endblock %}

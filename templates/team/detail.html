@@ -181,7 +181,7 @@
                     {% endif %}
 
                     <!-- Social Media Links -->
-                    {% if member.facebook_url or member.instagram_url or member.linkedin_url or member.email %}
+                    {% if member.facebook_url or member.instagram_url or member.linkedin_url or member.twitter_url or member.email %}
                     <div class="member-social-links">
                         {% if member.facebook_url %}
                         <a href="{{ member.facebook_url }}" target="_blank" rel="noopener" class="member-social-link" title="Facebook">
@@ -196,6 +196,11 @@
                         {% if member.linkedin_url %}
                         <a href="{{ member.linkedin_url }}" target="_blank" rel="noopener" class="member-social-link" title="LinkedIn">
                             <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        {% endif %}
+                        {% if member.twitter_url %}
+                        <a href="{{ member.twitter_url }}" target="_blank" rel="noopener" class="member-social-link" title="Twitter/X">
+                            <i class="fab fa-x-twitter"></i>
                         </a>
                         {% endif %}
                         {% if member.email %}
