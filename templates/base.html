@@ -61,7 +61,11 @@
             <li class="nav-item {% if '/about' in request.path %}active{% endif %}"><a href="{% url 'about' %}" class="nav-link">About</a></li>
 
             <!-- Connected to Causes page (Impact) -->
+<<<<<<< HEAD
             <li class="nav-item {% if '/impact' in request.path %}active{% endif %}"><a href="{% url 'impact' %}" class="nav-link">Impact</a></li>
+=======
+            <li class="nav-item {% if '/impact' in request.path %}active{% endif %}"><a href="{% url 'impact' %}" class="nav-link">Causes</a></li>
+>>>>>>> 87d2af204196459b1235fafd73d6dba87de92168
 
             <!-- Connected to Donate page -->
             <li class="nav-item {% if '/donate' in request.path %}active{% endif %}"><a href="{% url 'donate' %}" class="nav-link">Donate</a></li>
@@ -73,10 +77,14 @@
             <li class="nav-item {% if '/gallery' in request.path %}active{% endif %}"><a href="{% url 'gallery' %}" class="nav-link">Gallery</a></li>
 
             <!-- Connected to Team page -->
+<<<<<<< HEAD
             <li class="nav-item {% if '/team' in request.path or '/team' in request.path %}active{% endif %}"><a href="{% url 'team_list' %}" class="nav-link">Team</a></li>
 
             <!-- Connected to Team page -->
             <li class="nav-item {% if 'team/collaborations/' in request.path %}active{% endif %}"><a href="{% url 'collaboration_list' %}" class="nav-link">Collaboration</a></li>
+=======
+            <li class="nav-item {% if '/terms/members' in request.path or '/team' in request.path %}active{% endif %}"><a href="{% url 'members_page' %}" class="nav-link">Team</a></li>
+>>>>>>> 87d2af204196459b1235fafd73d6dba87de92168
 
             <!-- Connected to Events page -->
             <li class="nav-item {% if '/program/event' in request.path %}active{% endif %}"><a href="{% url 'events_page' %}" class="nav-link">Events</a></li>

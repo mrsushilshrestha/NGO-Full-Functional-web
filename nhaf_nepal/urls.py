@@ -17,7 +17,11 @@ urlpatterns = [
     path('gallery/', contact_views.gallery_page, name='gallery'),
     path('programs/', include('apps.programs.urls')),
     path('program/event/', programs_views.events_page, name='events_page'),
+<<<<<<< HEAD
     path('team/', include('apps.team.urls',)),
+=======
+    path('team/', include('apps.team.urls')),
+>>>>>>> 87d2af204196459b1235fafd73d6dba87de92168
     path('membership/', include('apps.membership.urls')),
     path('impact/', include('apps.impact.urls')),
     path('blog/', include('apps.blog.urls')),
